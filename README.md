@@ -41,10 +41,13 @@ for SPID compatibility.
 
    These options can be set by running:
 
-   ```
+   ```console
    composer config minimum-stability dev
    composer config prefer-stable true
    ```
+
+   **This installation step will be removed before the first stable release of
+   this package.**
 
 3. Require this package with composer.
 
@@ -79,7 +82,7 @@ can't know what CSRF token include in their POST requests sent to your routes.
 
 Publish the configuration with:
 
-```
+```console
 php artisan vendor:publish --provider="Italia\SPIDAuth\ServiceProvider"
 ```
 
@@ -143,13 +146,13 @@ with SPID, you can listen to the `LoginEvent` and `LogoutEvent` (see
 You can display a simple SPID access button by including the
 `spid-auth::spid-button` view in your template:
 
-```
+```blade
 @include('spid-auth::spid-button')
 ```
 
 Optionally you can specify the button size (`s`, `m`, `l` or `xl`):
 
-```
+```blade
 @include('spid-auth::spid-button', ['size' => 'm'])
 ```
 
@@ -165,13 +168,13 @@ Optionally you can specify the button size (`s`, `m`, `l` or `xl`):
 
 You can assign the `spid.auth` middleware to specific routes like so:
 
-```
+```php
 Route::get('private', 'PrivateController@show')->middleware('spid.auth');
 ```
 
 Or you can assign the `spid.auth` middleware to application controllers:
 
-```
+```php
 class PrivateController extends Controller
 {
     /**
@@ -198,8 +201,8 @@ class PrivateController extends Controller
 
 ### Events
 
-Listening to `LoginEvent` and `LogoutEvent`, you can use these methods to get
-some useful information about the authenticated user:
+`LoginEvent` and `LogoutEvent` can be listened to get some useful information
+about the authenticated user. Both events share these methods:
 - `getSPIDUser()` returns a `SPIDUser` object filled with the attributes
   specified in the `sp_requested_attributes` option and returned by the
   Identity Provider;
@@ -209,7 +212,7 @@ To listen to both events using the same object, you can use an
 [Event Subscriber](https://laravel.com/docs/5.5/events#event-subscribers) class
 that can be defined as follow:
 
-```
+```php
 <?php
 
 namespace App\Listeners;
@@ -259,7 +262,7 @@ class SPIDEventSubscriber
 The `SPIDEventSubscriber` class must be added to the `$subscribe` array in
 `app/Providers/EventServiceProvider.php`:
 
-```
+```php
 protected $subscribe = [
     'App\Listeners\SPIDEventSubscriber'
 ];
@@ -287,7 +290,7 @@ be run as an example in a fresh installed Laravel application.
 
 To publish the needed files run the command:
 
-```
+```console
 php artisan spid-auth:example
 ```
 
@@ -305,7 +308,7 @@ Next add the `SPIDEventSubscriber` class in
 
 To run the example:
 
-```
+```console
 php artisan serve
 ```
 
@@ -351,9 +354,9 @@ this [pull request](https://github.com/italia/spid-smart-button/pull/10).
 
 ## Licenses
 
-BSD-3-Clause License is generally applied to all the code in this repository if not otherwise specified.
+`BSD-3-Clause License` is generally applied to all the code in this repository if not otherwise specified.
 
-MIT License is applied to some portions of code as reported in
+`MIT License` is applied to some portions of code as reported in
 [this README](https://github.com/italia/spid-laravel/blob/master/src/Console/README.md).
 
-SIL Open Font License 1.1 is applied to the Titillium font included from CSS files.
+`SIL Open Font License 1.1` is applied to the Titillium font included from CSS files.
