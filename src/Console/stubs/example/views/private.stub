@@ -1,0 +1,18 @@
+@inject('SPIDAuth', 'SPIDAuth')
+
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+  <div class="row">
+    <div class="col-md-8 col-md-offset-2">
+      <div class="panel panel-default">
+        <div class="panel-heading">Private area</div>
+        <div class="panel-body center">
+          Hi {{ $SPIDAuth->getSPIDUser()->name }} {{ $SPIDAuth->getSPIDUser()->familyName }}, this area is private!
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+@endsection

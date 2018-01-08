@@ -1,0 +1,41 @@
+{
+  "name": "italia/spid-laravel",
+  "description": "Laravel 5 Package for SPID authentication",
+  "keywords": ["SPID", "Laravel", "Laravel 5"],
+  "homepage": "https://github.com/italia/spid-laravel",
+  "license": "BSD-3-clause",
+  "authors": [
+    {
+      "name": "Davide Porrovecchio - Agenzia per l'Italia Digitale - Team per la Trasformazione Digitale",
+      "email": "davide.porrovecchio@agid.gov.it"
+    }
+  ],
+  "require": {
+    "php": ">=5.4.0",
+    "illuminate/config": "~5.0",
+    "illuminate/support": "~5.0",
+    "onelogin/php-saml": "dev-remove_mcrypt",
+    "cweagans/composer-patches": "^1.6"
+  },
+  "require-dev": {
+    "pds/skeleton": "~1.0",
+    "phpunit/phpunit": "~4.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Italia\\SPIDAuth\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+        "providers": [
+            "Italia\\SPIDAuth\\ServiceProvider"
+        ]
+    },
+    "patches": {
+      "onelogin/php-saml": {
+        "Compatibility with SPID": "https://cdn.rawgit.com/pdavide/4305187d52e1a197cde3315dc28710d7/raw/f246f8c7885f0d4a4d0b6edd5c12079fd5a53882/php-saml-no-mcrypt-spid.patch"
+      }
+    }
+  }
+}

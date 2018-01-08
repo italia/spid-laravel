@@ -1,0 +1,3 @@
+
+Route::get('/', 'HomeController@index')->name('home');
+Route::get('/private', 'PrivateController@index')->name('private');
