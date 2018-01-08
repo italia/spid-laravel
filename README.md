@@ -14,7 +14,7 @@ applications based on [Laravel 5](https://www.laravel.com).
 
 1. Before installing this package patching must be enabled in `composer.json`.
 This is necessary because
-[this patch](https://gist.github.com/pdavide/4305187d52e1a197cde3315dc28710d7)
+[this patch](https://cdn.rawgit.com/italia/spid-laravel/887c53d1/patches/php-saml-remove_mcrypt-spid.patch)
 has to be applied to [onelogin/php-saml](https://github.com/onelogin/php-saml)
 for SPID compatibility.
 

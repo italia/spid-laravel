@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "50ba09df950c373dd84ca77d79ccec6b",
+    "content-hash": "735987785c6eae1e0a34b3f5af1c8861",
     "packages": [
         {
             "name": "cweagans/composer-patches",
@@ -348,7 +348,9 @@
             },
             "type": "library",
             "extra": {
-                "patches_applied": []
+                "patches_applied": {
+                    "Compatibility with SPID": "https://cdn.rawgit.com/italia/spid-laravel/887c53d1/patches/php-saml-remove_mcrypt-spid.patch"
+                }
             },
             "autoload": {
                 "classmap": [
