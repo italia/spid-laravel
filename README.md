@@ -28,13 +28,29 @@ for SPID compatibility.
    ```
    or simply run:
 
-   `composer config extra.enable-patching true`
+   `composer config extra.enable-patching true`.
 
-2. Require this package with composer.
+2. Since Laravel 5.5 requires PHP >= 7.0.0, this package depends on the
+   [`dev-remove_mcrypt` branch](https://github.com/onelogin/php-saml/tree/remove_mcrypt)
+   of onelogin/php-saml because [`mcrypt`](http://php.net/manual/en/intro.mcrypt.php)
+   extension is deprecated in PHP 7.1.0 and will be removed in PHP 7.2.0.
+
+   In order to allow composer to properly resolve dependencies the
+   `minimum-stability` option must be set to `dev` and the `prefer-stable`
+   option must be set to `true` in `composer.json`.
+
+   These options can be set by running:
+
+   ```
+   composer config minimum-stability dev
+   composer config prefer-stable true
+   ```
+
+3. Require this package with composer.
 
    `composer require italia/spid-laravel:dev-master`
 
-3. [Exclude the URIs](https://laravel.com/docs/5.5/csrf#csrf-excluding-uris)
+4. [Exclude the URIs](https://laravel.com/docs/5.5/csrf#csrf-excluding-uris)
 used by this package from CSRF protection because the the Identity Providers
 can't know what CSRF token include in their POST requests sent to your routes.
 
@@ -294,6 +310,9 @@ php artisan serve
 ```
 
 and browse to <http://localhost:8000/>.
+
+Open `storage/logs/laravel.log` to read some example informations logged by the
+`SPIDEventSubscriber`.
 
 ## Notes
 
