@@ -5,7 +5,7 @@
 [![SPID on forum.italia.it](https://img.shields.io/badge/Forum-SPID-blue.svg?colorB=0066cc)](https://forum.italia.it/c/spid)
 [![PDS Skeleton](https://img.shields.io/badge/pds-skeleton-blue.svg?colorB=0066cc)](https://github.com/php-pds/skeleton)
 
-**This is package is under development and is not suitable for production use.**
+**This package is under development and is not suitable for production use.**
 
 This is a package to provide a simple SPID authentication system to web
 applications based on [Laravel 5](https://www.laravel.com).
