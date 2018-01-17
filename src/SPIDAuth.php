@@ -86,13 +86,14 @@ class SPIDAuth extends Controller
 
         $SPIDUser = new SPIDUser($this->getSAML()->getAttributes());
 
-        $idp = $this->getIdpEntityName($this->getSAML()->getLastResponseXML());
+        list($idp, $idpEntityName) = $this->getIdpInfo($this->getSAML()->getLastResponseXML());
 
         session(['spid_idp' => $idp]);
+        session(['spid_idp_entity_name' => $idpEntityName]);
         session(['spid_sessionIndex' => $this->getSAML()->getSessionIndex()]);
         session(['spid_user' => $SPIDUser]);
 
-        event(new LoginEvent($SPIDUser, session('spid_idp')));
+        event(new LoginEvent($SPIDUser, session('spid_idp_entity_name')));
 
         return redirect()->intended(config('spid-auth.after_login_url'));
     }
@@ -107,11 +108,12 @@ class SPIDAuth extends Controller
         if ($this->isAuthenticated()) {
             $sessionIndex = session()->pull('spid_sessionIndex');
             $idp = session()->pull('spid_idp');
+            $idpEntityName = session()->pull('spid_idp_entity_name');
             $SPIDUser = session()->pull('spid_user');
             session()->save();
 
             $returnTo = url(config('spid-auth.after_logout_url'));
-            event(new LogoutEvent($SPIDUser, $idp));
+            event(new LogoutEvent($SPIDUser, $idpEntityName));
 
             return $this->getSAML()->logout($returnTo, [], null, $sessionIndex);
         }
@@ -219,18 +221,20 @@ class SPIDAuth extends Controller
     *
     * @return string|null The entityName associated with the given SAML response in XML format (issuer).
     */
-    protected function getIdpEntityName(string $responseXML)
+    protected function getIdpInfo(string $responseXML)
     {
         $responseDOM = new DOMDocument();
         $responseDOM->loadXML($responseXML);
         $responseIssuer = OneLogin_Saml2_Utils::query($responseDOM, '/samlp:Response/saml:Issuer')->item(0)->textContent;
         $idps = config('spid-idps');
-        $entityName = "";
-        foreach($idps as $idp => $info) {
+        $idpEntityName = '';
+        $idp = '';
+        foreach($idps as $idp_key => $info) {
             if ($info['entityId'] == $responseIssuer) {
-                $entityName = $info['entityName'];
+                $idpEntityName = $info['entityName'];
+                $idp = $idp_key;
             }
          }
-         return $entityName;
+         return [$idp, $idpEntityName];
     }
 }
