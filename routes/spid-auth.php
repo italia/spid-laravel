@@ -30,7 +30,7 @@ Route::group([
         'as' => 'spid-auth_metadata',
         'uses' => 'SPIDAuth@metadata'
     ]);
-    Route::post('providers', [
+    Route::get('providers', [
         'as' => 'spid-auth_providers',
         'uses' => 'SPIDAuth@providers'
     ]);
