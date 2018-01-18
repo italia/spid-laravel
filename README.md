@@ -319,6 +319,12 @@ Open `storage/logs/laravel.log` to read some example informations logged by the
 
 ## Notes
 
+### Security
+
+Make sure to set your timezone in `app/config/app.php` because the id of every
+assertion consumed is cached to prevent replay attacks. This feature rely on a
+correct timezone configuration of your app.
+
 ### Test Identity Provider
 
 In the

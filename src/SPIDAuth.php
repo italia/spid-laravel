@@ -13,6 +13,8 @@ use Italia\SPIDAuth\Events\LogoutEvent;
 
 use Illuminate\Routing\Controller;
 
+use Carbon\Carbon;
+
 use OneLogin_Saml2_Auth;
 use OneLogin_Saml2_Error;
 use OneLogin_Saml2_Utils;
@@ -76,13 +78,22 @@ class SPIDAuth extends Controller
         $this->getSAML()->processResponse();
 
         $errors = $this->getSAML()->getErrors();
+        $assertionId = $this->getSAML()->getLastAssertionId();
+        $assertionNotOnOrAfter = $this->getSAML()->getLastAssertionNotOnOrAfter();
 
         if (!empty($errors)) {
             abort(500, 'SAML Response error: '.$this->getSAML()->getLastErrorReason());
         }
+        if (cache()->has($assertionId)) {
+            abort(500, 'SAML Response error: assertion with id ' . $assertionId . ' was already processed');
+        }
         if (!$this->getSAML()->isAuthenticated()) {
             abort(500, 'SAML Authentication error: '.$this->getSAML()->getLastErrorReason());
         }
+
+        $assertionExpiry = Carbon::createFromTimestampUTC($assertionNotOnOrAfter);
+        $assertionExpiry->timezone = config('app.timezone');
+        cache([$assertionId => ''], $assertionExpiry);
 
         $SPIDUser = new SPIDUser($this->getSAML()->getAttributes());
 

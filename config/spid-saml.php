@@ -58,7 +58,7 @@ return [
     ],
     'requestedAuthnContextComparison' => 'minimum',
   ],
-  'strict' => false,
+  'strict' => true,
 
   // Organization information template, the info in en_US lang is recomended, add more if required
   'organization' => [
