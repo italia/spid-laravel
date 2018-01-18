@@ -3,7 +3,7 @@
   "description": "Laravel 5 Package for SPID authentication",
   "keywords": ["SPID", "Laravel", "Laravel 5"],
   "homepage": "https://github.com/italia/spid-laravel",
-  "license": "BSD-3-clause",
+  "license": "BSD-3-Clause",
   "authors": [
     {
       "name": "Davide Porrovecchio - Agenzia per l'Italia Digitale - Team per la Trasformazione Digitale",
