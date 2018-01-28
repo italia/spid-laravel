@@ -57,6 +57,8 @@ class SPIDAuth extends Controller
             if (empty($idp)) {
                 abort(400, 'Malformed request: "provider" parameter not present');
             }
+            session(['spid_idp' => $idp]);
+            session()->save();
 
             return $this->getSAML()->login(null, [], true);
         }
@@ -96,10 +98,8 @@ class SPIDAuth extends Controller
         cache([$assertionId => ''], $assertionExpiry);
 
         $SPIDUser = new SPIDUser($this->getSAML()->getAttributes());
+        $idpEntityName = $this->getIdpEntityName($this->getSAML()->getLastResponseXML());
 
-        list($idp, $idpEntityName) = $this->getIdpInfo($this->getSAML()->getLastResponseXML());
-
-        session(['spid_idp' => $idp]);
         session(['spid_idp_entity_name' => $idpEntityName]);
         session(['spid_sessionIndex' => $this->getSAML()->getSessionIndex()]);
         session(['spid_user' => $SPIDUser]);
@@ -232,7 +232,7 @@ class SPIDAuth extends Controller
     *
     * @return string|null The entityName associated with the given SAML response in XML format (issuer).
     */
-    protected function getIdpInfo(string $responseXML)
+    protected function getIdpEntityName(string $responseXML)
     {
         $responseDOM = new DOMDocument();
         $responseDOM->loadXML($responseXML);
@@ -240,12 +240,11 @@ class SPIDAuth extends Controller
         $idps = config('spid-idps');
         $idpEntityName = '';
         $idp = '';
-        foreach($idps as $idp_key => $info) {
-            if ($info['entityId'] == $responseIssuer) {
-                $idpEntityName = $info['entityName'];
-                $idp = $idp_key;
+        foreach($idps as $idp) {
+            if ($idp['entityId'] == $responseIssuer) {
+                $idpEntityName = $idp['entityName'];
             }
          }
-         return [$idp, $idpEntityName];
+         return $idpEntityName;
     }
 }
