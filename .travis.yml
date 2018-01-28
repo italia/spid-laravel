@@ -1,0 +1,23 @@
+language: php
+
+php:
+  - '7.0.26'
+  - '7.1.12'
+  - '7.2.0'
+
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+before_install:
+  - travis_retry composer self-update
+
+install:
+  - travis_retry composer update --prefer-dist --no-interaction --prefer-stable --no-suggest
+
+script: vendor/bin/phpunit
+
+after_success:
+    - bash <(curl -s https://codecov.io/bash)
