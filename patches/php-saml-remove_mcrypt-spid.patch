@@ -22,10 +22,17 @@ index e6e49a2..7faafb2 100644
  {$nameIdPolicyStr}
  {$requestedAuthnStr}
 diff --git a/lib/Saml2/Metadata.php b/lib/Saml2/Metadata.php
-index 5662624..4939525 100644
+index 5662624..2ef0fd8 100644
 --- a/lib/Saml2/Metadata.php
 +++ b/lib/Saml2/Metadata.php
-@@ -159,6 +159,7 @@ METADATA_TEMPLATE;
+@@ -152,13 +152,12 @@ METADATA_TEMPLATE;
+         $metadata = <<<METADATA_TEMPLATE
+ <?xml version="1.0"?>
+ <md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+-                     validUntil="{$validUntilTime}"
+-                     cacheDuration="PT{$cacheDuration}S"
+                      entityID="{$sp['entityId']}">
+     <md:SPSSODescriptor AuthnRequestsSigned="{$strAuthnsign}" WantAssertionsSigned="{$strWsign}" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
  {$sls}        <md:NameIDFormat>{$sp['NameIDFormat']}</md:NameIDFormat>
          <md:AssertionConsumerService Binding="{$sp['assertionConsumerService']['binding']}"
                                       Location="{$sp['assertionConsumerService']['url']}"
