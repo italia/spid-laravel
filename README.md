@@ -1,8 +1,10 @@
-# SPID authentication package for Laravel 5
-
 [![Join the #spid-laravel channel](https://img.shields.io/badge/Slack%20channel-%23spid--laravel-blue.svg?logo=slack&colorB=0066cc)](https://developersitalia.slack.com/messages/C8HCL6UDS/)
 [![Get invited](https://img.shields.io/badge/No%20slack%3F-Get%20your%20invite-blue.svg?logo=slack&colorB=0066cc)](https://slack.developers.italia.it/)
 [![SPID on forum.italia.it](https://img.shields.io/badge/Forum-SPID-blue.svg?colorB=0066cc)](https://forum.italia.it/c/spid)
+
+# SPID authentication package for Laravel 5
+
+[![Travis](https://img.shields.io/travis/italia/spid-laravel.svg?colorB=0066cc)]()
 [![PDS Skeleton](https://img.shields.io/badge/pds-skeleton-blue.svg?colorB=0066cc)](https://github.com/php-pds/skeleton)
 
 **This package is under development and is not suitable for production use.**
@@ -48,6 +50,10 @@ for SPID compatibility.
 
    **This installation step will be removed before the first stable release of
    this package.**
+   
+   **Please note that since onelogin/php-saml (version `2.x` and `remove_mcrypt`) is not
+   compatible with PHP 7.2.0 this package can be used only with PHP >= 7.0.0 and
+   < 7.2.0.**
 
 3. Require this package with composer.
 
