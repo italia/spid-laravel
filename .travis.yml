@@ -17,7 +17,9 @@ before_install:
 install:
   - travis_retry composer update --prefer-dist --no-interaction --prefer-stable --no-suggest
 
-script: vendor/bin/phpunit
+script: 
+  - vendor/bin/pds-skeleton validate
+  - vendor/bin/phpunit
 
 after_success:
     - bash <(curl -s https://codecov.io/bash)
