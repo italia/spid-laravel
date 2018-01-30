@@ -11,8 +11,7 @@
          stopOnError="false"
          stopOnFailure="false"
          syntaxCheck="true"
-         verbose="true"
->
+         verbose="true">
     <testsuites>
         <testsuite name="SPID Laravel Test Suite">
             <directory suffix="Test.php">tests/</directory>
