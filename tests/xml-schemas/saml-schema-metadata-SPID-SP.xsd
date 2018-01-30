@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+	xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
+	xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" xmlns="http://www.w3.org/2001/XMLSchema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:xml="http://www.w3.org/XML/1998/namespace"
+	targetNamespace="urn:oasis:names:tc:SAML:2.0:metadata" elementFormDefault="unqualified"
+	attributeFormDefault="unqualified" blockDefault="substitution" version="2.0">
+	<import namespace="http://www.w3.org/2001/04/xmlenc#"
+		schemaLocation="xenc-schema.xsd"/>
+	<import namespace="urn:oasis:names:tc:SAML:2.0:assertion"
+		schemaLocation="saml-schema-assertion-2.0.xsd"/>
+	<import namespace="http://www.w3.org/2000/09/xmldsig#"
+		schemaLocation="xmldsig-core-schema.xsd"/>
+	<import namespace="http://www.w3.org/XML/1998/namespace"
+		schemaLocation="xml.xsd"/>
+	<annotation>
+		<documentation> Document identifier: Location: Revision history: </documentation>
+	</annotation>
+	<simpleType name="entityIDType">
+		<restriction base="anyURI">
+			<maxLength value="1024"/>
+		</restriction>
+	</simpleType>
+	<complexType name="localizedNameType">
+		<simpleContent>
+			<extension base="string">
+				<attribute ref="xml:lang" use="required"/>
+			</extension>
+		</simpleContent>
+	</complexType>
+	<complexType name="localizedURIType">
+		<simpleContent>
+			<extension base="anyURI">
+				<attribute ref="xml:lang" use="required"/>
+			</extension>
+		</simpleContent>
+	</complexType>
+	<complexType name="EndpointType">
+		<attribute name="Binding" type="anyURI" use="required"/>
+		<attribute name="Location" type="anyURI" use="required"/>
+	</complexType>
+	<complexType name="SingleLogoutEndpointType">
+		<complexContent>
+			<extension base="md:EndpointType">
+				<attribute name="ResponseLocation" type="anyURI" use="optional"/>
+			</extension>
+		</complexContent>
+	</complexType>
+	<complexType name="IndexedEndpointType">
+		<complexContent>
+			<extension base="md:EndpointType">
+				<attribute name="index" type="unsignedShort" use="required"/>
+				<attribute name="isDefault" type="boolean" use="optional"/>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="EntityDescriptor" type="md:EntityDescriptorType"/>
+	<complexType name="EntityDescriptorType">
+		<sequence>
+			<element ref="ds:Signature"/>
+			<choice>
+				<element ref="md:SPSSODescriptor"/>
+			</choice>
+			<element ref="md:Organization" minOccurs="0"/>
+		</sequence>
+		<attribute name="entityID" type="md:entityIDType" use="required"/>
+		<attribute name="ID" type="ID" use="required"/>
+		<attribute name="cacheDuration" type="duration" use="prohibited"/>
+	</complexType>
+	<element name="Organization" type="md:OrganizationType"/>
+	<complexType name="OrganizationType">
+		<sequence>
+			<element ref="md:OrganizationName" maxOccurs="unbounded"/>
+			<element ref="md:OrganizationDisplayName" minOccurs="0" maxOccurs="unbounded"/>
+			<element ref="md:OrganizationURL" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+	<element name="OrganizationName" type="md:localizedNameType"/>
+	<element name="OrganizationDisplayName" type="md:localizedNameType"/>
+	<element name="OrganizationURL" type="md:localizedURIType"/>
+	<complexType name="RoleDescriptorType" abstract="true">
+		<sequence>
+			<element ref="md:KeyDescriptor"/>
+		</sequence>
+		<attribute name="protocolSupportEnumeration" type="md:anyURIListType" use="required"
+			fixed="urn:oasis:names:tc:SAML:2.0:protocol"/>
+	</complexType>
+	<simpleType name="anyURIListType">
+		<list itemType="anyURI"/>
+	</simpleType>
+	<element name="KeyDescriptor" type="md:KeyDescriptorType"/>
+	<complexType name="KeyDescriptorType">
+		<sequence>
+			<element ref="ds:KeyInfo"/>
+		</sequence>
+		<attribute name="use" type="md:KeyTypes" use="required"/>
+	</complexType>
+	<simpleType name="KeyTypes">
+		<restriction base="string">
+			<enumeration value="encryption"/>
+			<enumeration value="signing"/>
+		</restriction>
+	</simpleType>
+	
+
+	<complexType name="SSODescriptorType" abstract="true">
+		<complexContent>
+			<extension base="md:RoleDescriptorType">
+				<sequence>
+					<element ref="md:SingleLogoutService" minOccurs="0" maxOccurs="unbounded"/>
+					<element ref="md:NameIDFormat" minOccurs="1" maxOccurs="1"/>
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="SingleLogoutService" type="md:SingleLogoutEndpointType"/>
+	<element name="NameIDFormat" type="anyURI"
+		fixed="urn:oasis:names:tc:SAML:2.0:nameid-format:transient"/>
+	<element name="SingleSignOnService" type="md:EndpointType"/>
+	<element name="SPSSODescriptor" type="md:SPSSODescriptorType"/>
+	<complexType name="SPSSODescriptorType">
+		<complexContent>
+			<extension base="md:SSODescriptorType">
+				<sequence>
+					<element ref="md:AssertionConsumerService" maxOccurs="unbounded"/>
+					<element ref="md:AttributeConsumingService" maxOccurs="unbounded"/>
+				</sequence>
+				<attribute name="WantAssertionsSigned" type="boolean" use="optional"/>
+				<attribute name="AuthnRequestsSigned" type="boolean" use="required"/>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="AssertionConsumerService" type="md:IndexedEndpointType"/>
+	<element name="AttributeConsumingService" type="md:AttributeConsumingServiceType"/>
+	<complexType name="AttributeConsumingServiceType">
+		<sequence>
+			<element ref="md:ServiceName"/>
+			<element ref="md:ServiceDescription" minOccurs="0" maxOccurs="unbounded"/>
+			<element ref="md:RequestedAttribute" maxOccurs="unbounded"/>
+		</sequence>
+		<attribute name="index" type="unsignedShort" use="required"/>
+		<attribute name="isDefault" type="boolean" use="optional"/>
+	</complexType>
+	<element name="ServiceName" type="md:localizedNameType"/>
+	<element name="ServiceDescription" type="md:localizedNameType"/>
+	<element name="RequestedAttribute" type="md:RequestedAttributeType"/>
+	<complexType name="RequestedAttributeType">
+		<attribute name="Name" type="string" use="required"/>
+		<attribute name="NameFormat" type="anyURI" use="optional"/>
+		<attribute name="FriendlyName" type="string" use="optional"/>
+	</complexType>
+</schema>

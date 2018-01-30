@@ -118,7 +118,7 @@ class SPIDAuth extends Controller
     {
         if ($this->isAuthenticated()) {
             $sessionIndex = session()->pull('spid_sessionIndex');
-            $idp = session()->pull('spid_idp');
+            session()->forget('spid_idp');
             $idpEntityName = session()->pull('spid_idp_entity_name');
             $SPIDUser = session()->pull('spid_user');
             session()->save();
