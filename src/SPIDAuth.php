@@ -167,8 +167,14 @@ class SPIDAuth extends Controller
      */
     public function providers()
     {
-        $idps = array_values(config('spid-idps'));
-        return response()->json(['spidProviders' => $idps]);
+        $idps = config('spid-idps');
+        
+        if (!config('spid-auth.test_idp')) {
+            unset($idps['test']);
+        }
+
+        $idps_values = array_values($idps);
+        return response()->json(['spidProviders' => $idps_values]);
     }
 
     /**

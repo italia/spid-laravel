@@ -30,6 +30,8 @@ return [
           #'digitalAddress',
           #'expirationDate'
       ],
+      
+      'test_idp' => true,
 
       'middleware_group' => 'web',
       'routes_prefix' => 'spid',
