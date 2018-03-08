@@ -106,6 +106,7 @@ class SPIDAuth extends Controller
 
         event(new LoginEvent($SPIDUser, session('spid_idp_entity_name')));
 
+        session()->reflash();
         return redirect()->intended(config('spid-auth.after_login_url'));
     }
 
@@ -129,6 +130,7 @@ class SPIDAuth extends Controller
             return $this->getSAML()->logout($returnTo, [], null, $sessionIndex);
         }
 
+        session()->reflash();
         return redirect(config('spid-auth.after_logout_url'));
     }
 
