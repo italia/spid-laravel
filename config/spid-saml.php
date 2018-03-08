@@ -25,7 +25,7 @@ return [
     // attributeConsumingService. nameFormat, attributeValue and
     // friendlyName can be omitted. Otherwise remove this section.
     'attributeConsumingService' => [
-        'ServiceName' => 'SPID service',
+        'serviceName' => 'SPID service',
         'requestedAttributes' => []
     ],
     // Specifies info about where and how the <Logout Response> message MUST be
