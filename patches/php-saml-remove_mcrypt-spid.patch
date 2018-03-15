@@ -1,31 +1,22 @@
 diff --git a/lib/Saml2/AuthnRequest.php b/lib/Saml2/AuthnRequest.php
-index e6e49a2..7faafb2 100644
+index e6e49a2..9cab719 100644
 --- a/lib/Saml2/AuthnRequest.php
 +++ b/lib/Saml2/AuthnRequest.php
-@@ -48,7 +48,7 @@ class OneLogin_Saml2_AuthnRequest
-         if ($setNameIdPolicy) {
-             $nameIDPolicyFormat = $spData['NameIDFormat'];
-             if (isset($security['wantNameIdEncrypted']) && $security['wantNameIdEncrypted']) {
--                $nameIDPolicyFormat = OneLogin_Saml2_Constants::NAMEID_ENCRYPTED;
-+                $nameIDPolicyFormat = OneLogin_Saml2_Constants::NAMEID_TRANSIENT;
-             }
-
-             $nameIdPolicyStr = <<<NAMEIDPOLICY
 @@ -124,7 +124,8 @@ REQUESTEDAUTHN;
      IssueInstant="$issueInstant"
      Destination="{$idpData['singleSignOnService']['url']}"
      ProtocolBinding="{$spData['assertionConsumerService']['binding']}"
 -    AssertionConsumerServiceURL="{$spData['assertionConsumerService']['url']}">
 +    AssertionConsumerServiceURL="{$spData['assertionConsumerService']['url']}"
-+    AttributeConsumingServiceIndex="0">
++    AttributeConsumingServiceIndex="1">
      <saml:Issuer>{$spData['entityId']}</saml:Issuer>
  {$nameIdPolicyStr}
  {$requestedAuthnStr}
 diff --git a/lib/Saml2/Metadata.php b/lib/Saml2/Metadata.php
-index 5662624..2ef0fd8 100644
+index 5662624..d8a37c8 100644
 --- a/lib/Saml2/Metadata.php
 +++ b/lib/Saml2/Metadata.php
-@@ -152,13 +152,12 @@ METADATA_TEMPLATE;
+@@ -152,8 +152,6 @@ METADATA_TEMPLATE;
          $metadata = <<<METADATA_TEMPLATE
  <?xml version="1.0"?>
  <md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
@@ -34,9 +25,3 @@ index 5662624..2ef0fd8 100644
                       entityID="{$sp['entityId']}">
      <md:SPSSODescriptor AuthnRequestsSigned="{$strAuthnsign}" WantAssertionsSigned="{$strWsign}" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
  {$sls}        <md:NameIDFormat>{$sp['NameIDFormat']}</md:NameIDFormat>
-         <md:AssertionConsumerService Binding="{$sp['assertionConsumerService']['binding']}"
-                                      Location="{$sp['assertionConsumerService']['url']}"
-+                                     isDefault="true"
-                                      index="1" />
-         {$strAttributeConsumingService}
-     </md:SPSSODescriptor>{$strOrganization}{$strContacts}
