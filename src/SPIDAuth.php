@@ -84,12 +84,15 @@ class SPIDAuth extends Controller
         $assertionNotOnOrAfter = $this->getSAML()->getLastAssertionNotOnOrAfter();
 
         if (!empty($errors)) {
+            logger()->error('SAML Response error: '.$this->getSAML()->getLastErrorReason());
             abort(500, 'SAML Response error: '.$this->getSAML()->getLastErrorReason());
         }
         if (cache()->has($assertionId)) {
+            logger()->error('SAML Response error: assertion with id ' . $assertionId . ' was already processed');
             abort(500, 'SAML Response error: assertion with id ' . $assertionId . ' was already processed');
         }
         if (!$this->getSAML()->isAuthenticated()) {
+            logger()->error('SAML Authentication error: '.$this->getSAML()->getLastErrorReason());
             abort(500, 'SAML Authentication error: '.$this->getSAML()->getLastErrorReason());
         }
 
@@ -203,6 +206,8 @@ class SPIDAuth extends Controller
         $config['sp']['entityId'] = config('spid-auth.sp_entity_id');
         $config['sp']['assertionConsumerService']['url'] = url('/').'/'.config('spid-auth.routes_prefix').'/acs';
         $config['sp']['singleLogoutService']['url'] = url('/').'/'.config('spid-auth.routes_prefix').'/logout';
+        $config['sp']['x509cert'] = config('spid-auth.sp_certificate');
+        $config['sp']['privateKey'] = config('spid-auth.sp_private_key');
 
         foreach (config('spid-auth.sp_requested_attributes') as $attr) {
             $config['sp']['attributeConsumingService']['requestedAttributes'][] = ['name' => $attr];
