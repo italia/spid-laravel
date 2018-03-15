@@ -25,7 +25,7 @@ return [
     // attributeConsumingService. nameFormat, attributeValue and
     // friendlyName can be omitted. Otherwise remove this section.
     'attributeConsumingService' => [
-        'serviceName' => 'SPID service',
+        'serviceName' => '',
         'requestedAttributes' => []
     ],
     // Specifies info about where and how the <Logout Response> message MUST be
@@ -51,6 +51,7 @@ return [
   'security' => [
     'authnRequestsSigned' => true,
     'signMetadata' => true,
+    'wantAssertionsSigned' => true,
     'signatureAlgorithm' => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
     'digestAlgorithm' => 'http://www.w3.org/2001/04/xmlenc#sha256',
     'requestedAuthnContext' => [
@@ -62,12 +63,12 @@ return [
 
   // Organization information template, the info in en_US lang is recomended, add more if required
   'organization' => [
-    'en-US' => [
+    'en' => [
       'name' => '',
       'displayname' => '',
       'url' => ''
     ],
-    'it-IT' => [
+    'it' => [
       'name' => '',
       'displayname' => '',
       'url' => ''

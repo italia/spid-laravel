@@ -204,6 +204,7 @@ class SPIDAuth extends Controller
         $config = config('spid-saml');
 
         $config['sp']['entityId'] = config('spid-auth.sp_entity_id');
+        $config['sp']['attributeConsumingService']['serviceName'] = config('spid-auth.sp_service_name');
         $config['sp']['assertionConsumerService']['url'] = url('/').'/'.config('spid-auth.routes_prefix').'/acs';
         $config['sp']['singleLogoutService']['url'] = url('/').'/'.config('spid-auth.routes_prefix').'/logout';
         $config['sp']['x509cert'] = config('spid-auth.sp_certificate');
@@ -213,9 +214,9 @@ class SPIDAuth extends Controller
             $config['sp']['attributeConsumingService']['requestedAttributes'][] = ['name' => $attr];
         }
 
-        $config['organization']['it-IT']['name'] = $config['organization']['en-US']['name'] = config('spid-auth.sp_organization_name');
-        $config['organization']['it-IT']['displayname'] = $config['organization']['en-US']['displayname'] = config('spid-auth.sp_organization_display_name');
-        $config['organization']['it-IT']['url'] = $config['organization']['en-US']['url'] = config('spid-auth.sp_organization_url');
+        $config['organization']['it']['name'] = $config['organization']['en']['name'] = config('spid-auth.sp_organization_name');
+        $config['organization']['it']['displayname'] = $config['organization']['en']['displayname'] = config('spid-auth.sp_organization_display_name');
+        $config['organization']['it']['url'] = $config['organization']['en']['url'] = config('spid-auth.sp_organization_url');
 
         $idps = config('spid-idps');
 
