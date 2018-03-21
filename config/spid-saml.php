@@ -19,7 +19,7 @@ return [
         // SAML protocol binding to be used when returning the <Response>
         // message.  Onelogin Toolkit supports for this endpoint the
         // HTTP-Redirect binding only
-        'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
+        'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
     ],
     // If you need to specify requested attributes, set a
     // attributeConsumingService. nameFormat, attributeValue and
