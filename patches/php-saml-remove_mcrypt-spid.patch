@@ -1,5 +1,5 @@
 diff --git a/lib/Saml2/AuthnRequest.php b/lib/Saml2/AuthnRequest.php
-index e6e49a2..0bbb914 100644
+index e6e49a2..3cd647a 100644
 --- a/lib/Saml2/AuthnRequest.php
 +++ b/lib/Saml2/AuthnRequest.php
 @@ -124,8 +124,13 @@ REQUESTEDAUTHN;
@@ -9,7 +9,7 @@ index e6e49a2..0bbb914 100644
 -    AssertionConsumerServiceURL="{$spData['assertionConsumerService']['url']}">
 -    <saml:Issuer>{$spData['entityId']}</saml:Issuer>
 +    AssertionConsumerServiceURL="{$spData['assertionConsumerService']['url']}"
-+    AttributeConsumingServiceIndex="1">
++    AttributeConsumingServiceIndex="0">
 +    <saml:Issuer
 +        NameQualifier="{$spData['entityId']}"
 +        Format="urn:oasis:names:tc:SAML:2.0:nameid-format:entity">
@@ -19,10 +19,19 @@ index e6e49a2..0bbb914 100644
  {$requestedAuthnStr}
  </samlp:AuthnRequest>
 diff --git a/lib/Saml2/Metadata.php b/lib/Saml2/Metadata.php
-index 5662624..2ef0fd8 100644
+index 5662624..1f9582e 100644
 --- a/lib/Saml2/Metadata.php
 +++ b/lib/Saml2/Metadata.php
-@@ -152,13 +152,12 @@ METADATA_TEMPLATE;
+@@ -142,7 +142,7 @@ ATTRIBUTEVALUE;
+ 
+             $requestedAttributeStr = implode(PHP_EOL, $requestedAttributeData);
+             $strAttributeConsumingService = <<<METADATA_TEMPLATE
+-<md:AttributeConsumingService index="1">
++<md:AttributeConsumingService index="0">
+             <md:ServiceName xml:lang="en">{$sp['attributeConsumingService']['serviceName']}</md:ServiceName>
+ {$attrCsDesc}{$requestedAttributeStr}
+         </md:AttributeConsumingService>
+@@ -152,14 +152,13 @@ METADATA_TEMPLATE;
          $metadata = <<<METADATA_TEMPLATE
  <?xml version="1.0"?>
  <md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
@@ -33,7 +42,9 @@ index 5662624..2ef0fd8 100644
  {$sls}        <md:NameIDFormat>{$sp['NameIDFormat']}</md:NameIDFormat>
          <md:AssertionConsumerService Binding="{$sp['assertionConsumerService']['binding']}"
                                       Location="{$sp['assertionConsumerService']['url']}"
+-                                     index="1" />
 +                                     isDefault="true"
-                                      index="1" />
++                                     index="0" />
          {$strAttributeConsumingService}
      </md:SPSSODescriptor>{$strOrganization}{$strContacts}
+ </md:EntityDescriptor>
