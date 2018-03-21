@@ -37,7 +37,7 @@
     },
     "patches": {
       "onelogin/php-saml": {
-        "Compatibility with SPID": "https://cdn.rawgit.com/italia/spid-laravel/master/patches/php-saml-remove_mcrypt-spid.patch"
+        "Compatibility with SPID": "https://rawgit.com/italia/spid-laravel/master/patches/php-saml-remove_mcrypt-spid.patch"
       }
     }
   }

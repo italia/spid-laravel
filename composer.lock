@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "c163272a3e3903bb83f7b132ab9ffcb9",
+    "content-hash": "45d37354afc8999d8fb29d05b2543dc6",
     "packages": [
         {
             "name": "cweagans/composer-patches",
@@ -276,16 +276,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v5.5.37",
+            "version": "v5.5.39",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "cf750b00c77d0d73e889c86f7db6a0e13b8dea8c"
+                "reference": "a21ef7e51df831a7c38d24dcf8c4774ee0847526"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/cf750b00c77d0d73e889c86f7db6a0e13b8dea8c",
-                "reference": "cf750b00c77d0d73e889c86f7db6a0e13b8dea8c",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/a21ef7e51df831a7c38d24dcf8c4774ee0847526",
+                "reference": "a21ef7e51df831a7c38d24dcf8c4774ee0847526",
                 "shasum": ""
             },
             "require": {
@@ -296,7 +296,7 @@
                 "league/flysystem": "~1.0",
                 "monolog/monolog": "~1.12",
                 "mtdowling/cron-expression": "~1.0",
-                "nesbot/carbon": "~1.20",
+                "nesbot/carbon": "^1.24.1",
                 "php": ">=7.0",
                 "psr/container": "~1.0",
                 "psr/simple-cache": "^1.0",
@@ -406,7 +406,7 @@
                 "framework",
                 "laravel"
             ],
-            "time": "2018-03-07T14:11:09+00:00"
+            "time": "2018-03-09T17:24:53+00:00"
         },
         {
             "name": "league/flysystem",
@@ -616,20 +616,20 @@
         },
         {
             "name": "nesbot/carbon",
-            "version": "1.23.0",
+            "version": "1.25.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/briannesbitt/Carbon.git",
-                "reference": "4a874a39b2b00d7e0146cd46fab6f47c41ce9e65"
+                "reference": "cbcf13da0b531767e39eb86e9687f5deba9857b4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/4a874a39b2b00d7e0146cd46fab6f47c41ce9e65",
-                "reference": "4a874a39b2b00d7e0146cd46fab6f47c41ce9e65",
+                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/cbcf13da0b531767e39eb86e9687f5deba9857b4",
+                "reference": "cbcf13da0b531767e39eb86e9687f5deba9857b4",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.0",
+                "php": ">=5.3.9",
                 "symfony/translation": "~2.6 || ~3.0 || ~4.0"
             },
             "require-dev": {
@@ -665,7 +665,7 @@
                 "datetime",
                 "time"
             ],
-            "time": "2018-02-28T09:22:05+00:00"
+            "time": "2018-03-19T15:50:49+00:00"
         },
         {
             "name": "onelogin/php-saml",
@@ -701,7 +701,7 @@
             "type": "library",
             "extra": {
                 "patches_applied": {
-                    "Compatibility with SPID": "https://cdn.rawgit.com/italia/spid-laravel/master/patches/php-saml-remove_mcrypt-spid.patch"
+                    "Compatibility with SPID": "https://rawgit.com/italia/spid-laravel/master/patches/php-saml-remove_mcrypt-spid.patch"
                 }
             },
             "autoload": {
@@ -2330,16 +2330,16 @@
         },
         {
             "name": "orchestra/testbench-core",
-            "version": "v3.5.9",
+            "version": "v3.5.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/orchestral/testbench-core.git",
-                "reference": "997a5dfade0cfb9c88d5e1f2bf4ff76900311333"
+                "reference": "09a57dc446a24fd19a75ff57b679b86094251f8e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/orchestral/testbench-core/zipball/997a5dfade0cfb9c88d5e1f2bf4ff76900311333",
-                "reference": "997a5dfade0cfb9c88d5e1f2bf4ff76900311333",
+                "url": "https://api.github.com/repos/orchestral/testbench-core/zipball/09a57dc446a24fd19a75ff57b679b86094251f8e",
+                "reference": "09a57dc446a24fd19a75ff57b679b86094251f8e",
                 "shasum": ""
             },
             "require": {
@@ -2392,7 +2392,7 @@
                 "orchestral",
                 "testing"
             ],
-            "time": "2018-02-20T04:07:40+00:00"
+            "time": "2018-03-13T02:35:58+00:00"
         },
         {
             "name": "pds/skeleton",
