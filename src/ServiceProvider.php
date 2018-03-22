@@ -13,7 +13,6 @@ use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
 use Illuminate\Support\Facades\View;
 use Illuminate\Routing\Router;
 
-
 class ServiceProvider extends LaravelServiceProvider
 {
     /**

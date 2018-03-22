@@ -34,7 +34,7 @@ class ServiceProviderTest extends TestCase
         ];
         
         foreach ($spidRoutesNames as $routeName) {
-          $this->assertTrue($allRoutes->hasNamedRoute($routeName));
+            $this->assertTrue($allRoutes->hasNamedRoute($routeName));
         }
     }
     

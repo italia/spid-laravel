@@ -9,7 +9,6 @@ use Orchestra\Testbench\TestCase;
 
 class MiddlewareTest extends TestCase
 {
-    
     protected function getPackageProviders($app)
     {
         return ['Italia\SPIDAuth\ServiceProvider'];
@@ -18,7 +17,7 @@ class MiddlewareTest extends TestCase
     public function testUnauthenticated()
     {
         $loginURL = URL::route('spid-auth_login');
-        Route::get('/', function() {
+        Route::get('/', function () {
             return 'home';
         })->middleware('spid.auth');
         $response = $this->get('/');
@@ -29,7 +28,7 @@ class MiddlewareTest extends TestCase
     public function testAuthenticated()
     {
         $loginURL = URL::route('spid-auth_login');
-        Route::get('/', function() {
+        Route::get('/', function () {
             return 'home';
         })->middleware('spid.auth');
         $response = $this->withSession(['spid_sessionIndex' => 'sessionIndex'])->get('/');

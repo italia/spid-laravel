@@ -14,40 +14,40 @@ class LogoutEvent
 {
 
       /** The SPIDUser in the current event. */
-      protected $SPIDUser;
+    protected $SPIDUser;
 
-      /** The current selected Identity Provider. */
-      protected $idp;
+    /** The current selected Identity Provider. */
+    protected $idp;
 
-      /**
-       * Create a new event instance.
-       *
-       * @param SPIDUser Current authenticated SPIDUser.
-       * @param string Current selected Identity Provider.
-       */
-      public function __construct(SPIDUser $SPIDUser, $idp)
-      {
-          $this->SPIDUser = $SPIDUser;
-          $this->idp = $idp;
-      }
+    /**
+     * Create a new event instance.
+     *
+     * @param SPIDUser Current authenticated SPIDUser.
+     * @param string Current selected Identity Provider.
+     */
+    public function __construct(SPIDUser $SPIDUser, $idp)
+    {
+        $this->SPIDUser = $SPIDUser;
+        $this->idp = $idp;
+    }
 
-      /**
-       * Return SPIDUser.
-       *
-       * @return SPIDUser SPIDUser logging out.
-       */
-      public function getSPIDUser()
-      {
-          return $this->SPIDUser;
-      }
+    /**
+     * Return SPIDUser.
+     *
+     * @return SPIDUser SPIDUser logging out.
+     */
+    public function getSPIDUser()
+    {
+        return $this->SPIDUser;
+    }
 
-      /**
-       * Return idp.
-       *
-       * @return string Identity Provider used to logout.
-       */
-      public function getIdp()
-      {
-          return $this->idp;
-      }
+    /**
+     * Return idp.
+     *
+     * @return string Identity Provider used to logout.
+     */
+    public function getIdp()
+    {
+        return $this->idp;
+    }
 }

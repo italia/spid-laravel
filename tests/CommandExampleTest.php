@@ -8,7 +8,6 @@ use Orchestra\Testbench\TestCase;
 
 class CommandExampleTest extends TestCase
 {
-    
     protected function getPackageProviders($app)
     {
         return ['Italia\SPIDAuth\ServiceProvider'];
@@ -36,14 +35,15 @@ class CommandExampleTest extends TestCase
             $objects = scandir($dir);
             foreach ($objects as $object) {
                 if ($object != "." && $object != "..") {
-                    if (is_dir($dir."/".$object))
+                    if (is_dir($dir."/".$object)) {
                         $this->rrmdir($dir."/".$object);
-                    else
-                        unlink($dir."/".$object); 
+                    } else {
+                        unlink($dir."/".$object);
+                    }
                 }
             }
             rmdir($dir);
-        } 
+        }
     }
     
     public function testHandle()
@@ -54,8 +54,8 @@ class CommandExampleTest extends TestCase
     
     public function testOverwrite()
     {
-      $returnCode = Artisan::call('spid-auth:example', ['-n' => 1]);
-      $returnCode = Artisan::call('spid-auth:example', ['-n' => 1]);
-      $this->assertEquals($returnCode, 0);
+        $returnCode = Artisan::call('spid-auth:example', ['-n' => 1]);
+        $returnCode = Artisan::call('spid-auth:example', ['-n' => 1]);
+        $this->assertEquals($returnCode, 0);
     }
 }
