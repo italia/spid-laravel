@@ -2,18 +2,18 @@
 
 namespace Italia\SPIDAuth\Tests;
 
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Foundation\Exceptions\Handler;
 
+use Italia\SPIDAuth\Exceptions\LogoutException;
+use Italia\SPIDAuth\Exceptions\MetadataException;
+use Italia\SPIDAuth\Exceptions\ResponseValidationException;
 use Orchestra\Testbench\TestCase;
 use Mockery as m;
 use OneLogin_Saml2_Error;
 
 use DOMDocument;
-use Exception;
 
 use Italia\SPIDAuth\SPIDAuth;
 use Italia\SPIDAuth\SPIDUser;
@@ -57,9 +57,7 @@ class SPIDAuthTest extends TestCase
         return ['Italia\SPIDAuth\ServiceProvider'];
     }
     
-    protected function setSPIDAuthMock(
-        bool $withErrors = false,
-        bool $isAuthenticated = true)
+    protected function setSPIDAuthMock(bool $withErrors = false, bool $isAuthenticated = true, bool $withInvalidBinding = false)
     {
         $testRedirectURL = $this->app['config']->get('spid-idps.test.singleSignOnService.url');
         $this->SPIDAuth = m::mock(SPIDAuth::class)->makePartial()->shouldAllowMockingProtectedMethods();
@@ -67,10 +65,19 @@ class SPIDAuthTest extends TestCase
         $SAMLAuth->shouldReceive('login')->with(null, [], true)->andReturn(
             Response::redirectTo($testRedirectURL)
         );
-        $SAMLAuth->shouldReceive('processResponse')->andReturn(true);
-        $SAMLAuth->shouldReceive('getErrors')->andReturn($withErrors);
+        if (!$withInvalidBinding) {
+            $SAMLAuth->shouldReceive('processResponse')->andReturn(true);
+        } else {
+            $SAMLAuth->shouldReceive('processResponse')->andThrow(
+                new OneLogin_Saml2_Error(
+                    'SAML Response not found, Only supported HTTP_POST Binding',
+                    OneLogin_Saml2_Error::SAML_RESPONSE_NOT_FOUND
+                )
+            );
+        }
         $SAMLAuth->shouldReceive('getLastAssertionId')->andReturn('assertionId');
         $SAMLAuth->shouldReceive('getLastAssertionNotOnOrAfter')->andReturn(time() + 300);
+        $SAMLAuth->shouldReceive('getLastErrorReason')->andReturn('errorReason');
         $SAMLAuth->shouldReceive('isAuthenticated')->andReturn($isAuthenticated);
         $SAMLAuth->shouldReceive('getAttributes')->andReturn([
             'spidCode' => ['TEST0123456789'],
@@ -85,11 +92,28 @@ class SPIDAuthTest extends TestCase
             </saml2p:Response>'
         );
         $SAMLAuth->shouldReceive('getSessionIndex')->andReturn('sessionIndex');
-        $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], null, 'sessionIndex')->andReturn(
-            Response::redirectTo($this->afterLoginURL)
-        );
+        if (!$withErrors) {
+            $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], null, 'sessionIndex')->andReturn(
+                Response::redirectTo($this->afterLoginURL)
+            );
+            $SAMLAuth->shouldReceive('getErrors')->andReturn(false);
+            $SAMLAuth->shouldReceive('getSPMetadata')->andReturn();
+        } else {
+            $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], null, 'sessionIndex')->andThrow(
+                new OneLogin_Saml2_Error(
+                    'The IdP does not support Single Log Out',
+                    OneLogin_Saml2_Error::SAML_SINGLE_LOGOUT_NOT_SUPPORTED
+                )
+            );
+            $SAMLAuth->shouldReceive('getSPMetadata')->andThrow(
+                new OneLogin_Saml2_Error(
+                    'Invalid metadata syntax',
+                    OneLogin_Saml2_Error::SETTINGS_INVALID_SYNTAX
+                )
+            );
+            $SAMLAuth->shouldReceive('getErrors')->andReturn(['error']);
+        }
         $SAMLAuth->shouldReceive('getSettings')->andReturn($SAMLAuth);
-        $SAMLAuth->shouldReceive('getSPMetadata')->andReturn();
         $SAMLAuth->shouldReceive('validateMetadata')->andReturn(['error']);
         $this->SPIDAuth->shouldReceive('getSAML')->andReturn($SAMLAuth);
         $this->app->instance('SPIDAuth', $this->SPIDAuth);
@@ -174,11 +198,22 @@ class SPIDAuthTest extends TestCase
     
     public function testAcsWithMalformedSAMLResponse()
     {
+        $this->withoutExceptionHandling();
+        $this->expectException(ResponseValidationException::class);
         $this->setSPIDAuthMock(true);
         $response = $this->post($this->acsURL);
         $response->assertStatus(500);
     }
-    
+
+    public function testAcsWithInvalidBinding()
+    {
+        $this->withoutExceptionHandling();
+        $this->expectException(ResponseValidationException::class);
+        $this->setSPIDAuthMock(false, true, true);
+        $response = $this->post($this->acsURL);
+        $response->assertStatus(500);
+    }
+
     public function testAcsWithFailedSAMLAuthentication()
     {
         $this->setSPIDAuthMock(false, false);
@@ -188,6 +223,8 @@ class SPIDAuthTest extends TestCase
     
     public function testAcsWithReplayAttack()
     {
+        $this->withoutExceptionHandling();
+        $this->expectException(ResponseValidationException::class);
         $this->setSPIDAuthMock();
         $response = $this->post($this->acsURL);
         $response = $this->post($this->acsURL);
@@ -224,6 +261,16 @@ class SPIDAuthTest extends TestCase
         $response = $this->get($this->logoutURL);
         $response->assertRedirect($this->afterLogoutURL);
     }
+
+    public function testLogoutWithErrors()
+    {
+        $this->withoutExceptionHandling();
+        $this->expectException(LogoutException::class);
+        $this->testAcs();
+        $this->setSPIDAuthMock(true);
+        $response = $this->get($this->logoutURL);
+        $response->assertStatus(500);
+    }
     
     public function testMetadata()
     {
@@ -234,13 +281,22 @@ class SPIDAuthTest extends TestCase
         $this->assertTrue($metadata->schemaValidate('tests/xml-schemas/saml-schema-metadata-SPID-SP.xsd'));
     }
     
+    public function testNotValidMetadata()
+    {
+        $this->withoutExceptionHandling();
+        $this->expectException(MetadataException::class);
+        $this->setSPIDAuthMock();
+        $response = $this->get($this->metadataURL);
+        $response->assertStatus(500);
+    }
+
     public function testMalformedMetadata()
     {
         $this->withoutExceptionHandling();
-        $this->expectException(OneLogin_Saml2_Error::class);
-        $this->setSPIDAuthMock();
+        $this->expectException(MetadataException::class);
+        $this->setSPIDAuthMock(true);
         $response = $this->get($this->metadataURL);
-        var_dump($response);
+        $response->assertStatus(500);
     }
     
     public function testProvidersWithTestIdp()
