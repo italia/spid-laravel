@@ -1,3 +1,4 @@
 /vendor
 clover.xml
 coverage
+.php_cs.cache
