@@ -4,15 +4,15 @@
 
 @section('content')
 <div class="container">
-  <div class="row">
-    <div class="col-md-8 col-md-offset-2">
-      <div class="panel panel-default">
-        <div class="panel-heading">Private area</div>
-        <div class="panel-body center">
-          Hi {{ $SPIDAuth->getSPIDUser()->name }} {{ $SPIDAuth->getSPIDUser()->familyName }}, this area is private!
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">Private area</div>
+                <div class="card-body">
+                    Hi {{ $SPIDAuth->getSPIDUser()->name }} {{ $SPIDAuth->getSPIDUser()->familyName }}, this area is private!
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </div>
 @endsection

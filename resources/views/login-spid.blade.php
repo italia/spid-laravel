@@ -15,50 +15,21 @@
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link type="text/css" rel="stylesheet" href="{{ asset('/vendor/spid-auth/css/agid-spid-enter.min.1.0.0.css') }}">
-    <style>
-        html, body {
-            background-color: #fff;
-            color: #636b6f;
-            font-family: 'Raleway', sans-serif;
-            font-weight: 100;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .full-height {
-            height: 100vh;
-        }
-
-        .flex-center {
-            align-items: center;
-            display: flex;
-            justify-content: center;
-        }
-
-        .position-rel {
-            position: relative;
-        }
-
-        .center {
-            text-align: center;
-        }
-    </style>
 </head>
 <body>
-    <div class="flex-center position-rel full-height">
-        <div id="app">
+    <div id="app" class="flex-center position-ref full-height">
+        <main class="py-4">
             <div class="container">
-                <div class="row">
-                    <div class="col-md-8 col-md-offset-2">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
                                 @if (session('url.intended'))
                                 @lang('spid-auth::messages.spid_access_required')
                                 @else
                                 @lang('spid-auth::messages.spid_login')
-                                @endif
-                            </div>
-                            <div class="panel-body center">
+                                @endif</div>
+                            <div class="card-body">
                                 @include('spid-auth::spid-button', ['size' => 'm'])
                                 @lang('spid-auth::messages.or') <a href="{{ url('/') }}">@lang('spid-auth::messages.return_home')</a>
                             </div>
@@ -66,7 +37,8 @@
                     </div>
                 </div>
             </div>
-        </div>
+            @yield('content')
+        </main>
     </div>
 
     <!-- Scripts -->
