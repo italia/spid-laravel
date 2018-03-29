@@ -112,6 +112,12 @@ The values entered in the config file will be used to generate the SAML Service
 Provider metadata at runtime. The generated metadata will be available in XML
 format at `/spid/metadata`.
 
+### Bindings
+
+Due to limitations of [onelogin/php-saml](https://github.com/onelogin/php-saml),
+only the `HTTP-POST` binding is supported for the AssertionConsumerService
+endpoint and the `HTTP-Redirect` for the the SingleLogoutService endpoint.
+
 **Application options**
 
 - `middleware_group`:
@@ -338,26 +344,29 @@ In the
 [`spid-idps.php`](https://github.com/italia/spid-laravel/blob/master/config/spid-idps.php)
 file are defined the official
 [SPID Identity Providers](https://registry.spid.gov.it/identity-providers).
-For testing purposes, this file includes also the Test Identity Provider
-available at [idp.spid.gov.it:9443](https://idp.spid.gov.it:9443).
+
+For testing purposes, this file includes also a test Identity Provider.
+Refer to the [SPID Test Environment](https://github.com/italia/spid-testenv)
+to get more informations about SPID authentication testing.
+
+The test Identity Provider can be enabled/disabled using the `test_idp` entry
+in your `config/spid-auth.php` file.
 
 **Remove it before using in production**.
 
 ### Service Provider certificate and private key
 
 In the
-[`spid-saml.php`](https://github.com/italia/spid-laravel/blob/master/config/spid-saml.php)
+[`spid-auth.php`](https://github.com/italia/spid-laravel/blob/master/config/spid-auth.php)
 file are defined the X.509 certificate and the private key of the Service
 Provider. Please note that the values provided are only for testing purposes and
 can't be used in production.
 
+You can set your own X.509 certificate and private key in the
+`config/spid-auth.php` file of your application (which overrides the one in the
+package).
+
 **Change the values and keep the private key secret**.
-
-The Service Provider is configured to properly work with the Test Identity
-Provider using the following credentials:
-
-- username: `laravel.test`
-- password: `laravel.test`
 
 ### SPID smart button
 

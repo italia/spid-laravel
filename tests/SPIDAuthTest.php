@@ -88,7 +88,7 @@ class SPIDAuthTest extends TestCase
         $SAMLAuth->shouldReceive('getLastResponseXML')->andReturn(
             '<?xml version="1.0" encoding="UTF-8"?>
             <saml2p:Response xmlns:saml2p="urn:oasis:names:tc:SAML:2.0:protocol">
-               <saml2:Issuer xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">idp.spid.gov.it</saml2:Issuer>
+               <saml2:Issuer xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">spid-testenv-identityserver</saml2:Issuer>
             </saml2p:Response>'
         );
         $SAMLAuth->shouldReceive('getSessionIndex')->andReturn('sessionIndex');
