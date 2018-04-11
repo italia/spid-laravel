@@ -1,10 +1,13 @@
 diff --git a/lib/Saml2/AuthnRequest.php b/lib/Saml2/AuthnRequest.php
-index e6e49a2..3cd647a 100644
+index e6e49a2..b5414bb 100644
 --- a/lib/Saml2/AuthnRequest.php
 +++ b/lib/Saml2/AuthnRequest.php
-@@ -124,8 +124,13 @@ REQUESTEDAUTHN;
+@@ -122,10 +122,15 @@ REQUESTEDAUTHN;
+     Version="2.0"
+ {$providerNameStr}{$forceAuthnStr}{$isPassiveStr}
      IssueInstant="$issueInstant"
-     Destination="{$idpData['singleSignOnService']['url']}"
+-    Destination="{$idpData['singleSignOnService']['url']}"
++    Destination="{$idpData['entityId']}"
      ProtocolBinding="{$spData['assertionConsumerService']['binding']}"
 -    AssertionConsumerServiceURL="{$spData['assertionConsumerService']['url']}">
 -    <saml:Issuer>{$spData['entityId']}</saml:Issuer>
