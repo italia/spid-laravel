@@ -17,7 +17,7 @@ return [
     'entityId' => 'https://identity.infocert.it',
     'singleSignOnService' => [
       'url' => 'https://identity.infocert.it/spid/samlsso',
-      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
     ],
     'singleLogoutService' => [
       'url' => 'https://identity.infocert.it/spid/samlslo',
@@ -33,8 +33,8 @@ return [
     'isActive' => true,
     'entityId' => 'https://posteid.poste.it',
     'singleSignOnService' => [
-      'url' => 'https://posteid.poste.it/jod-fs/ssoservicepost',
-      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'
+      'url' => 'https://posteid.poste.it/jod-fs/ssoserviceredirect',
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
     ],
     'singleLogoutService' => [
       'url' => 'https://posteid.poste.it/jod-fs/sloserviceredirect',
@@ -51,7 +51,7 @@ return [
     'entityId' => 'https://login.id.tim.it/affwebservices/public/saml2sso',
     'singleSignOnService' => [
       'url' => 'https://login.id.tim.it/affwebservices/public/saml2sso',
-      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
     ],
     'singleLogoutService' => [
       'url' => 'https://login.id.tim.it/affwebservices/public/saml2slo',
@@ -68,7 +68,7 @@ return [
     'entityId' => 'https://identity.sieltecloud.it',
     'singleSignOnService' => [
       'url' => 'https://identity.sieltecloud.it/simplesaml/saml2/idp/SSO.php',
-      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
     ],
     'singleLogoutService' => [
       'url' => 'https://identity.sieltecloud.it/simplesaml/saml2/idp/SLS.php',
@@ -85,7 +85,7 @@ return [
     'entityId' => 'https://loginspid.aruba.it',
     'singleSignOnService' => [
       'url' => 'https://loginspid.aruba.it/ServiceLoginWelcome',
-      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
     ],
     'singleLogoutService' => [
       'url' => 'https://loginspid.aruba.it/ServiceLogoutRequest',
@@ -101,8 +101,8 @@ return [
     'isActive'=> true,
     'entityId' => 'https://idp.namirialtsp.com/idp',
     'singleSignOnService' => [
-      'url' => 'https://idp.namirialtsp.com/idp/profile/SAML2/POST/SSO',
-      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'
+      'url' => 'https://idp.namirialtsp.com/idp/profile/SAML2/Redirect/SSO',
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
     ],
     'singleLogoutService' => [
       'url' => 'https://idp.namirialtsp.com/idp/profile/SAML2/Redirect/SLO',
@@ -119,7 +119,7 @@ return [
     'entityId' => 'https://spid.register.it',
     'singleSignOnService' => [
       'url' => 'https://spid.register.it/login/sso',
-      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
     ],
     'singleLogoutService' => [
       'url' => 'https://spid.register.it/login/singleLogout',
@@ -136,7 +136,7 @@ return [
     'entityId' => 'https://spid.intesa.it',
     'singleSignOnService' => [
       'url' => 'https://spid.intesa.it/Time4UserServices/services/idp/AuthnRequest/',
-      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
     ],
     'singleLogoutService' => [
       'url' => 'https://spid.intesa.it/Time4UserServices/services/idp/SingleLogout',
@@ -153,9 +153,11 @@ return [
     'entityId' => 'spid-testenv-identityserver',
     'singleSignOnService' => [
       'url' => 'https://spid-testenv-identityserver:9443/samlsso',
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
     ],
     'singleLogoutService' => [
       'url' => 'https://spid-testenv-identityserver:9443/samlsso',
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
     ],
     'x509cert' => 'MIIDZzCCAk8CCQCLkN9v/oVqczANBgkqhkiG9w0BAQsFADBwMQswCQYDVQQGEwJJVDENMAsGA1UECAwEUm9tZTENMAsGA1UEBwwEUm9tZTENMAsGA1UECgwEQWdJRDElMCMGA1UECwwcVGVzdCBDZXJ0aWZpY2F0aW9uIEF1dGhvcml0eTENMAsGA1UEAwwEQWdJRDAeFw0xNzEyMjkwOTI2MzlaFw0yNzEyMjcwOTI2MzlaMHsxCzAJBgNVBAYTAklUMQ0wCwYDVQQIDARSb21lMQ0wCwYDVQQHDARSb21lMQ0wCwYDVQQKDARBZ0lEMRkwFwYDVQQLDBBTUElEIFRlc3QgU2VydmVyMSQwIgYDVQQDDBtzcGlkLXRlc3RlbnYtaWRlbnRpdHlzZXJ2ZXIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDLLx2ruR0xCGDlBsWl2+TYni51L/ypZzc7B95WFGdzP/giU5+Dyhf/iiYy0aGRPlium/VluOaUlC+C8lPDvOr7NlhyNaPwnHHe4n3W0CnuSAyLTsRR+ipVkdEr5xv+AbrNE/GbBmvyWxLbvj2S4Y0rSZokBTIsOt1/wvLlc3FYgne/YtfRATqGY10HebgJzxmoy/Lfdz56+5bmw8ZRi5c9QyKyA13cQ2XUxnmUQpWQ1p+OZ95TRerW1Cl9CCDbQ+Zdu7z4Q+o7UwekUu/ef+SBjjgV4WK6nYh5IdMzVavGcBDMIEi9j1etIS3uPRa/uB3Kr9XUfhrlZ3K30mW6AjpBAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAHwBVlFSLiCxWl5OjFrxbFroXhASlTR0VA5K83zFXrAVHE+DzFW6ATiulEl6a+tGJkYP5G/fzzl4SdgpK90IbiANWQfmJsuG3ygBPJew7Hjvq7COgrKpb4uqEs+fh3X9FO87PXHRQnDJhN9+/9QmaJAoydod/T8I0NCJEqOtMGGZtbcne/VJz4Y/8rCkNZhJLAYng2NfpdP0RFeN3Im9s3nFzWeJMhDWJbhk54OO7R8N0ouQcFhaWHpwkb2SRKFBAkKw2glR2Bx6UPBv8rFzsdIRy7e4GiGLLj2G/5Crx6ikESlUR+gfn4iays6MQM/e4HkOJ+h210V8BlTcQi8mPSI=',
   ],
