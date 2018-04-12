@@ -62,7 +62,7 @@ class SPIDAuthTest extends TestCase
         $testRedirectURL = $this->app['config']->get('spid-idps.test.singleSignOnService.url');
         $this->SPIDAuth = m::mock(SPIDAuth::class)->makePartial()->shouldAllowMockingProtectedMethods();
         $SAMLAuth = m::mock('OneLogin_Saml2_Auth');
-        $SAMLAuth->shouldReceive('login')->with(null, [], true)->andReturn(
+        $SAMLAuth->shouldReceive('login')->andReturn(
             Response::redirectTo($testRedirectURL)
         );
         if (!$withInvalidBinding) {

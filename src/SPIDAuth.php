@@ -65,7 +65,7 @@ class SPIDAuth extends Controller
             session(['spid_idp' => $idp]);
             session()->save();
 
-            return $this->getSAML()->login(null, [], true);
+            return $this->getSAML()->login();
         }
 
         return redirect()->intended(config('spid-auth.after_login_url'));
