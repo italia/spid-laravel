@@ -51,3 +51,22 @@ index 5662624..1f9582e 100644
          {$strAttributeConsumingService}
      </md:SPSSODescriptor>{$strOrganization}{$strContacts}
  </md:EntityDescriptor>
+diff --git a/lib/Saml2/Response.php b/lib/Saml2/Response.php
+index 6c43068..d6c19af 100644
+--- a/lib/Saml2/Response.php
++++ b/lib/Saml2/Response.php
+@@ -268,10 +268,11 @@ class OneLogin_Saml2_Response
+                 foreach ($issuers as $issuer) {
+                     $trimmedIssuer = trim($issuer);
+                     if (empty($trimmedIssuer) || $trimmedIssuer !== $idPEntityId) {
+-                        throw new OneLogin_Saml2_ValidationError(
+-                            "Invalid issuer in the Assertion/Response (expected '$idPEntityId', got '$trimmedIssuer')",
+-                            OneLogin_Saml2_ValidationError::WRONG_ISSUER
+-                        );
++                        // See https://github.com/italia/spid-regole-tecniche/issues/20
++                        // throw new OneLogin_Saml2_ValidationError(
++                        //     "Invalid issuer in the Assertion/Response (expected '$idPEntityId', got '$trimmedIssuer')",
++                        //     OneLogin_Saml2_ValidationError::WRONG_ISSUER
++                        // );
+                     }
+                 }
