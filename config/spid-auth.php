@@ -9,7 +9,7 @@
 return [
       'sp_entity_id' => 'https://laravel-test',
       'sp_base_url' => 'https://localhost',
-      'sp_service_name' => 'SPID service',
+      'sp_service_name' => 'SPID service name',
       'sp_organization_name' => 'Example',
       'sp_organization_display_name' => 'Example Organization',
       'sp_organization_url' => 'https://example.org',
