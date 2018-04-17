@@ -133,7 +133,7 @@ class SPIDAuth extends Controller
     {
         if ($this->isAuthenticated()) {
             $sessionIndex = session()->pull('spid_sessionIndex');
-            session()->forget('spid_idp');
+            $idp = session()->pull('spid_idp');
             $idpEntityName = session()->pull('spid_idp_entity_name');
             $SPIDUser = session()->pull('spid_user');
             session()->save();
@@ -142,7 +142,7 @@ class SPIDAuth extends Controller
             event(new LogoutEvent($SPIDUser, $idpEntityName));
 
             try {
-                return $this->getSAML()->logout($returnTo, [], null, $sessionIndex);
+                return $this->getSAML($idp)->logout($returnTo, [], null, $sessionIndex);
             } catch (OneLogin_Saml2_Error $e) {
                 throw new LogoutException($e->getMessage());
             }
@@ -192,7 +192,7 @@ class SPIDAuth extends Controller
     public function providers()
     {
         $idps = config('spid-idps');
-        
+
         if (!config('spid-auth.test_idp')) {
             unset($idps['test']);
         }
@@ -249,11 +249,12 @@ class SPIDAuth extends Controller
      *
      * @return OneLogin_Saml2_Auth  SAML instance configured for the current selected Identity Provider.
      */
-    protected function getSAML()
+    protected function getSAML(string $idp = null)
     {
-        $idp = session('spid_idp') ?: 'test';
+        $session_idp = session('spid_idp') ?: 'test';
+        $idp = $idp ?: $session_idp;
 
-        if (empty($this->saml)) {
+        if (empty($this->saml) || $this->saml->getSettings()->getIdPData()['provider'] != $idp) {
             $this->saml = new OneLogin_Saml2_Auth($this->getSAMLConfig($idp));
         }
 
