@@ -92,14 +92,15 @@ class SPIDAuthTest extends TestCase
             </saml2p:Response>'
         );
         $SAMLAuth->shouldReceive('getSessionIndex')->andReturn('sessionIndex');
+        $SAMLAuth->shouldReceive('getNameId')->andReturn('nameId');
         if (!$withErrors) {
-            $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], null, 'sessionIndex')->andReturn(
+            $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], 'nameId', 'sessionIndex')->andReturn(
                 Response::redirectTo($this->afterLoginURL)
             );
             $SAMLAuth->shouldReceive('getErrors')->andReturn(false);
             $SAMLAuth->shouldReceive('getSPMetadata')->andReturn();
         } else {
-            $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], null, 'sessionIndex')->andThrow(
+            $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], 'nameId', 'sessionIndex')->andThrow(
                 new OneLogin_Saml2_Error(
                     'The IdP does not support Single Log Out',
                     OneLogin_Saml2_Error::SAML_SINGLE_LOGOUT_NOT_SUPPORTED
@@ -171,6 +172,7 @@ class SPIDAuthTest extends TestCase
         $response = $this->post($this->acsURL);
         $response->assertSessionHas('spid_idp_entity_name');
         $response->assertSessionHas('spid_sessionIndex');
+        $response->assertSessionHas('spid_nameId');
         $response->assertSessionHas('spid_user');
         $response->assertRedirect($this->afterLoginURL);
         Event::assertDispatched(LoginEvent::class, function ($e) {
@@ -238,6 +240,7 @@ class SPIDAuthTest extends TestCase
         $response = $this->get($this->logoutURL);
         $response->assertSessionMissing('spid_idp_entity_name');
         $response->assertSessionMissing('spid_sessionIndex');
+        $response->assertSessionMissing('spid_nameId');
         $response->assertSessionMissing('spid_user');
         $response->assertRedirect($this->afterLogoutURL);
         Event::assertDispatched(LogoutEvent::class, function ($e) {

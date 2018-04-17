@@ -115,6 +115,7 @@ class SPIDAuth extends Controller
 
         session(['spid_idp_entity_name' => $idpEntityName]);
         session(['spid_sessionIndex' => $this->getSAML()->getSessionIndex()]);
+        session(['spid_nameId' => $this->getSAML()->getNameId()]);
         session(['spid_user' => $SPIDUser]);
 
         event(new LoginEvent($SPIDUser, session('spid_idp_entity_name')));
@@ -133,6 +134,7 @@ class SPIDAuth extends Controller
     {
         if ($this->isAuthenticated()) {
             $sessionIndex = session()->pull('spid_sessionIndex');
+            $nameId = session()->pull('spid_nameId');
             $idp = session()->pull('spid_idp');
             $idpEntityName = session()->pull('spid_idp_entity_name');
             $SPIDUser = session()->pull('spid_user');
@@ -142,7 +144,7 @@ class SPIDAuth extends Controller
             event(new LogoutEvent($SPIDUser, $idpEntityName));
 
             try {
-                return $this->getSAML($idp)->logout($returnTo, [], null, $sessionIndex);
+                return $this->getSAML($idp)->logout($returnTo, [], $nameId, $sessionIndex);
             } catch (OneLogin_Saml2_Error $e) {
                 throw new LogoutException($e->getMessage());
             }
