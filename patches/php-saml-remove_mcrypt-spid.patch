@@ -21,6 +21,23 @@ index e6e49a2..be566fa 100644
  {$nameIdPolicyStr}
  {$requestedAuthnStr}
  </samlp:AuthnRequest>
+diff --git a/lib/Saml2/LogoutRequest.php b/lib/Saml2/LogoutRequest.php
+index 79c04de..33e9a8d 100644
+--- a/lib/Saml2/LogoutRequest.php
++++ b/lib/Saml2/LogoutRequest.php
+@@ -92,7 +92,11 @@ class OneLogin_Saml2_LogoutRequest
+     Version="2.0"
+     IssueInstant="{$issueInstant}"
+     Destination="{$idpData['singleLogoutService']['url']}">
+-    <saml:Issuer>{$spData['entityId']}</saml:Issuer>
++    <saml:Issuer
++        NameQualifier="{$spData['entityId']}"
++        Format="urn:oasis:names:tc:SAML:2.0:nameid-format:entity">
++        {$spData['entityId']}
++    </saml:Issuer>
+     {$nameIdObj}
+     {$sessionIndexStr}
+ </samlp:LogoutRequest>
 diff --git a/lib/Saml2/Metadata.php b/lib/Saml2/Metadata.php
 index 5662624..2ef0fd8 100644
 --- a/lib/Saml2/Metadata.php
@@ -59,3 +76,4 @@ index 6c43068..d6c19af 100644
 +                        // );
                      }
                  }
+ 
