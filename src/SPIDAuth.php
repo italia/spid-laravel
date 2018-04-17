@@ -224,8 +224,8 @@ class SPIDAuth extends Controller
 
         $config['sp']['entityId'] = config('spid-auth.sp_entity_id');
         $config['sp']['attributeConsumingService']['serviceName'] = config('spid-auth.sp_service_name');
-        $config['sp']['assertionConsumerService']['url'] = url('/') . '/' . config('spid-auth.routes_prefix') . '/acs';
-        $config['sp']['singleLogoutService']['url'] = url('/') . '/' . config('spid-auth.routes_prefix') . '/logout';
+        $config['sp']['assertionConsumerService']['url'] = config('spid-auth.sp_base_url') . '/' . config('spid-auth.routes_prefix') . '/acs';
+        $config['sp']['singleLogoutService']['url'] = config('spid-auth.sp_base_url') . '/' . config('spid-auth.routes_prefix') . '/logout';
         $config['sp']['x509cert'] = config('spid-auth.sp_certificate');
         $config['sp']['privateKey'] = config('spid-auth.sp_private_key');
 
