@@ -7,8 +7,8 @@
  */
 
 return [
-    'spid_login' => 'Effettua l\'accesso con SPID',
-    'spid_access_required' => 'La risorsa richiesta richiede l\'accesso con SPID',
+    'spid_login' => "Effettua l'accesso con SPID",
+    'spid_access_required' => "La risorsa richiesta richiede l'accesso con SPID.",
     'return_home' => 'ritorna alla pagina iniziale',
     'or' => 'oppure'
 ];

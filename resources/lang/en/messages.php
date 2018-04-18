@@ -8,7 +8,7 @@
 
 return [
     'spid_login' => 'Login using SPID',
-    'spid_access_required' => 'The requested resource requires SPID authentication',
+    'spid_access_required' => 'The requested resource requires SPID authentication.',
     'return_home' => 'go back to homepage',
     'or' => 'or'
 ];
