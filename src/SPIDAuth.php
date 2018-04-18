@@ -21,6 +21,7 @@ use Carbon\Carbon;
 use OneLogin_Saml2_Auth;
 use OneLogin_Saml2_Error;
 use OneLogin_Saml2_Utils;
+use OneLogin_Saml2_Constants;
 
 use DOMDocument;
 use Exception;
@@ -144,7 +145,7 @@ class SPIDAuth extends Controller
             event(new LogoutEvent($SPIDUser, $idpEntityName));
 
             try {
-                return $this->getSAML($idp)->logout($returnTo, [], $nameId, $sessionIndex);
+                return $this->getSAML($idp)->logout($returnTo, [], $nameId, $sessionIndex, OneLogin_Saml2_Constants::NAMEID_TRANSIENT);
             } catch (OneLogin_Saml2_Error $e) {
                 throw new LogoutException($e->getMessage());
             }

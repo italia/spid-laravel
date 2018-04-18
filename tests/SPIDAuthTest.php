@@ -12,6 +12,7 @@ use Italia\SPIDAuth\Exceptions\ResponseValidationException;
 use Orchestra\Testbench\TestCase;
 use Mockery as m;
 use OneLogin_Saml2_Error;
+use OneLogin_Saml2_Constants;
 
 use DOMDocument;
 
@@ -94,13 +95,13 @@ class SPIDAuthTest extends TestCase
         $SAMLAuth->shouldReceive('getSessionIndex')->andReturn('sessionIndex');
         $SAMLAuth->shouldReceive('getNameId')->andReturn('nameId');
         if (!$withErrors) {
-            $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], 'nameId', 'sessionIndex')->andReturn(
+            $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], 'nameId', 'sessionIndex', OneLogin_Saml2_Constants::NAMEID_TRANSIENT)->andReturn(
                 Response::redirectTo($this->afterLoginURL)
             );
             $SAMLAuth->shouldReceive('getErrors')->andReturn(false);
             $SAMLAuth->shouldReceive('getSPMetadata')->andReturn();
         } else {
-            $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], 'nameId', 'sessionIndex')->andThrow(
+            $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], 'nameId', 'sessionIndex', OneLogin_Saml2_Constants::NAMEID_TRANSIENT)->andThrow(
                 new OneLogin_Saml2_Error(
                     'The IdP does not support Single Log Out',
                     OneLogin_Saml2_Error::SAML_SINGLE_LOGOUT_NOT_SUPPORTED
