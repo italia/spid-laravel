@@ -13,6 +13,7 @@ use Exception;
 class SPIDLogoutException extends Exception
 {
     const SAML_LOGOUT_ERROR = 0;
+    const SAML_VALIDATION_ERROR = 1;
 
     /**
      * SPIDMetadataException constructor.

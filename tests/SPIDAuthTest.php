@@ -68,11 +68,18 @@ class SPIDAuthTest extends TestCase
         );
         if (!$withInvalidBinding) {
             $SAMLAuth->shouldReceive('processResponse')->andReturn(true);
+            $SAMLAuth->shouldReceive('processSLO')->andReturn(true);
         } else {
             $SAMLAuth->shouldReceive('processResponse')->andThrow(
                 new OneLogin_Saml2_Error(
                     'SAML Response not found, Only supported HTTP_POST Binding',
                     OneLogin_Saml2_Error::SAML_RESPONSE_NOT_FOUND
+                )
+            );
+            $SAMLAuth->shouldReceive('processSLO')->andThrow(
+                new OneLogin_Saml2_Error(
+                    'SAML LogoutRequest/LogoutResponse not found. Only supported HTTP_REDIRECT Binding',
+                    OneLogin_Saml2_Error::SAML_LOGOUTMESSAGE_NOT_FOUND
                 )
             );
         }
@@ -96,7 +103,7 @@ class SPIDAuthTest extends TestCase
         $SAMLAuth->shouldReceive('getNameId')->andReturn('nameId');
         if (!$withErrors) {
             $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], 'nameId', 'sessionIndex', false, OneLogin_Saml2_Constants::NAMEID_TRANSIENT)->andReturn(
-                Response::redirectTo($this->afterLoginURL)
+                Response::redirectTo($this->logoutURL)
             );
             $SAMLAuth->shouldReceive('getErrors')->andReturn(false);
             $SAMLAuth->shouldReceive('getSPMetadata')->andReturn();
@@ -236,13 +243,20 @@ class SPIDAuthTest extends TestCase
     
     public function testLogout()
     {
-        Event::fake();
         $this->testAcs();
         $response = $this->get($this->logoutURL);
-        $response->assertSessionMissing('spid_idp_entity_name');
         $response->assertSessionMissing('spid_sessionIndex');
         $response->assertSessionMissing('spid_nameId');
-        $response->assertSessionMissing('spid_user');
+        $response->assertRedirect($this->logoutURL);
+    }
+    
+    public function testSLO()
+    {
+        Event::fake();
+        $this->testLogout();
+        $response = $this->get($this->logoutURL . '?SAMLResponse');
+        $response->assertSessionMissing('spid_idp_entity_name');
+        $response->assertSessionMissing('spid_idp');
         $response->assertRedirect($this->afterLogoutURL);
         Event::assertDispatched(LogoutEvent::class, function ($e) {
             $SPIDUser = $e->getSPIDUser();
@@ -258,6 +272,24 @@ class SPIDAuthTest extends TestCase
         });
         $SPIDUser = $this->app->make('SPIDAuth')->getSPIDUser();
         $this->assertNull($SPIDUser);
+    }
+    
+    public function testSLOWithInvalidBinding()
+    {
+      $this->setSPIDAuthMock(false, false, true);
+      $this->withoutExceptionHandling();
+      $this->expectException(SPIDLogoutException::class);
+      $response = $this->withSession(['spid_idp_entity_name' => 'spid_idp_entity_name', 'spid_user' => new SPIDUser([])])->get($this->logoutURL . '?SAMLResponse');
+      $response->assertStatus(500);
+    }
+    
+    public function testSLOWithMalformedSAMLResponse()
+    {
+      $this->setSPIDAuthMock(true, false);
+      $this->withoutExceptionHandling();
+      $this->expectException(SPIDLogoutException::class);
+      $response = $this->withSession(['spid_idp_entity_name' => 'spid_idp_entity_name', 'spid_user' => new SPIDUser([])])->get($this->logoutURL . '?SAMLResponse');
+      $response->assertStatus(500);
     }
     
     public function testLogoutIfNotAuthenticated()

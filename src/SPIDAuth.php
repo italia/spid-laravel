@@ -136,19 +136,33 @@ class SPIDAuth extends Controller
         if ($this->isAuthenticated()) {
             $sessionIndex = session()->pull('spid_sessionIndex');
             $nameId = session()->pull('spid_nameId');
-            $idp = session()->pull('spid_idp');
-            $idpEntityName = session()->pull('spid_idp_entity_name');
-            $SPIDUser = session()->pull('spid_user');
+            $returnTo = url(config('spid-auth.after_logout_url'));
             session()->save();
 
-            $returnTo = url(config('spid-auth.after_logout_url'));
-            event(new LogoutEvent($SPIDUser, $idpEntityName));
-
             try {
-                return $this->getSAML($idp)->logout($returnTo, [], $nameId, $sessionIndex, false, OneLogin_Saml2_Constants::NAMEID_TRANSIENT);
+                return $this->getSAML()->logout($returnTo, [], $nameId, $sessionIndex, false, OneLogin_Saml2_Constants::NAMEID_TRANSIENT);
             } catch (OneLogin_Saml2_Error $e) {
-                throw new SPIDLogoutException($e->getMessage());
+                throw new SPIDLogoutException($e->getMessage(), SPIDLogoutException::SAML_LOGOUT_ERROR);
             }
+        }
+
+        if (request()->has('SAMLResponse')) {
+          $idpEntityName = session()->pull('spid_idp_entity_name');
+          $SPIDUser = session()->pull('spid_user');
+          $idp = session()->pull('spid_idp');
+          event(new LogoutEvent($SPIDUser, $idpEntityName));
+          try {
+              $this->getSAML($idp)->processSLO();
+          } catch (OneLogin_Saml2_Error $e) {
+              throw new SPIDLogoutException('SAML response validation error: ' . $e->getMessage(), SPIDLogoutException::SAML_VALIDATION_ERROR);
+          }
+
+          $errors = $this->getSAML()->getErrors();
+
+          if (!empty($errors)) {
+              logger()->error('SAML Response error: ' . $this->getSAML()->getLastErrorReason());
+              throw new SPIDLogoutException('SAML response validation error: ' . implode(', ', $errors), SPIDLogoutException::SAML_VALIDATION_ERROR);
+          }
         }
 
         session()->reflash();
