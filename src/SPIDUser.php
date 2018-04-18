@@ -31,6 +31,9 @@ class SPIDUser
     public function __get($attribute)
     {
         if (array_key_exists($attribute, $this->attributes)) {
+            if ($attribute == 'fiscalNumber') {
+                return str_replace('TINIT-', '', $this->attributes['fiscalNumber'][0]);
+            }
             return $this->attributes[$attribute][0];
         }
         
