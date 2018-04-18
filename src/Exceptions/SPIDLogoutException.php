@@ -1,6 +1,6 @@
 <?php
 /**
- * This class implements a LogoutException for SPIDAuth Package.
+ * This class implements a SPIDLogoutException for SPIDAuth Package.
  *
  * @package Italia\SPIDAuth
  * @license BSD-3-clause
@@ -10,16 +10,16 @@ namespace Italia\SPIDAuth\Exceptions;
 
 use Exception;
 
-class LogoutException extends Exception
+class SPIDLogoutException extends Exception
 {
     const SAML_LOGOUT_ERROR = 0;
 
     /**
-     * MetadataException constructor.
+     * SPIDMetadataException constructor.
      * @param $message
      */
     public function __construct($message)
     {
-        parent::__construct($message, LogoutException::SAML_LOGOUT_ERROR, null);
+        parent::__construct($message, SPIDLogoutException::SAML_LOGOUT_ERROR, null);
     }
 }

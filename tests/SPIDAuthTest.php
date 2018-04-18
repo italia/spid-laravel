@@ -6,9 +6,9 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\URL;
 
-use Italia\SPIDAuth\Exceptions\LogoutException;
-use Italia\SPIDAuth\Exceptions\MetadataException;
-use Italia\SPIDAuth\Exceptions\ResponseValidationException;
+use Italia\SPIDAuth\Exceptions\SPIDLogoutException;
+use Italia\SPIDAuth\Exceptions\SPIDMetadataException;
+use Italia\SPIDAuth\Exceptions\SPIDLoginException;
 use Orchestra\Testbench\TestCase;
 use Mockery as m;
 use OneLogin_Saml2_Error;
@@ -202,7 +202,7 @@ class SPIDAuthTest extends TestCase
     public function testAcsWithMalformedSAMLResponse()
     {
         $this->withoutExceptionHandling();
-        $this->expectException(ResponseValidationException::class);
+        $this->expectException(SPIDLoginException::class);
         $this->setSPIDAuthMock(true);
         $response = $this->post($this->acsURL);
         $response->assertStatus(500);
@@ -211,7 +211,7 @@ class SPIDAuthTest extends TestCase
     public function testAcsWithInvalidBinding()
     {
         $this->withoutExceptionHandling();
-        $this->expectException(ResponseValidationException::class);
+        $this->expectException(SPIDLoginException::class);
         $this->setSPIDAuthMock(false, true, true);
         $response = $this->post($this->acsURL);
         $response->assertStatus(500);
@@ -227,7 +227,7 @@ class SPIDAuthTest extends TestCase
     public function testAcsWithReplayAttack()
     {
         $this->withoutExceptionHandling();
-        $this->expectException(ResponseValidationException::class);
+        $this->expectException(SPIDLoginException::class);
         $this->setSPIDAuthMock();
         $response = $this->post($this->acsURL);
         $response = $this->post($this->acsURL);
@@ -269,7 +269,7 @@ class SPIDAuthTest extends TestCase
     public function testLogoutWithErrors()
     {
         $this->withoutExceptionHandling();
-        $this->expectException(LogoutException::class);
+        $this->expectException(SPIDLogoutException::class);
         $this->testAcs();
         $this->setSPIDAuthMock(true);
         $response = $this->get($this->logoutURL);
@@ -288,7 +288,7 @@ class SPIDAuthTest extends TestCase
     public function testNotValidMetadata()
     {
         $this->withoutExceptionHandling();
-        $this->expectException(MetadataException::class);
+        $this->expectException(SPIDMetadataException::class);
         $this->setSPIDAuthMock();
         $response = $this->get($this->metadataURL);
         $response->assertStatus(500);
@@ -297,7 +297,7 @@ class SPIDAuthTest extends TestCase
     public function testMalformedMetadata()
     {
         $this->withoutExceptionHandling();
-        $this->expectException(MetadataException::class);
+        $this->expectException(SPIDMetadataException::class);
         $this->setSPIDAuthMock(true);
         $response = $this->get($this->metadataURL);
         $response->assertStatus(500);

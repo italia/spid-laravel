@@ -10,9 +10,9 @@ namespace Italia\SPIDAuth;
 
 use Italia\SPIDAuth\Events\LoginEvent;
 use Italia\SPIDAuth\Events\LogoutEvent;
-use Italia\SPIDAuth\Exceptions\MetadataException;
-use Italia\SPIDAuth\Exceptions\ResponseValidationException;
-use Italia\SPIDAuth\Exceptions\LogoutException;
+use Italia\SPIDAuth\Exceptions\SPIDMetadataException;
+use Italia\SPIDAuth\Exceptions\SPIDLoginException;
+use Italia\SPIDAuth\Exceptions\SPIDLogoutException;
 
 use Illuminate\Routing\Controller;
 
@@ -80,14 +80,14 @@ class SPIDAuth extends Controller
      * Fire LoginEvent with SPIDUser (also stored in session).
      *
      * @return \Illuminate\Http\Response    Redirect to the intended or configured URL.
-     * @throws ResponseValidationException
+     * @throws SPIDLoginException
      */
     public function acs()
     {
         try {
             $this->getSAML()->processResponse();
         } catch (OneLogin_Saml2_Error $e) {
-            throw new ResponseValidationException('SAML response validation error: ' . $e->getMessage(), ResponseValidationException::SAML_VALIDATION_ERROR);
+            throw new SPIDLoginException('SAML response validation error: ' . $e->getMessage(), SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         $errors = $this->getSAML()->getErrors();
@@ -96,15 +96,15 @@ class SPIDAuth extends Controller
 
         if (!empty($errors)) {
             logger()->error('SAML Response error: ' . $this->getSAML()->getLastErrorReason());
-            throw new ResponseValidationException('SAML response validation error: ' . implode(', ', $errors), ResponseValidationException::SAML_VALIDATION_ERROR);
+            throw new SPIDLoginException('SAML response validation error: ' . implode(', ', $errors), SPIDLoginException::SAML_VALIDATION_ERROR);
         }
         if (cache()->has($assertionId)) {
             logger()->error('SAML Response error: assertion with id ' . $assertionId . ' was already processed');
-            throw new ResponseValidationException('SAML Response error: assertion with id ' . $assertionId . ' was already processed', ResponseValidationException::SAML_RESPONSE_ALREADY_PROCESSED);
+            throw new SPIDLoginException('SAML Response error: assertion with id ' . $assertionId . ' was already processed', SPIDLoginException::SAML_RESPONSE_ALREADY_PROCESSED);
         }
         if (!$this->getSAML()->isAuthenticated()) {
             logger()->error('SAML Authentication error: ' . $this->getSAML()->getLastErrorReason());
-            throw new ResponseValidationException('SAML Authentication error: ' . $this->getSAML()->getLastErrorReason(), ResponseValidationException::SAML_AUTHENTICATION_ERROR);
+            throw new SPIDLoginException('SAML Authentication error: ' . $this->getSAML()->getLastErrorReason(), SPIDLoginException::SAML_AUTHENTICATION_ERROR);
         }
 
         $assertionExpiry = Carbon::createFromTimestampUTC($assertionNotOnOrAfter);
@@ -129,7 +129,7 @@ class SPIDAuth extends Controller
      * Attempt logout with the selected SPID Identity Provider.
      *
      * @return \Illuminate\Http\Response    Redirect to after_logout_url.
-     * @throws LogoutException
+     * @throws SPIDLogoutException
      */
     public function logout()
     {
@@ -147,7 +147,7 @@ class SPIDAuth extends Controller
             try {
                 return $this->getSAML($idp)->logout($returnTo, [], $nameId, $sessionIndex, OneLogin_Saml2_Constants::NAMEID_TRANSIENT);
             } catch (OneLogin_Saml2_Error $e) {
-                throw new LogoutException($e->getMessage());
+                throw new SPIDLogoutException($e->getMessage());
             }
         }
 
@@ -169,20 +169,20 @@ class SPIDAuth extends Controller
      * Metadata endpoint for this Service Provider.
      *
      * @return \Illuminate\Http\Response    XML metadata of this Service Provider.
-     * @throws MetadataException
+     * @throws SPIDMetadataException
      */
     public function metadata()
     {
         try {
             $metadata = $this->getSAML()->getSettings()->getSPMetadata();
         } catch (Exception $e) {
-            throw new MetadataException('Invalid SP metadata: ' . $e->getMessage());
+            throw new SPIDMetadataException('Invalid SP metadata: ' . $e->getMessage());
         }
         $errors = $this->getSAML()->getSettings()->validateMetadata($metadata);
         if (empty($errors)) {
             return response($metadata, '200')->header('Content-Type', 'text/xml');
         } else {
-            throw new MetadataException('Invalid SP metadata: ' . implode(', ', $errors));
+            throw new SPIDMetadataException('Invalid SP metadata: ' . implode(', ', $errors));
         }
     }
 
