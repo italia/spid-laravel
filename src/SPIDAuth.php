@@ -145,7 +145,7 @@ class SPIDAuth extends Controller
             event(new LogoutEvent($SPIDUser, $idpEntityName));
 
             try {
-                return $this->getSAML($idp)->logout($returnTo, [], $nameId, $sessionIndex, OneLogin_Saml2_Constants::NAMEID_TRANSIENT);
+                return $this->getSAML($idp)->logout($returnTo, [], $nameId, $sessionIndex, false, OneLogin_Saml2_Constants::NAMEID_TRANSIENT);
             } catch (OneLogin_Saml2_Error $e) {
                 throw new SPIDLogoutException($e->getMessage());
             }
