@@ -137,11 +137,11 @@ class SPIDAuth extends Controller
             $sessionIndex = session()->pull('spid_sessionIndex');
             $nameId = session()->pull('spid_nameId');
             $returnTo = url(config('spid-auth.after_logout_url'));
-            $idpEntityName = session()->get('spid_idp_entity_name');
+            $idpEntityId = $this->getIdps()[session()->get('spid_idp')]['entityId'];
             session()->save();
 
             try {
-                return $this->getSAML()->logout($returnTo, [], $nameId, $sessionIndex, false, SAMLConstants::NAMEID_TRANSIENT, $idpEntityName);
+                return $this->getSAML()->logout($returnTo, [], $nameId, $sessionIndex, false, SAMLConstants::NAMEID_TRANSIENT, $idpEntityId);
             } catch (SAMLError $e) {
                 throw new SPIDLogoutException($e->getMessage(), SPIDLogoutException::SAML_LOGOUT_ERROR);
             }
