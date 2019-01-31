@@ -18,10 +18,10 @@ use Illuminate\Routing\Controller;
 
 use Carbon\Carbon;
 
-use OneLogin_Saml2_Auth;
-use OneLogin_Saml2_Error;
-use OneLogin_Saml2_Utils;
-use OneLogin_Saml2_Constants;
+use OneLogin\Saml2\Auth as SAMLAuth;
+use OneLogin\Saml2\Error as SAMLError;
+use OneLogin\Saml2\Utils as SAMLUtils;
+use OneLogin\Saml2\Constants as SAMLConstants;
 
 use DOMDocument;
 use Exception;
@@ -30,9 +30,9 @@ class SPIDAuth extends Controller
 {
 
     /**
-     * OneLogin_Saml2_Auth instance.
+     * SAMLAuth instance.
      *
-     * @var OneLogin_Saml2_Auth $saml
+     * @var SAMLAuth $saml
      */
     private $saml;
 
@@ -86,7 +86,7 @@ class SPIDAuth extends Controller
     {
         try {
             $this->getSAML()->processResponse();
-        } catch (OneLogin_Saml2_Error $e) {
+        } catch (SAMLError $e) {
             throw new SPIDLoginException('SAML response validation error: ' . $e->getMessage(), SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
@@ -137,11 +137,12 @@ class SPIDAuth extends Controller
             $sessionIndex = session()->pull('spid_sessionIndex');
             $nameId = session()->pull('spid_nameId');
             $returnTo = url(config('spid-auth.after_logout_url'));
+            $idpEntityId = $this->getIdps()[session()->get('spid_idp')]['entityId'];
             session()->save();
 
             try {
-                return $this->getSAML()->logout($returnTo, [], $nameId, $sessionIndex, false, OneLogin_Saml2_Constants::NAMEID_TRANSIENT);
-            } catch (OneLogin_Saml2_Error $e) {
+                return $this->getSAML()->logout($returnTo, [], $nameId, $sessionIndex, false, SAMLConstants::NAMEID_TRANSIENT, $idpEntityId);
+            } catch (SAMLError $e) {
                 throw new SPIDLogoutException($e->getMessage(), SPIDLogoutException::SAML_LOGOUT_ERROR);
             }
         }
@@ -153,7 +154,7 @@ class SPIDAuth extends Controller
           event(new LogoutEvent($SPIDUser, $idpEntityName));
           try {
               $this->getSAML($idp)->processSLO();
-          } catch (OneLogin_Saml2_Error $e) {
+          } catch (SAMLError $e) {
               throw new SPIDLogoutException('SAML response validation error: ' . $e->getMessage(), SPIDLogoutException::SAML_VALIDATION_ERROR);
           }
 
@@ -208,14 +209,29 @@ class SPIDAuth extends Controller
      */
     public function providers()
     {
+        $idps_values = array_values($this->getIdps());
+        return response()->json(['spidProviders' => $idps_values]);
+    }
+
+    /**
+     * Return configured IdPs array.
+     *
+     * @return array    Configured Identity providers.
+     */
+    protected function getIdps()
+    {
         $idps = config('spid-idps');
 
         if (!config('spid-auth.test_idp')) {
             unset($idps['test']);
+        } else {
+            $idps['test']['entityId'] = config('spid-auth.test_idp.entityId');
+            $idps['test']['singleSignOnService']['url'] = config('spid-auth.test_idp.sso_endpoint');
+            $idps['test']['singleLogoutService']['url'] = config('spid-auth.test_idp.slo_endpoint');
+            $idps['test']['x509cert'] = config('spid-auth.test_idp.x509cert');
         }
 
-        $idps_values = array_values($idps);
-        return response()->json(['spidProviders' => $idps_values]);
+        return $idps;
     }
 
     /**
@@ -230,10 +246,10 @@ class SPIDAuth extends Controller
 
 
     /**
-     * Return configuration array for OneLogin_Saml2_Auth.
+     * Return configuration array for SAMLAuth.
      *
      * @param string    Identity Provider name.
-     * @return array    Configuration array for OneLogin_Saml2_Auth.
+     * @return array    Configuration array for SAMLAuth.
      */
     protected function getSAMLConfig($idp)
     {
@@ -254,7 +270,7 @@ class SPIDAuth extends Controller
         $config['organization']['it']['displayname'] = $config['organization']['en']['displayname'] = config('spid-auth.sp_organization_display_name');
         $config['organization']['it']['url'] = $config['organization']['en']['url'] = config('spid-auth.sp_organization_url');
 
-        $idps = config('spid-idps');
+        $idps = $this->getIdps();
 
         $config['idp'] = $idps[$idp];
 
@@ -264,7 +280,7 @@ class SPIDAuth extends Controller
     /**
      * Return the SAML instance configured for the current selected Identity Provider.
      *
-     * @return OneLogin_Saml2_Auth  SAML instance configured for the current selected Identity Provider.
+     * @return SAMLAuth  SAML instance configured for the current selected Identity Provider.
      */
     protected function getSAML(string $idp = null)
     {
@@ -272,7 +288,7 @@ class SPIDAuth extends Controller
         $idp = $idp ?: $session_idp;
 
         if (empty($this->saml) || $this->saml->getSettings()->getIdPData()['provider'] != $idp) {
-            $this->saml = new OneLogin_Saml2_Auth($this->getSAMLConfig($idp));
+            $this->saml = new SAMLAuth($this->getSAMLConfig($idp));
         }
 
         return $this->saml;
@@ -288,8 +304,8 @@ class SPIDAuth extends Controller
     {
         $responseDOM = new DOMDocument();
         $responseDOM->loadXML($responseXML);
-        $responseIssuer = OneLogin_Saml2_Utils::query($responseDOM, '/samlp:Response/saml:Issuer')->item(0)->textContent;
-        $idps = config('spid-idps');
+        $responseIssuer = SAMLUtils::query($responseDOM, '/samlp:Response/saml:Issuer')->item(0)->textContent;
+        $idps = $this->getIdps();
         $idpEntityName = '';
         foreach ($idps as $idp) {
             if ($idp['entityId'] == $responseIssuer) {

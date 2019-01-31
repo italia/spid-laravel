@@ -17,7 +17,7 @@ applications based on [Laravel 5](https://www.laravel.com).
 
 1. Before installing this package patching must be enabled in `composer.json`.
 This is necessary because
-[this patch](https://cdn.rawgit.com/italia/spid-laravel/887c53d1/patches/php-saml-remove_mcrypt-spid.patch)
+[this patch](https://rawgit.com/italia/spid-laravel/master/patches/php-saml-3-spid.patch)
 has to be applied to [onelogin/php-saml](https://github.com/onelogin/php-saml)
 for SPID compatibility.
 
@@ -33,34 +33,11 @@ for SPID compatibility.
 
    `composer config extra.enable-patching true`.
 
-2. Since Laravel 5.5 requires PHP >= 7.0.0, this package depends on the
-   [`dev-remove_mcrypt` branch](https://github.com/onelogin/php-saml/tree/remove_mcrypt)
-   of onelogin/php-saml because [`mcrypt`](http://php.net/manual/en/intro.mcrypt.php)
-   extension is deprecated in PHP 7.1.0 and will be removed in PHP 7.2.0.
-
-   In order to allow composer to properly resolve dependencies the
-   `minimum-stability` option must be set to `dev` and the `prefer-stable`
-   option must be set to `true` in `composer.json`.
-
-   These options can be set by running:
-
-   ```console
-   composer config minimum-stability dev
-   composer config prefer-stable true
-   ```
-
-   **This installation step will be removed before the first stable release of
-   this package.**
-   
-   **Please note that since onelogin/php-saml (version `2.x` and `remove_mcrypt`) is not
-   compatible with PHP 7.2.0 this package can be used only with PHP >= 7.0.0 and
-   < 7.2.0.**
-
-3. Require this package with composer.
+2. Require this package with composer.
 
    `composer require italia/spid-laravel:dev-master`
 
-4. [Exclude the URIs](https://laravel.com/docs/5.5/csrf#csrf-excluding-uris)
+3. [Exclude the URIs](https://laravel.com/docs/5.7/csrf#csrf-excluding-uris)
 used by this package from CSRF protection because the the Identity Providers
 can't know what CSRF token include in their POST requests sent to your routes.
 
@@ -105,8 +82,7 @@ set these options:
 - `sp_requested_attributes`: SPID attributes requested to Identity Providers.
 
 These options must be set accordingly to the official SPID
-[technical rules](http://spid-regole-tecniche.readthedocs.io/en/latest/index.html)
-and [notices](http://www.agid.gov.it/agenda-digitale/infrastrutture-architetture/spid/avvisi).
+[technical rules](https://docs.italia.it/italia/spid/spid-regole-tecniche/it/stabile/).
 
 The values entered in the config file will be used to generate the SAML Service
 Provider metadata at runtime. The generated metadata will be available in XML
@@ -346,13 +322,22 @@ file are defined the official
 [SPID Identity Providers](https://registry.spid.gov.it/identity-providers).
 
 For testing purposes, this file includes also a test Identity Provider.
-Refer to the [SPID Test Environment](https://github.com/italia/spid-testenv)
+Refer to the [SPID Test Environment](https://github.com/italia/spid-testenv2)
 to get more informations about SPID authentication testing.
 
 The test Identity Provider can be enabled/disabled using the `test_idp` entry
 in your `config/spid-auth.php` file.
 
-**Remove it before using in production**.
+```php
+'test_idp' => [
+    'entityId' => '<Test IdP entityId>',
+    'sso_endpoint' => '<Test IdP SingleSignOnService endpoint>',
+    'slo_endpoint' => '<Test IdP SingleLogoutService endpoint>',
+    'x509cert' => '<Test IdP x509 certificate>'
+    ],
+```
+
+**Set ```'test_idp' => false``` to disable**.
 
 ### Service Provider certificate and private key
 

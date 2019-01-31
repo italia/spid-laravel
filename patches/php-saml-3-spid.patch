@@ -1,0 +1,74 @@
+diff --git a/src/Saml2/AuthnRequest.php b/src/Saml2/AuthnRequest.php
+index 2dd6bd2..84539f5 100644
+--- a/src/Saml2/AuthnRequest.php
++++ b/src/Saml2/AuthnRequest.php
+@@ -69,8 +69,7 @@ class AuthnRequest
+
+             $nameIdPolicyStr = <<<NAMEIDPOLICY
+     <samlp:NameIDPolicy
+-        Format="{$nameIDPolicyFormat}"
+-        AllowCreate="true" />
++        Format="{$nameIDPolicyFormat}" />
+ NAMEIDPOLICY;
+         }
+
+@@ -137,12 +136,17 @@ REQUESTEDAUTHN;
+     xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+     ID="$id"
+     Version="2.0"
+-{$providerNameStr}{$forceAuthnStr}{$isPassiveStr}
++{$forceAuthnStr}{$isPassiveStr}
+     IssueInstant="$issueInstant"
+-    Destination="{$idpData['singleSignOnService']['url']}"
++    Destination="{$idpData['entityId']}"
+     ProtocolBinding="{$spData['assertionConsumerService']['binding']}"
+-    AssertionConsumerServiceURL="{$acsUrl}">
+-    <saml:Issuer>{$spEntityId}</saml:Issuer>
++    AssertionConsumerServiceURL="{$acsUrl}"
++    AttributeConsumingServiceIndex="1">
++    <saml:Issuer
++        NameQualifier="{$spEntityId}"
++        Format="urn:oasis:names:tc:SAML:2.0:nameid-format:entity">
++        {$spEntityId}
++    </saml:Issuer>
+ {$nameIdPolicyStr}
+ {$requestedAuthnStr}
+ </samlp:AuthnRequest>
+diff --git a/src/Saml2/LogoutRequest.php b/src/Saml2/LogoutRequest.php
+index 2e9258c..aa05b4f 100644
+--- a/src/Saml2/LogoutRequest.php
++++ b/src/Saml2/LogoutRequest.php
+@@ -135,8 +135,12 @@ class LogoutRequest
+     ID="{$id}"
+     Version="2.0"
+     IssueInstant="{$issueInstant}"
+-    Destination="{$idpData['singleLogoutService']['url']}">
+-    <saml:Issuer>{$spEntityId}</saml:Issuer>
++    Destination="{$idpData['entityId']}">
++    <saml:Issuer
++        NameQualifier="{$spEntityId}"
++        Format="urn:oasis:names:tc:SAML:2.0:nameid-format:entity">
++        {$spEntityId}
++    </saml:Issuer>
+     {$nameIdObj}
+     {$sessionIndexStr}
+ </samlp:LogoutRequest>
+diff --git a/src/Saml2/Metadata.php b/src/Saml2/Metadata.php
+index 2efd113..9daaced 100644
+--- a/src/Saml2/Metadata.php
++++ b/src/Saml2/Metadata.php
+@@ -175,13 +175,12 @@ METADATA_TEMPLATE;
+         $metadata = <<<METADATA_TEMPLATE
+ <?xml version="1.0"?>
+ <md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+-                     validUntil="{$validUntilTime}"
+-                     cacheDuration="PT{$cacheDuration}S"
+                      entityID="{$spEntityId}">
+     <md:SPSSODescriptor AuthnRequestsSigned="{$strAuthnsign}" WantAssertionsSigned="{$strWsign}" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+ {$sls}        <md:NameIDFormat>{$sp['NameIDFormat']}</md:NameIDFormat>
+         <md:AssertionConsumerService Binding="{$sp['assertionConsumerService']['binding']}"
+                                      Location="{$acsUrl}"
++                                     isDefault="true"
+                                      index="1" />
+         {$strAttributeConsumingService}
+     </md:SPSSODescriptor>{$strOrganization}{$strContacts}

@@ -11,8 +11,8 @@ use Italia\SPIDAuth\Exceptions\SPIDMetadataException;
 use Italia\SPIDAuth\Exceptions\SPIDLoginException;
 use Orchestra\Testbench\TestCase;
 use Mockery as m;
-use OneLogin_Saml2_Error;
-use OneLogin_Saml2_Constants;
+use OneLogin\Saml2\Error as SAMLError;
+use OneLogin\Saml2\Constants as SAMLConstants;
 
 use DOMDocument;
 
@@ -62,7 +62,7 @@ class SPIDAuthTest extends TestCase
     {
         $testRedirectURL = $this->app['config']->get('spid-idps.test.singleSignOnService.url');
         $this->SPIDAuth = m::mock(SPIDAuth::class)->makePartial()->shouldAllowMockingProtectedMethods();
-        $SAMLAuth = m::mock('OneLogin_Saml2_Auth');
+        $SAMLAuth = m::mock('\OneLogin\Saml2\Auth');
         $SAMLAuth->shouldReceive('login')->andReturn(
             Response::redirectTo($testRedirectURL)
         );
@@ -71,15 +71,15 @@ class SPIDAuthTest extends TestCase
             $SAMLAuth->shouldReceive('processSLO')->andReturn(true);
         } else {
             $SAMLAuth->shouldReceive('processResponse')->andThrow(
-                new OneLogin_Saml2_Error(
+                new SAMLError(
                     'SAML Response not found, Only supported HTTP_POST Binding',
-                    OneLogin_Saml2_Error::SAML_RESPONSE_NOT_FOUND
+                    SAMLError::SAML_RESPONSE_NOT_FOUND
                 )
             );
             $SAMLAuth->shouldReceive('processSLO')->andThrow(
-                new OneLogin_Saml2_Error(
+                new SAMLError(
                     'SAML LogoutRequest/LogoutResponse not found. Only supported HTTP_REDIRECT Binding',
-                    OneLogin_Saml2_Error::SAML_LOGOUTMESSAGE_NOT_FOUND
+                    SAMLError::SAML_LOGOUTMESSAGE_NOT_FOUND
                 )
             );
         }
@@ -96,28 +96,28 @@ class SPIDAuthTest extends TestCase
         $SAMLAuth->shouldReceive('getLastResponseXML')->andReturn(
             '<?xml version="1.0" encoding="UTF-8"?>
             <saml2p:Response xmlns:saml2p="urn:oasis:names:tc:SAML:2.0:protocol">
-               <saml2:Issuer xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">spid-testenv-identityserver</saml2:Issuer>
+               <saml2:Issuer xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">spid-testenv</saml2:Issuer>
             </saml2p:Response>'
         );
         $SAMLAuth->shouldReceive('getSessionIndex')->andReturn('sessionIndex');
         $SAMLAuth->shouldReceive('getNameId')->andReturn('nameId');
         if (!$withErrors) {
-            $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], 'nameId', 'sessionIndex', false, OneLogin_Saml2_Constants::NAMEID_TRANSIENT)->andReturn(
+            $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], 'nameId', 'sessionIndex', false, SAMLConstants::NAMEID_TRANSIENT, 'spid-testenv')->andReturn(
                 Response::redirectTo($this->logoutURL)
             );
             $SAMLAuth->shouldReceive('getErrors')->andReturn(false);
             $SAMLAuth->shouldReceive('getSPMetadata')->andReturn();
         } else {
-            $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], 'nameId', 'sessionIndex', false, OneLogin_Saml2_Constants::NAMEID_TRANSIENT)->andThrow(
-                new OneLogin_Saml2_Error(
+            $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], 'nameId', 'sessionIndex', false, SAMLConstants::NAMEID_TRANSIENT, 'spid-testenv')->andThrow(
+                new SAMLError(
                     'The IdP does not support Single Log Out',
-                    OneLogin_Saml2_Error::SAML_SINGLE_LOGOUT_NOT_SUPPORTED
+                    SAMLError::SAML_SINGLE_LOGOUT_NOT_SUPPORTED
                 )
             );
             $SAMLAuth->shouldReceive('getSPMetadata')->andThrow(
-                new OneLogin_Saml2_Error(
+                new SAMLError(
                     'Invalid metadata syntax',
-                    OneLogin_Saml2_Error::SETTINGS_INVALID_SYNTAX
+                    SAMLError::SETTINGS_INVALID_SYNTAX
                 )
             );
             $SAMLAuth->shouldReceive('getErrors')->andReturn(['error']);
@@ -243,8 +243,9 @@ class SPIDAuthTest extends TestCase
     
     public function testLogout()
     {
+        $this->withoutExceptionHandling();
         $this->testAcs();
-        $response = $this->get($this->logoutURL);
+        $response = $this->withSession(['spid_idp' => 'test'])->get($this->logoutURL);
         $response->assertSessionMissing('spid_sessionIndex');
         $response->assertSessionMissing('spid_nameId');
         $response->assertRedirect($this->logoutURL);
@@ -304,7 +305,7 @@ class SPIDAuthTest extends TestCase
         $this->expectException(SPIDLogoutException::class);
         $this->testAcs();
         $this->setSPIDAuthMock(true);
-        $response = $this->get($this->logoutURL);
+        $response = $this->withSession(['spid_idp' => 'test'])->get($this->logoutURL);
         $response->assertStatus(500);
     }
     

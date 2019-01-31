@@ -14,15 +14,15 @@
     "php": ">=7.0.0",
     "illuminate/config": "~5.0",
     "illuminate/support": "~5.0",
-    "onelogin/php-saml": "dev-remove_mcrypt",
+    "onelogin/php-saml": "^3.1",
     "cweagans/composer-patches": "^1.6"
   },
   "require-dev": {
     "pds/skeleton": "~1.0",
-    "phpunit/phpunit": "^6.5",
+    "phpunit/phpunit": "^7.0",
     "orchestra/testbench": "~3.0",
     "mockery/mockery": "^1.0",
-    "mikey179/vfsStream": "^1.6",
+    "mikey179/vfsstream": "^1.6",
     "friendsofphp/php-cs-fixer": "^2.11"
   },
   "autoload": {
@@ -38,7 +38,7 @@
     },
     "patches": {
       "onelogin/php-saml": {
-        "Compatibility with SPID": "https://rawgit.com/italia/spid-laravel/master/patches/php-saml-remove_mcrypt-spid.patch"
+        "Compatibility with SPID": "https://rawgit.com/italia/spid-laravel/master/patches/php-saml-3-spid.patch"
       }
     }
   }
