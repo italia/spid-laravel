@@ -1,10 +1,23 @@
 diff --git a/lib/Saml2/AuthnRequest.php b/lib/Saml2/AuthnRequest.php
-index e6e49a2..be566fa 100644
+index e6e49a2..a58cfd3 100644
 --- a/lib/Saml2/AuthnRequest.php
 +++ b/lib/Saml2/AuthnRequest.php
-@@ -122,10 +122,15 @@ REQUESTEDAUTHN;
+@@ -53,8 +53,7 @@ class OneLogin_Saml2_AuthnRequest
+
+             $nameIdPolicyStr = <<<NAMEIDPOLICY
+     <samlp:NameIDPolicy
+-        Format="{$nameIDPolicyFormat}"
+-        AllowCreate="true" />
++        Format="{$nameIDPolicyFormat}" />
+ NAMEIDPOLICY;
+         }
+
+@@ -120,12 +119,17 @@ REQUESTEDAUTHN;
+     xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+     ID="$id"
      Version="2.0"
- {$providerNameStr}{$forceAuthnStr}{$isPassiveStr}
+-{$providerNameStr}{$forceAuthnStr}{$isPassiveStr}
++    {$forceAuthnStr}{$isPassiveStr}
      IssueInstant="$issueInstant"
 -    Destination="{$idpData['singleSignOnService']['url']}"
 +    Destination="{$idpData['entityId']}"

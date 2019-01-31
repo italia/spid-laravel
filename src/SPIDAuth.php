@@ -208,14 +208,29 @@ class SPIDAuth extends Controller
      */
     public function providers()
     {
+        $idps_values = array_values($this->getIdps());
+        return response()->json(['spidProviders' => $idps_values]);
+    }
+
+    /**
+     * Return configured IdPs array.
+     *
+     * @return array    Configured Identity providers.
+     */
+    protected function getIdps()
+    {
         $idps = config('spid-idps');
 
         if (!config('spid-auth.test_idp')) {
             unset($idps['test']);
+        } else {
+            $idps['test']['entityId'] = config('spid-auth.test_idp.entityId');
+            $idps['test']['singleSignOnService']['url'] = config('spid-auth.test_idp.sso_endpoint');
+            $idps['test']['singleLogoutService']['url'] = config('spid-auth.test_idp.slo_endpoint');
+            $idps['test']['x509cert'] = config('spid-auth.test_idp.x509cert');
         }
 
-        $idps_values = array_values($idps);
-        return response()->json(['spidProviders' => $idps_values]);
+        return $idps;
     }
 
     /**
@@ -254,7 +269,7 @@ class SPIDAuth extends Controller
         $config['organization']['it']['displayname'] = $config['organization']['en']['displayname'] = config('spid-auth.sp_organization_display_name');
         $config['organization']['it']['url'] = $config['organization']['en']['url'] = config('spid-auth.sp_organization_url');
 
-        $idps = config('spid-idps');
+        $idps = $this->getIdps();
 
         $config['idp'] = $idps[$idp];
 
