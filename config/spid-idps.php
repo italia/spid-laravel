@@ -150,15 +150,15 @@ return [
     'entityName'=> 'Test IdP',
     'logo'=> 'spid-idp-test.svg',
     'isActive'=> true,
-    'entityId' => '',
+    'entityId' => 'spid-testenv',
     'singleSignOnService' => [
-      'url' => '',
+      'url' => 'https://spid-testenv/sso',
       'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
     ],
     'singleLogoutService' => [
-      'url' => '',
+      'url' => 'https://spid-testenv/slo',
       'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
     ],
-    'x509cert' => ''
+    'x509cert' => 'spid-testenv-cert'
   ],
 ];
