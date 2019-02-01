@@ -8,7 +8,7 @@
 [![Codecov](https://img.shields.io/codecov/c/github/italia/spid-laravel.svg?colorB=0066cc)](https://codecov.io/gh/italia/spid-laravel)
 [![PDS Skeleton](https://img.shields.io/badge/pds-skeleton-blue.svg?colorB=0066cc)](https://github.com/php-pds/skeleton)
 
-**This package is under development and is not suitable for production use.**
+⚠️ **This package is under development and is not suitable for production use.**
 
 This is a package to provide a simple SPID authentication system to web
 applications based on [Laravel 5](https://www.laravel.com).
@@ -33,9 +33,23 @@ for SPID compatibility.
 
    `composer config extra.enable-patching true`.
 
+   Since this package is still in beta, `minimum-stability` option must be set
+   to `beta` and the `prefer-stable` option must be set to `true` in
+   `composer.json`.	
+
+    These options can be set by running:	
+
+    ```console	
+   composer config minimum-stability beta	
+   composer config prefer-stable true	
+   ```	
+
+    **This installation step will be removed before the first stable release of	
+   this package.**
+
 2. Require this package with composer.
 
-   `composer require italia/spid-laravel:dev-master`
+   `composer require italia/spid-laravel`
 
 3. [Exclude the URIs](https://laravel.com/docs/5.7/csrf#csrf-excluding-uris)
 used by this package from CSRF protection because the the Identity Providers
