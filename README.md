@@ -1,6 +1,7 @@
 [![Join the #spid-laravel channel](https://img.shields.io/badge/Slack%20channel-%23spid--laravel-blue.svg?logo=slack&colorB=0066cc)](https://developersitalia.slack.com/messages/C8HCL6UDS/)
 [![Get invited](https://img.shields.io/badge/No%20slack%3F-Get%20your%20invite-blue.svg?logo=slack&colorB=0066cc)](https://slack.developers.italia.it/)
 [![SPID on forum.italia.it](https://img.shields.io/badge/Forum-SPID-blue.svg?colorB=0066cc)](https://forum.italia.it/c/spid)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fitalia%2Fspid-laravel.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fitalia%2Fspid-laravel?ref=badge_shield)
 
 # SPID authentication package for Laravel 5
 
@@ -381,3 +382,6 @@ this [pull request](https://github.com/italia/spid-smart-button/pull/10).
 [this README](https://github.com/italia/spid-laravel/blob/master/src/Console/README.md).
 
 `SIL Open Font License 1.1` is applied to the Titillium font included from CSS files.
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fitalia%2Fspid-laravel.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fitalia%2Fspid-laravel?ref=badge_large)
