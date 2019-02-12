@@ -7,6 +7,7 @@
 [![Travis](https://img.shields.io/travis/italia/spid-laravel.svg?colorB=0066cc)](https://travis-ci.org/italia/spid-laravel)
 [![Codecov](https://img.shields.io/codecov/c/github/italia/spid-laravel.svg?colorB=0066cc)](https://codecov.io/gh/italia/spid-laravel)
 [![PDS Skeleton](https://img.shields.io/badge/pds-skeleton-blue.svg?colorB=0066cc)](https://github.com/php-pds/skeleton)
+[![License](https://img.shields.io/packagist/l/italia/spid-laravel.svg?colorB=0066cc)](https://github.com/italia/spid-laravel/blob/master/LICENSE)
 
 ⚠️ **This package is under development and is not suitable for production use.**
 
@@ -381,3 +382,6 @@ this [pull request](https://github.com/italia/spid-smart-button/pull/10).
 [this README](https://github.com/italia/spid-laravel/blob/master/src/Console/README.md).
 
 `SIL Open Font License 1.1` is applied to the Titillium font included from CSS files.
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fitalia%2Fspid-laravel.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fitalia%2Fspid-laravel?ref=badge_large)
+
