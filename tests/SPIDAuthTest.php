@@ -33,7 +33,7 @@ class SPIDAuthTest extends TestCase
     protected $metadataURL;
     protected $providersURL;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         
@@ -48,7 +48,7 @@ class SPIDAuthTest extends TestCase
         $this->providersURL = URL::route('spid-auth_providers');
     }
     
-    protected function tearDown()
+    protected function tearDown(): void
     {
         m::close();
     }

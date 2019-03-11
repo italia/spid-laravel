@@ -13,7 +13,7 @@ class CommandExampleTest extends TestCase
         return ['Italia\SPIDAuth\ServiceProvider'];
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         
@@ -24,7 +24,7 @@ class CommandExampleTest extends TestCase
         copy(__DIR__.'/fakes/composer.json', __DIR__.'/test_app/composer.json');
     }
     
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->rrmdir(__DIR__.'/test_app');
     }
