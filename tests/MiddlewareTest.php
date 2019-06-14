@@ -24,6 +24,17 @@ class MiddlewareTest extends TestCase
         $response->assertRedirect($loginURL);
         $response->assertSessionHas('url.intended', URL::to('/'));
     }
+
+    public function testUnauthenticatedJson()
+    {
+        $loginURL = URL::route('spid-auth_login');
+        Route::get('/', function () {
+            return 'home';
+        })->middleware('spid.auth');
+        $response = $this->json('GET' ,'/');
+        $response->assertStatus(401);
+        $response->assertExactJson(['message' => 'Unauthenticated.']);
+    }
     
     public function testAuthenticated()
     {

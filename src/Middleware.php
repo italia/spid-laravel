@@ -23,7 +23,9 @@ class Middleware
     public function handle($request, Closure $next)
     {
         if (!app('SPIDAuth')->isAuthenticated()) {
-            return redirect()->guest(route('spid-auth_login'));
+            return $request->expectsJson()
+                ? response()->json(['message' => 'Unauthenticated.'], 401)
+                : redirect()->guest(route('spid-auth_login'));
         }
         return $next($request);
     }
