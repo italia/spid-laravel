@@ -1,18 +1,18 @@
 diff --git a/src/Saml2/AuthnRequest.php b/src/Saml2/AuthnRequest.php
-index 2dd6bd2..84539f5 100644
+index c8ebc2f..0057216 100644
 --- a/src/Saml2/AuthnRequest.php
 +++ b/src/Saml2/AuthnRequest.php
-@@ -69,8 +69,7 @@ class AuthnRequest
-
+@@ -82,8 +82,7 @@ SUBJECT;
              $nameIdPolicyStr = <<<NAMEIDPOLICY
+ 
      <samlp:NameIDPolicy
 -        Format="{$nameIDPolicyFormat}"
 -        AllowCreate="true" />
 +        Format="{$nameIDPolicyFormat}" />
  NAMEIDPOLICY;
          }
-
-@@ -137,12 +136,17 @@ REQUESTEDAUTHN;
+ 
+@@ -151,12 +150,19 @@ REQUESTEDAUTHN;
      xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
      ID="$id"
      Version="2.0"
@@ -23,7 +23,7 @@ index 2dd6bd2..84539f5 100644
 +    Destination="{$idpData['entityId']}"
      ProtocolBinding="{$spData['assertionConsumerService']['binding']}"
 -    AssertionConsumerServiceURL="{$acsUrl}">
--    <saml:Issuer>{$spEntityId}</saml:Issuer>
+-    <saml:Issuer>{$spEntityId}</saml:Issuer>{$subjectStr}{$nameIdPolicyStr}{$requestedAuthnStr}
 +    AssertionConsumerServiceURL="{$acsUrl}"
 +    AttributeConsumingServiceIndex="1">
 +    <saml:Issuer
@@ -31,11 +31,13 @@ index 2dd6bd2..84539f5 100644
 +        Format="urn:oasis:names:tc:SAML:2.0:nameid-format:entity">
 +        {$spEntityId}
 +    </saml:Issuer>
- {$nameIdPolicyStr}
- {$requestedAuthnStr}
++{$nameIdPolicyStr}
++{$requestedAuthnStr}
  </samlp:AuthnRequest>
+ AUTHNREQUEST;
+ 
 diff --git a/src/Saml2/LogoutRequest.php b/src/Saml2/LogoutRequest.php
-index 2e9258c..aa05b4f 100644
+index 4cd7efb..37a3ff7 100644
 --- a/src/Saml2/LogoutRequest.php
 +++ b/src/Saml2/LogoutRequest.php
 @@ -135,8 +135,12 @@ class LogoutRequest
@@ -54,7 +56,7 @@ index 2e9258c..aa05b4f 100644
      {$sessionIndexStr}
  </samlp:LogoutRequest>
 diff --git a/src/Saml2/Metadata.php b/src/Saml2/Metadata.php
-index 2efd113..9daaced 100644
+index 922ad60..d513ae9 100644
 --- a/src/Saml2/Metadata.php
 +++ b/src/Saml2/Metadata.php
 @@ -175,13 +175,12 @@ METADATA_TEMPLATE;
