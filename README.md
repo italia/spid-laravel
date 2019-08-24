@@ -36,14 +36,14 @@ for SPID compatibility.
 
    Since this package is still in beta, `minimum-stability` option must be set
    to `beta` and the `prefer-stable` option must be set to `true` in
-   `composer.json`.	
+   `composer.json`.
 
-    These options can be set by running:	
+    These options can be set by running:
 
-    ```console	
-   composer config minimum-stability beta	
-   composer config prefer-stable true	
-   ```	
+    ```console
+   composer config minimum-stability beta
+   composer config prefer-stable true
+   ```
 
     **This installation step will be removed before the first stable release of	
    this package.**
@@ -384,4 +384,3 @@ this [pull request](https://github.com/italia/spid-smart-button/pull/10).
 `SIL Open Font License 1.1` is applied to the Titillium font included from CSS files.
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fitalia%2Fspid-laravel.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fitalia%2Fspid-laravel?ref=badge_large)
-
