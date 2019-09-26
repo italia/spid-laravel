@@ -2,7 +2,7 @@
 [![Get invited](https://img.shields.io/badge/No%20slack%3F-Get%20your%20invite-blue.svg?logo=slack&colorB=0066cc)](https://slack.developers.italia.it/)
 [![SPID on forum.italia.it](https://img.shields.io/badge/Forum-SPID-blue.svg?colorB=0066cc)](https://forum.italia.it/c/spid)
 
-# SPID authentication package for Laravel 5
+# SPID authentication package for Laravel 5/6
 
 [![Travis](https://img.shields.io/travis/italia/spid-laravel.svg?colorB=0066cc)](https://travis-ci.org/italia/spid-laravel)
 [![Codecov](https://img.shields.io/codecov/c/github/italia/spid-laravel.svg?colorB=0066cc)](https://codecov.io/gh/italia/spid-laravel)
