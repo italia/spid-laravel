@@ -14,7 +14,7 @@
     "php": "^7.2.0",
     "illuminate/config": ">=5.0",
     "illuminate/support": ">=5.0",
-    "onelogin/php-saml": "3.2.1",
+    "onelogin/php-saml": "3.3.0",
     "cweagans/composer-patches": "^1.6"
   },
   "require-dev": {
@@ -38,7 +38,7 @@
     },
     "patches": {
       "onelogin/php-saml": {
-        "Compatibility with SPID": "https://rawgit.com/italia/spid-laravel/master/patches/php-saml-3-spid.patch"
+        "Compatibility with SPID": "https://rawgit.com/italia/spid-laravel/master/patches/php-saml-3.3.0-spid.patch"
       }
     }
   }
