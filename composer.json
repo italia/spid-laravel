@@ -41,5 +41,8 @@
         "Compatibility with SPID": "https://rawgit.com/italia/spid-laravel/master/patches/php-saml-3.3.0-spid.patch"
       }
     }
+  },
+  "archive": {
+    "exclude": ["/tests", ".travis.yml", "/certs", ".editorconfig", "php_cs.dist"]
   }
 }
