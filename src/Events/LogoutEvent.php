@@ -23,7 +23,7 @@ class LogoutEvent
      * @param SPIDUser current authenticated SPIDUser
      * @param string current selected Identity Provider
      */
-    public function __construct(SPIDUser $SPIDUser, $idp)
+    public function __construct(SPIDUser $SPIDUser, string $idp)
     {
         $this->SPIDUser = $SPIDUser;
         $this->idp = $idp;
@@ -34,7 +34,7 @@ class LogoutEvent
      *
      * @return SPIDUser SPIDUser logging out
      */
-    public function getSPIDUser()
+    public function getSPIDUser(): SPIDUser
     {
         return $this->SPIDUser;
     }
@@ -42,9 +42,9 @@ class LogoutEvent
     /**
      * Return idp.
      *
-     * @return string identity Provider used to logout
+     * @return string Identity Provider used to logout
      */
-    public function getIdp()
+    public function getIdp(): string
     {
         return $this->idp;
     }

@@ -10,6 +10,9 @@ namespace Italia\SPIDAuth;
 use Carbon\Carbon;
 use DOMDocument;
 use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Italia\SPIDAuth\Events\LoginEvent;
 use Italia\SPIDAuth\Events\LogoutEvent;
@@ -35,7 +38,7 @@ class SPIDAuth extends Controller
      * Show the configured login_view with a SPID button, if authenticated redirect to after_login_url.
      *
      * @return \Illuminate\Support\Facades\View display the page for the Identity Provider selection, if not authenticated
-     * @return \Illuminate\Http\Response redirect to the intended or configured URL if authenticated
+     * @return Response redirect to the intended or configured URL if authenticated
      */
     public function login()
     {
@@ -49,9 +52,9 @@ class SPIDAuth extends Controller
     /**
      * Attempt login with the selected SPID Identity Provider.
      *
-     * @return \Illuminate\Http\Response redirect to the intended or configured after_login_url if authenticated
+     * @return RedirectResponse redirect to the intended or configured after_login_url if authenticated
      */
-    public function doLogin()
+    public function doLogin(): RedirectResponse
     {
         if (!$this->isAuthenticated()) {
             $idp = request('provider');
@@ -76,9 +79,9 @@ class SPIDAuth extends Controller
      *
      * @throws SPIDLoginException
      *
-     * @return \Illuminate\Http\Response redirect to the intended or configured URL
+     * @return RedirectResponse redirect to the intended or configured URL
      */
-    public function acs()
+    public function acs(): RedirectResponse
     {
         try {
             $this->getSAML()->processResponse();
@@ -127,9 +130,9 @@ class SPIDAuth extends Controller
      *
      * @throws SPIDLogoutException
      *
-     * @return \Illuminate\Http\Response redirect to after_logout_url
+     * @return RedirectResponse redirect to after_logout_url
      */
-    public function logout()
+    public function logout(): RedirectResponse
     {
         if ($this->isAuthenticated()) {
             $sessionIndex = session()->pull('spid_sessionIndex');
@@ -174,7 +177,7 @@ class SPIDAuth extends Controller
      *
      * @return bool whether the current session is authenticated with SPID
      */
-    public function isAuthenticated()
+    public function isAuthenticated(): bool
     {
         return session()->has('spid_sessionIndex');
     }
@@ -184,9 +187,9 @@ class SPIDAuth extends Controller
      *
      * @throws SPIDMetadataException
      *
-     * @return \Illuminate\Http\Response XML metadata of this Service Provider
+     * @return Response XML metadata of this Service Provider
      */
-    public function metadata()
+    public function metadata(): Response
     {
         try {
             $metadata = $this->getSAML()->getSettings()->getSPMetadata();
@@ -205,9 +208,9 @@ class SPIDAuth extends Controller
      * Identity Providers list endpoint for this Service Provider.
      * This is used by the SPID smart button.
      *
-     * @return \Illuminate\Http\Response JSON list of Identity Providers configured for this Service Provider
+     * @return JsonResponse JSON list of Identity Providers configured for this Service Provider
      */
-    public function providers()
+    public function providers(): JsonResponse
     {
         $idps_values = array_values($this->getIdps());
 
@@ -229,7 +232,7 @@ class SPIDAuth extends Controller
      *
      * @return array configured Identity providers
      */
-    protected function getIdps()
+    protected function getIdps(): array
     {
         $idps = config('spid-idps');
 
@@ -286,11 +289,11 @@ class SPIDAuth extends Controller
     /**
      * Return configuration array for SAMLAuth.
      *
-     * @param string    identity Provider name
+     * @param string Identity Provider name
      *
      * @return array configuration array for SAMLAuth
      */
-    protected function getSAMLConfig($idp)
+    protected function getSAMLConfig(string $idp): array
     {
         $configStatus = $this->isConfigured();
 
@@ -351,7 +354,7 @@ class SPIDAuth extends Controller
      *
      * @return SAMLAuth SAML instance configured for the current selected Identity Provider
      */
-    protected function getSAML(string $idp = null)
+    protected function getSAML(string $idp = null): SAMLAuth
     {
         $session_idp = session('spid_idp') ?: 'test';
         $idp = $idp ?: $session_idp;
@@ -366,7 +369,7 @@ class SPIDAuth extends Controller
     /**
      * Return the IdP entityName associated with a given SAML response in XML format (issuer).
      *
-     * @param string        XML response from IdP
+     * @param string XML response from IdP
      *
      * @return string|null entityName associated with the given SAML response in XML format (issuer)
      */
