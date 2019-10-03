@@ -2,20 +2,16 @@
 /**
  * This class implements a SPIDUser for SPIDAuth Package.
  *
- * @package Italia\SPIDAuth
  * @license BSD-3-clause
  */
 
 namespace Italia\SPIDAuth;
 
-use Italia\SPIDAuth\SPIDUser;
-
 class SPIDUser
 {
-
-   /**
-    * SPID attributes set in spid-auth config
-    */
+    /**
+     * SPID attributes set in spid-auth config.
+     */
     protected $attributes;
 
     /**
@@ -31,12 +27,13 @@ class SPIDUser
     public function __get($attribute)
     {
         if (array_key_exists($attribute, $this->attributes)) {
-            if ($attribute == 'fiscalNumber') {
+            if ('fiscalNumber' == $attribute) {
                 return str_replace('TINIT-', '', $this->attributes['fiscalNumber'][0]);
             }
+
             return $this->attributes[$attribute][0];
         }
-        
+
         return null;
     }
 }

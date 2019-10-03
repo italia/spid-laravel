@@ -2,7 +2,6 @@
 /**
  * This class implements a SPIDConfigurationException for SPIDAuth Package.
  *
- * @package Italia\SPIDAuth
  * @license BSD-3-clause
  */
 

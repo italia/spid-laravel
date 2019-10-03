@@ -23,7 +23,6 @@ $rules = [
     'no_empty_comment' => false,
     'ordered_imports' => true,
     'phpdoc_align' => ['align' => 'left'],
-    'phpdoc_no_empty_return' => false,
     'phpdoc_order' => true,
 ];
 

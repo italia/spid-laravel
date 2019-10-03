@@ -3,28 +3,11 @@
 namespace Italia\SPIDAuth\Tests;
 
 use Italia\SPIDAuth\Exceptions\SPIDConfigurationException;
-
 use Orchestra\Testbench\TestCase;
-
 use ReflectionClass;
 
 class SPIDAuthConfigTest extends TestCase
 {
-    protected function getPackageProviders($app)
-    {
-        return ['Italia\SPIDAuth\ServiceProvider'];
-    }
-
-    protected function getSPIDAuthConfig()
-    {
-        $SPIDAuth = $this->app->make('SPIDAuth');
-        $reflectedSPIDAuth = new ReflectionClass(get_class($SPIDAuth));
-        $getSAMLConfig = $reflectedSPIDAuth->getMethod('getSAMLConfig');
-        $getSAMLConfig->setAccessible(true);
-
-        return $getSAMLConfig->invokeArgs($SPIDAuth, ['test']);
-    }
-
     public function testMissingEntityId()
     {
         $this->withoutExceptionHandling();
@@ -115,5 +98,20 @@ class SPIDAuthConfigTest extends TestCase
         config(['spid-auth.sp_private_key' => null]);
         config(['spid-auth.sp_private_key_file' => __DIR__ . '/secrets/private_invalid.key']);
         $SPIDAuthConfig = $this->getSPIDAuthConfig();
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return ['Italia\SPIDAuth\ServiceProvider'];
+    }
+
+    protected function getSPIDAuthConfig()
+    {
+        $SPIDAuth = $this->app->make('SPIDAuth');
+        $reflectedSPIDAuth = new ReflectionClass(get_class($SPIDAuth));
+        $getSAMLConfig = $reflectedSPIDAuth->getMethod('getSAMLConfig');
+        $getSAMLConfig->setAccessible(true);
+
+        return $getSAMLConfig->invokeArgs($SPIDAuth, ['test']);
     }
 }

@@ -2,7 +2,6 @@
 /**
  * This class implements a Laravel Event for SPIDAuth Package.
  *
- * @package Italia\SPIDAuth
  * @license BSD-3-clause
  */
 
@@ -12,8 +11,7 @@ use Italia\SPIDAuth\SPIDUser;
 
 class LogoutEvent
 {
-
-      /** The SPIDUser in the current event. */
+    /** The SPIDUser in the current event. */
     protected $SPIDUser;
 
     /** The current selected Identity Provider. */
@@ -22,8 +20,8 @@ class LogoutEvent
     /**
      * Create a new event instance.
      *
-     * @param SPIDUser Current authenticated SPIDUser.
-     * @param string Current selected Identity Provider.
+     * @param SPIDUser current authenticated SPIDUser
+     * @param string current selected Identity Provider
      */
     public function __construct(SPIDUser $SPIDUser, $idp)
     {
@@ -34,7 +32,7 @@ class LogoutEvent
     /**
      * Return SPIDUser.
      *
-     * @return SPIDUser SPIDUser logging out.
+     * @return SPIDUser SPIDUser logging out
      */
     public function getSPIDUser()
     {
@@ -44,7 +42,7 @@ class LogoutEvent
     /**
      * Return idp.
      *
-     * @return string Identity Provider used to logout.
+     * @return string identity Provider used to logout
      */
     public function getIdp()
     {

@@ -6,7 +6,6 @@
  * Illuminate\Auth\Console\AuthMakeCommand class which is part of the Laravel
  * Framework project and licensed under the MIT license.
  *
- * @package Italia\SPIDAuth
  * @license BSD-3-clause
  * @license MIT
  */
@@ -47,8 +46,6 @@ class CommandExample extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return void
      */
     public function handle()
     {
@@ -73,7 +70,7 @@ class CommandExample extends Command
 
         file_put_contents(
             base_path('routes/web.php'),
-            file_get_contents(__DIR__.'/stubs/example/routes.stub'),
+            file_get_contents(__DIR__ . '/stubs/example/routes.stub'),
             FILE_APPEND
         );
 
@@ -82,36 +79,32 @@ class CommandExample extends Command
 
     /**
      * Create the directory for the files.
-     *
-     * @return void
      */
     protected function createDirectories()
     {
-        if (! is_dir($directory = resource_path('views/layouts'))) {
+        if (!is_dir($directory = resource_path('views/layouts'))) {
             mkdir($directory, 0755, true);
         }
 
-        if (! is_dir($directory = app_path('Listeners'))) {
+        if (!is_dir($directory = app_path('Listeners'))) {
             mkdir($directory, 0755, true);
         }
     }
 
     /**
      * Export the example views.
-     *
-     * @return void
      */
     protected function exportViews()
     {
         foreach ($this->views as $key => $value) {
-            if (file_exists($view = resource_path('views/'.$value))) {
-                if (! $this->confirm("The [{$value}] view already exists. Do you want to replace it?")) {
+            if (file_exists($view = resource_path('views/' . $value))) {
+                if (!$this->confirm("The [{$value}] view already exists. Do you want to replace it?")) {
                     continue;
                 }
             }
 
             copy(
-                __DIR__.'/stubs/example/views/'.$key,
+                __DIR__ . '/stubs/example/views/' . $key,
                 $view
             );
         }
@@ -121,14 +114,15 @@ class CommandExample extends Command
      * Compiles the stubs.
      *
      * @param string The stub to compile
+     *
      * @return string The compiled stub
      */
-    protected function compileStub($stubName)
+    protected function compileStub(string $stubName): string
     {
         return str_replace(
             '{{namespace}}',
             $this->getAppNamespace(),
-            file_get_contents(__DIR__.'/stubs/example/'.$stubName.'.stub')
+            file_get_contents(__DIR__ . '/stubs/example/' . $stubName . '.stub')
         );
     }
 }
