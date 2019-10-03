@@ -1,0 +1,42 @@
+<?php
+use PhpCsFixer\Finder;
+use PhpCsFixer\Config;
+use PhpCsFixer\FixerInterface;
+
+$excluded_folders = [
+    'config',
+    'bootstrap/cache',
+    'node_modules',
+    'public',
+    'resources',
+    'storage',
+    'vendor',
+];
+
+$rules = [
+    '@PSR2' => true,
+    '@Symfony' => true,
+    'ordered_class_elements' => true,
+    'array_syntax' => ['syntax' => 'short'],
+    'concat_space' => ['spacing' => 'one'],
+    'linebreak_after_opening_tag' => true,
+    'no_empty_comment' => false,
+    'ordered_imports' => true,
+    'phpdoc_align' => ['align' => 'left'],
+    'phpdoc_no_empty_return' => false,
+    'phpdoc_order' => true,
+];
+
+$finder = Finder::create()
+    ->exclude($excluded_folders)
+    ->notPath('server.php')
+    ->name('*.php')
+    ->notName('*.blade.php')
+    ->ignoreDotFiles(true)
+    ->ignoreVCS(true)
+    ->in(__DIR__);
+
+return Config::create()
+    ->setRules($rules)
+    ->setFinder($finder)
+    ->setUsingCache(true);
