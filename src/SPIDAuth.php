@@ -10,6 +10,7 @@ namespace Italia\SPIDAuth;
 
 use Italia\SPIDAuth\Events\LoginEvent;
 use Italia\SPIDAuth\Events\LogoutEvent;
+use Italia\SPIDAuth\Exceptions\SPIDConfigurationException;
 use Italia\SPIDAuth\Exceptions\SPIDMetadataException;
 use Italia\SPIDAuth\Exceptions\SPIDLoginException;
 use Italia\SPIDAuth\Exceptions\SPIDLogoutException;
@@ -37,7 +38,7 @@ class SPIDAuth extends Controller
     private $saml;
 
     /**
-     * Show a view with a SPID button, if authenticated redirect to after_login_url.
+     * Show the configured login_view with a SPID button, if authenticated redirect to after_login_url.
      *
      * @return \Illuminate\Support\Facades\View Display the page for the Identity Provider selection, if not authenticated.
      * @return \Illuminate\Http\Response        Redirect to the intended or configured URL if authenticated.
@@ -54,7 +55,7 @@ class SPIDAuth extends Controller
     /**
      * Attempt login with the selected SPID Identity Provider.
      *
-     * @return \Illuminate\Http\Response    Redirect to the intended or configured URL if authenticated.
+     * @return \Illuminate\Http\Response    Redirect to the intended or configured after_login_url if authenticated.
      */
     public function doLogin()
     {
@@ -76,7 +77,7 @@ class SPIDAuth extends Controller
      * Attribute Consuming Service.
      *
      * Process the POST response from Identity Providers, set session variables
-     * and redirect to the intended or configured URL.
+     * and redirect to the intended or configured after_login_url.
      * Fire LoginEvent with SPIDUser (also stored in session).
      *
      * @return \Illuminate\Http\Response    Redirect to the intended or configured URL.
@@ -241,7 +242,45 @@ class SPIDAuth extends Controller
      */
     public function getSPIDUser()
     {
-        return session()->has('spid_user') ? session()->get('spid_user') : null;
+        return session()->get('spid_user', null);
+    }
+
+    /**
+     * Check wether SPIDAuth package is properly configured.
+     *
+     * @return string|bool    True if no configuration issues are found, error string otherwise.
+     */
+    protected function isConfigured()
+    {
+        if (!is_string(config('spid-auth.sp_entity_id')) || empty(config('spid-auth.sp_entity_id'))) {
+            return 'Service provider entity ID not set';
+        }
+
+        if (!is_string(config('spid-auth.sp_base_url')) || empty(config('spid-auth.sp_base_url'))) {
+            return 'Service provider base URL not set';
+        }
+
+        if (!is_string(config('spid-auth.sp_service_name')) || empty(config('spid-auth.sp_service_name'))) {
+            return 'Service provider service name not set';
+        }
+
+        if (!is_array(config('spid-auth.sp_requested_attributes')) || empty(config('spid-auth.sp_requested_attributes'))) {
+            return 'Service provider requested attributes not set';
+        }
+
+        if (!is_string(config('spid-auth.sp_certificate')) || empty(config('spid-auth.sp_certificate'))) {
+            if (!is_readable(config('spid-auth.sp_certificate_file'))) {
+                return 'Service provider certificate not set';
+            }
+        }
+
+        if (!is_string(config('spid-auth.sp_private_key')) || empty(config('spid-auth.sp_private_key'))) {
+            if (!is_readable(config('spid-auth.sp_private_key_file'))) {
+                return 'Service provider private key not set';
+            }
+        }
+
+        return true;
     }
 
 
@@ -253,14 +292,45 @@ class SPIDAuth extends Controller
      */
     protected function getSAMLConfig($idp)
     {
+        $configStatus = $this->isConfigured();
+
+        if (true !== $configStatus) {
+            throw new SPIDConfigurationException($configStatus);
+        }
+
         $config = config('spid-saml');
 
         $config['sp']['entityId'] = config('spid-auth.sp_entity_id');
         $config['sp']['attributeConsumingService']['serviceName'] = config('spid-auth.sp_service_name');
         $config['sp']['assertionConsumerService']['url'] = config('spid-auth.sp_base_url') . '/' . config('spid-auth.routes_prefix') . '/acs';
         $config['sp']['singleLogoutService']['url'] = config('spid-auth.sp_base_url') . '/' . config('spid-auth.routes_prefix') . '/logout';
-        $config['sp']['x509cert'] = config('spid-auth.sp_certificate');
-        $config['sp']['privateKey'] = config('spid-auth.sp_private_key');
+
+        if (!is_string(config('spid-auth.sp_private_key')) || empty(config('spid-auth.sp_private_key'))) {
+            $keyData = file_get_contents(config('spid-auth.sp_private_key_file'));
+            $key = openssl_pkey_get_private($keyData);
+
+            if (!$key) {
+                throw new SPIDConfigurationException('Private key not valid');
+            }
+
+            $config['sp']['privateKey'] = SAMLUtils::formatPrivateKey($keyData, false);
+        } else {
+            $config['sp']['privateKey'] = config('spid-auth.sp_private_key');
+        }
+
+        if (!is_string(config('spid-auth.sp_certificate')) || empty(config('spid-auth.sp_certificate'))) {
+            $certificateData = file_get_contents(config('spid-auth.sp_certificate_file'));
+            $certificate = openssl_pkey_get_public($certificateData);
+
+            if (!$certificate) {
+                throw new SPIDConfigurationException('Certificate not valid');
+            }
+
+            $config['sp']['x509cert'] = SAMLUtils::formatCert($certificateData, false);
+        } else {
+            $config['sp']['x509cert'] = config('spid-auth.sp_certificate');
+        }
+
 
         foreach (config('spid-auth.sp_requested_attributes') as $attr) {
             $config['sp']['attributeConsumingService']['requestedAttributes'][] = ['name' => $attr];
