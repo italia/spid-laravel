@@ -16,8 +16,9 @@ before_install:
 install:
   - travis_retry composer update --prefer-dist --no-interaction --prefer-stable --no-suggest
 
-script: 
+script:
   - vendor/bin/pds-skeleton validate
+  - vendor/bin/php-cs-fixer fix --diff --dry-run --verbose
   - vendor/bin/phpunit
 
 after_success:

@@ -2,7 +2,6 @@
 /**
  * This class implements a Laravel Event for SPIDAuth Package.
  *
- * @package Italia\SPIDAuth
  * @license BSD-3-clause
  */
 
@@ -12,7 +11,6 @@ use Italia\SPIDAuth\SPIDUser;
 
 class LoginEvent
 {
-
     /** The SPIDUser in the current event. */
     protected $SPIDUser;
 
@@ -22,10 +20,10 @@ class LoginEvent
     /**
      * Create a new event instance.
      *
-     * @param SPIDUser Current authenticated SPIDUser.
-     * @param string Current selected Identity Provider.
+     * @param SPIDUser current authenticated SPIDUser
+     * @param string current selected Identity Provider
      */
-    public function __construct(SPIDUser $SPIDUser, $idp)
+    public function __construct(SPIDUser $SPIDUser, string $idp)
     {
         $this->SPIDUser = $SPIDUser;
         $this->idp = $idp;
@@ -34,9 +32,9 @@ class LoginEvent
     /**
      * Return SPIDUser.
      *
-     * @return SPIDUser SPIDUser logging in.
+     * @return SPIDUser SPIDUser logging in
      */
-    public function getSPIDUser()
+    public function getSPIDUser(): SPIDUser
     {
         return $this->SPIDUser;
     }
@@ -44,9 +42,9 @@ class LoginEvent
     /**
      * Return idp.
      *
-     * @return string Identity Provider used to login.
+     * @return string Identity Provider used to login
      */
-    public function getIdp()
+    public function getIdp(): string
     {
         return $this->idp;
     }

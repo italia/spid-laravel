@@ -18,7 +18,7 @@ applications based on [Laravel 5](https://www.laravel.com).
 
 1. Before installing this package patching must be enabled in `composer.json`.
 This is necessary because
-[this patch](https://rawgit.com/italia/spid-laravel/master/patches/php-saml-3-spid.patch)
+[this patch](https://rawgit.com/italia/spid-laravel/master/patches/php-saml-3.3.0-spid.patch)
 has to be applied to [onelogin/php-saml](https://github.com/onelogin/php-saml)
 for SPID compatibility.
 
@@ -45,7 +45,7 @@ for SPID compatibility.
    composer config prefer-stable true
    ```
 
-    **This installation step will be removed before the first stable release of	
+    **This installation step will be removed before the first stable release of
    this package.**
 
 2. Require this package with composer.
@@ -77,6 +77,7 @@ can't know what CSRF token include in their POST requests sent to your routes.
        ];
    }
    ```
+
 ## Configuration
 
 Publish the configuration with:
@@ -144,6 +145,29 @@ The SPID authentication process is completely agnostic about the authentication
 system of your application. If you plan to integrate your authentication system
 with SPID, you can listen to the `LoginEvent` and `LogoutEvent` (see
 [Events](#events) and [Example](#example)).
+
+### SPIDAuth Service Provider
+
+If you need more customization in the authentication logic of your application,
+you can use the methods available in the `SPIDAuth` Service Provider.
+
+First you need an instance of the Service Provider from the Service Container:
+```php
+$SPIDAuth = app('SPIDAuth');
+```
+
+The following public methods can be used in your application.
+
+| Method          | Description                                                                                                                                         |
+|-----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| login           | Show the configured `login_view` with a SPID button, if authenticated redirect to `after_login_url`.                                                |
+| doLogin         | Attempt login with the SPID Identity Provider in the current request and redirect to the intended or configured `after_login_url` if authenticated. |
+| acs             | Process the POST response from Identity Providers, set session variables and redirect to the intended or configured `after_login_url`.              |
+| logout          | Attempt logout with the SPID Identity Provider stored in the current session.                                                                       |
+| isAuthenticated | Check if the current session is authenticated with SPID.                                                                                            |
+| metadata        | Show metadata for this SPID Service Provider.                                                                                                       |
+| providers       | Identity Providers list in JSON format used by the SPID smart button.                                                                               |
+| getSPIDUser     | Return the current authenticated SPIDUser or `null` if not authenticated.                                                                           |
 
 ### Button
 
@@ -365,6 +389,10 @@ can't be used in production.
 You can set your own X.509 certificate and private key in the
 `config/spid-auth.php` file of your application (which overrides the one in the
 package).
+
+The X.509 certificate and the private key can be configured as strings or as
+paths to files. If both are specified in your `config/spid-auth.php` then the
+ones specified as strings will take precedence.
 
 **Change the values and keep the private key secret**.
 

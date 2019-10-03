@@ -2,7 +2,7 @@
 
 namespace {{namespace}}Http\Controllers;
 
-use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class PrivateController extends Controller
 {
@@ -19,9 +19,9 @@ class PrivateController extends Controller
     /**
      * Show the application private area.
      *
-     * @return \Illuminate\Http\Response
+     * @return View
      */
-    public function index()
+    public function index(): View
     {
         return view('private')->with('spid_user', resolve('SPIDAuth')->getSPIDUser());
     }

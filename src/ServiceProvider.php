@@ -3,15 +3,14 @@
  * This class implements a Laravel Service Provider for SPIDAuth Package.
  *
  *
- * @package Italia\SPIDAuth
  * @license BSD-3-clause
  */
 
 namespace Italia\SPIDAuth;
 
-use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
-use Illuminate\Support\Facades\View;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
 
 class ServiceProvider extends LaravelServiceProvider
 {
@@ -20,14 +19,14 @@ class ServiceProvider extends LaravelServiceProvider
      */
     public function boot(Router $router)
     {
-        $this->loadRoutesFrom(dirname(__DIR__).'/routes/spid-auth.php');
-        $this->loadViewsFrom(dirname(__DIR__).'/resources/views', 'spid-auth');
-        $this->loadTranslationsFrom(dirname(__DIR__).'/resources/lang', 'spid-auth');
+        $this->loadRoutesFrom(dirname(__DIR__) . '/routes/spid-auth.php');
+        $this->loadViewsFrom(dirname(__DIR__) . '/resources/views', 'spid-auth');
+        $this->loadTranslationsFrom(dirname(__DIR__) . '/resources/lang', 'spid-auth');
 
-        $configAuth = dirname(__DIR__).'/config/spid-auth.php';
-        $configSAML = dirname(__DIR__).'/config/spid-saml.php';
-        $configIdps = dirname(__DIR__).'/config/spid-idps.php';
-        $assets = dirname(__DIR__).'/resources/assets';
+        $configAuth = dirname(__DIR__) . '/config/spid-auth.php';
+        $configSAML = dirname(__DIR__) . '/config/spid-saml.php';
+        $configIdps = dirname(__DIR__) . '/config/spid-idps.php';
+        $assets = dirname(__DIR__) . '/resources/assets';
 
         $this->mergeConfigFrom($configAuth, 'spid-auth');
         $this->mergeConfigFrom($configSAML, 'spid-saml');

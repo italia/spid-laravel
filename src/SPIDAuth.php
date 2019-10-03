@@ -2,45 +2,43 @@
 /**
  * This class implements a Laravel Controller for SPIDAuth Package.
  *
- * @package Italia\SPIDAuth
  * @license BSD-3-clause
  */
 
 namespace Italia\SPIDAuth;
 
-use Italia\SPIDAuth\Events\LoginEvent;
-use Italia\SPIDAuth\Events\LogoutEvent;
-use Italia\SPIDAuth\Exceptions\SPIDMetadataException;
-use Italia\SPIDAuth\Exceptions\SPIDLoginException;
-use Italia\SPIDAuth\Exceptions\SPIDLogoutException;
-
-use Illuminate\Routing\Controller;
-
 use Carbon\Carbon;
-
-use OneLogin\Saml2\Auth as SAMLAuth;
-use OneLogin\Saml2\Error as SAMLError;
-use OneLogin\Saml2\Utils as SAMLUtils;
-use OneLogin\Saml2\Constants as SAMLConstants;
-
 use DOMDocument;
 use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
+use Illuminate\Routing\Controller;
+use Italia\SPIDAuth\Events\LoginEvent;
+use Italia\SPIDAuth\Events\LogoutEvent;
+use Italia\SPIDAuth\Exceptions\SPIDConfigurationException;
+use Italia\SPIDAuth\Exceptions\SPIDLoginException;
+use Italia\SPIDAuth\Exceptions\SPIDLogoutException;
+use Italia\SPIDAuth\Exceptions\SPIDMetadataException;
+use OneLogin\Saml2\Auth as SAMLAuth;
+use OneLogin\Saml2\Constants as SAMLConstants;
+use OneLogin\Saml2\Error as SAMLError;
+use OneLogin\Saml2\Utils as SAMLUtils;
 
 class SPIDAuth extends Controller
 {
-
     /**
      * SAMLAuth instance.
      *
-     * @var SAMLAuth $saml
+     * @var SAMLAuth
      */
     private $saml;
 
     /**
-     * Show a view with a SPID button, if authenticated redirect to after_login_url.
+     * Show the configured login_view with a SPID button, if authenticated redirect to after_login_url.
      *
-     * @return \Illuminate\Support\Facades\View Display the page for the Identity Provider selection, if not authenticated.
-     * @return \Illuminate\Http\Response        Redirect to the intended or configured URL if authenticated.
+     * @return \Illuminate\Support\Facades\View display the page for the Identity Provider selection, if not authenticated
+     * @return Response redirect to the intended or configured URL if authenticated
      */
     public function login()
     {
@@ -54,9 +52,9 @@ class SPIDAuth extends Controller
     /**
      * Attempt login with the selected SPID Identity Provider.
      *
-     * @return \Illuminate\Http\Response    Redirect to the intended or configured URL if authenticated.
+     * @return RedirectResponse redirect to the intended or configured after_login_url if authenticated
      */
-    public function doLogin()
+    public function doLogin(): RedirectResponse
     {
         if (!$this->isAuthenticated()) {
             $idp = request('provider');
@@ -76,13 +74,14 @@ class SPIDAuth extends Controller
      * Attribute Consuming Service.
      *
      * Process the POST response from Identity Providers, set session variables
-     * and redirect to the intended or configured URL.
+     * and redirect to the intended or configured after_login_url.
      * Fire LoginEvent with SPIDUser (also stored in session).
      *
-     * @return \Illuminate\Http\Response    Redirect to the intended or configured URL.
      * @throws SPIDLoginException
+     *
+     * @return RedirectResponse redirect to the intended or configured URL
      */
-    public function acs()
+    public function acs(): RedirectResponse
     {
         try {
             $this->getSAML()->processResponse();
@@ -122,16 +121,18 @@ class SPIDAuth extends Controller
         event(new LoginEvent($SPIDUser, session('spid_idp_entity_name')));
 
         session()->reflash();
+
         return redirect()->intended(config('spid-auth.after_login_url'));
     }
 
     /**
      * Attempt logout with the selected SPID Identity Provider.
      *
-     * @return \Illuminate\Http\Response    Redirect to after_logout_url.
      * @throws SPIDLogoutException
+     *
+     * @return RedirectResponse redirect to after_logout_url
      */
-    public function logout()
+    public function logout(): RedirectResponse
     {
         if ($this->isAuthenticated()) {
             $sessionIndex = session()->pull('spid_sessionIndex');
@@ -148,34 +149,35 @@ class SPIDAuth extends Controller
         }
 
         if (request()->has('SAMLResponse')) {
-          $idpEntityName = session()->pull('spid_idp_entity_name');
-          $SPIDUser = session()->pull('spid_user');
-          $idp = session()->pull('spid_idp');
-          event(new LogoutEvent($SPIDUser, $idpEntityName));
-          try {
-              $this->getSAML($idp)->processSLO();
-          } catch (SAMLError $e) {
-              throw new SPIDLogoutException('SAML response validation error: ' . $e->getMessage(), SPIDLogoutException::SAML_VALIDATION_ERROR);
-          }
+            $idpEntityName = session()->pull('spid_idp_entity_name');
+            $SPIDUser = session()->pull('spid_user');
+            $idp = session()->pull('spid_idp');
+            event(new LogoutEvent($SPIDUser, $idpEntityName));
+            try {
+                $this->getSAML($idp)->processSLO();
+            } catch (SAMLError $e) {
+                throw new SPIDLogoutException('SAML response validation error: ' . $e->getMessage(), SPIDLogoutException::SAML_VALIDATION_ERROR);
+            }
 
-          $errors = $this->getSAML()->getErrors();
+            $errors = $this->getSAML()->getErrors();
 
-          if (!empty($errors)) {
-              logger()->error('SAML Response error: ' . $this->getSAML()->getLastErrorReason());
-              throw new SPIDLogoutException('SAML response validation error: ' . implode(', ', $errors), SPIDLogoutException::SAML_VALIDATION_ERROR);
-          }
+            if (!empty($errors)) {
+                logger()->error('SAML Response error: ' . $this->getSAML()->getLastErrorReason());
+                throw new SPIDLogoutException('SAML response validation error: ' . implode(', ', $errors), SPIDLogoutException::SAML_VALIDATION_ERROR);
+            }
         }
 
         session()->reflash();
+
         return redirect(config('spid-auth.after_logout_url'));
     }
 
     /**
      * Check if the current session is authenticated with SPID.
      *
-     * @return boolean  Whether the current session is authenticated with SPID.
+     * @return bool whether the current session is authenticated with SPID
      */
-    public function isAuthenticated()
+    public function isAuthenticated(): bool
     {
         return session()->has('spid_sessionIndex');
     }
@@ -183,10 +185,11 @@ class SPIDAuth extends Controller
     /**
      * Metadata endpoint for this Service Provider.
      *
-     * @return \Illuminate\Http\Response    XML metadata of this Service Provider.
      * @throws SPIDMetadataException
+     *
+     * @return Response XML metadata of this Service Provider
      */
-    public function metadata()
+    public function metadata(): Response
     {
         try {
             $metadata = $this->getSAML()->getSettings()->getSPMetadata();
@@ -205,20 +208,31 @@ class SPIDAuth extends Controller
      * Identity Providers list endpoint for this Service Provider.
      * This is used by the SPID smart button.
      *
-     * @return \Illuminate\Http\Response    JSON list of Identity Providers configured for this Service Provider.
+     * @return JsonResponse JSON list of Identity Providers configured for this Service Provider
      */
-    public function providers()
+    public function providers(): JsonResponse
     {
         $idps_values = array_values($this->getIdps());
+
         return response()->json(['spidProviders' => $idps_values]);
+    }
+
+    /**
+     * Return the current authenticated SPIDUser.
+     *
+     * @return SPIDUser|null the current authenticated SPIDUser or null if not authenticated
+     */
+    public function getSPIDUser()
+    {
+        return session()->get('spid_user', null);
     }
 
     /**
      * Return configured IdPs array.
      *
-     * @return array    Configured Identity providers.
+     * @return array configured Identity providers
      */
-    protected function getIdps()
+    protected function getIdps(): array
     {
         $idps = config('spid-idps');
 
@@ -235,32 +249,90 @@ class SPIDAuth extends Controller
     }
 
     /**
-     * Return the current authenticated SPIDUser.
+     * Check wether SPIDAuth package is properly configured.
      *
-     * @return SPIDUser|null    The current authenticated SPIDUser or null if not authenticated.
+     * @return string|bool true if no configuration issues are found, error string otherwise
      */
-    public function getSPIDUser()
+    protected function isConfigured()
     {
-        return session()->has('spid_user') ? session()->get('spid_user') : null;
-    }
+        if (!is_string(config('spid-auth.sp_entity_id')) || empty(config('spid-auth.sp_entity_id'))) {
+            return 'Service provider entity ID not set';
+        }
 
+        if (!is_string(config('spid-auth.sp_base_url')) || empty(config('spid-auth.sp_base_url'))) {
+            return 'Service provider base URL not set';
+        }
+
+        if (!is_string(config('spid-auth.sp_service_name')) || empty(config('spid-auth.sp_service_name'))) {
+            return 'Service provider service name not set';
+        }
+
+        if (!is_array(config('spid-auth.sp_requested_attributes')) || empty(config('spid-auth.sp_requested_attributes'))) {
+            return 'Service provider requested attributes not set';
+        }
+
+        if (!is_string(config('spid-auth.sp_certificate')) || empty(config('spid-auth.sp_certificate'))) {
+            if (!is_readable(config('spid-auth.sp_certificate_file'))) {
+                return 'Service provider certificate not set';
+            }
+        }
+
+        if (!is_string(config('spid-auth.sp_private_key')) || empty(config('spid-auth.sp_private_key'))) {
+            if (!is_readable(config('spid-auth.sp_private_key_file'))) {
+                return 'Service provider private key not set';
+            }
+        }
+
+        return true;
+    }
 
     /**
      * Return configuration array for SAMLAuth.
      *
-     * @param string    Identity Provider name.
-     * @return array    Configuration array for SAMLAuth.
+     * @param string Identity Provider name
+     *
+     * @return array configuration array for SAMLAuth
      */
-    protected function getSAMLConfig($idp)
+    protected function getSAMLConfig(string $idp): array
     {
+        $configStatus = $this->isConfigured();
+
+        if (true !== $configStatus) {
+            throw new SPIDConfigurationException($configStatus);
+        }
+
         $config = config('spid-saml');
 
         $config['sp']['entityId'] = config('spid-auth.sp_entity_id');
         $config['sp']['attributeConsumingService']['serviceName'] = config('spid-auth.sp_service_name');
         $config['sp']['assertionConsumerService']['url'] = config('spid-auth.sp_base_url') . '/' . config('spid-auth.routes_prefix') . '/acs';
         $config['sp']['singleLogoutService']['url'] = config('spid-auth.sp_base_url') . '/' . config('spid-auth.routes_prefix') . '/logout';
-        $config['sp']['x509cert'] = config('spid-auth.sp_certificate');
-        $config['sp']['privateKey'] = config('spid-auth.sp_private_key');
+
+        if (!is_string(config('spid-auth.sp_private_key')) || empty(config('spid-auth.sp_private_key'))) {
+            $keyData = file_get_contents(config('spid-auth.sp_private_key_file'));
+            $key = openssl_pkey_get_private($keyData);
+
+            if (!$key) {
+                throw new SPIDConfigurationException('Private key not valid');
+            }
+
+            $config['sp']['privateKey'] = SAMLUtils::formatPrivateKey($keyData, false);
+        } else {
+            $config['sp']['privateKey'] = config('spid-auth.sp_private_key');
+        }
+
+        if (!is_string(config('spid-auth.sp_certificate')) || empty(config('spid-auth.sp_certificate'))) {
+            $certificateData = file_get_contents(config('spid-auth.sp_certificate_file'));
+            $certificate = openssl_pkey_get_public($certificateData);
+
+            if (!$certificate) {
+                throw new SPIDConfigurationException('Certificate not valid');
+            }
+
+            $config['sp']['x509cert'] = SAMLUtils::formatCert($certificateData, false);
+        } else {
+            $config['sp']['x509cert'] = config('spid-auth.sp_certificate');
+        }
 
         foreach (config('spid-auth.sp_requested_attributes') as $attr) {
             $config['sp']['attributeConsumingService']['requestedAttributes'][] = ['name' => $attr];
@@ -280,9 +352,9 @@ class SPIDAuth extends Controller
     /**
      * Return the SAML instance configured for the current selected Identity Provider.
      *
-     * @return SAMLAuth  SAML instance configured for the current selected Identity Provider.
+     * @return SAMLAuth SAML instance configured for the current selected Identity Provider
      */
-    protected function getSAML(string $idp = null)
+    protected function getSAML(string $idp = null): SAMLAuth
     {
         $session_idp = session('spid_idp') ?: 'test';
         $idp = $idp ?: $session_idp;
@@ -297,8 +369,9 @@ class SPIDAuth extends Controller
     /**
      * Return the IdP entityName associated with a given SAML response in XML format (issuer).
      *
-     * @param string        XML response from IdP
-     * @return string|null  entityName associated with the given SAML response in XML format (issuer).
+     * @param string XML response from IdP
+     *
+     * @return string|null entityName associated with the given SAML response in XML format (issuer)
      */
     protected function getIdpEntityName(string $responseXML)
     {
@@ -312,6 +385,7 @@ class SPIDAuth extends Controller
                 $idpEntityName = $idp['entityName'];
             }
         }
+
         return $idpEntityName;
     }
 }
