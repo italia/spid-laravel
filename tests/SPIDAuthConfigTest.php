@@ -100,6 +100,24 @@ class SPIDAuthConfigTest extends TestCase
         $SPIDAuthConfig = $this->getSPIDAuthConfig();
     }
 
+    public function testMissingSpidLevel()
+    {
+        $this->withoutExceptionHandling();
+        $this->expectException(SPIDConfigurationException::class);
+        $this->expectExceptionMessage('SPID authentication level name wrong or not set');
+        config(['spid-auth.sp_spid_level' => null]);
+        $this->getSPIDAuthConfig();
+    }
+
+    public function testInvalidSpidLevel()
+    {
+        $this->withoutExceptionHandling();
+        $this->expectException(SPIDConfigurationException::class);
+        $this->expectExceptionMessage('SPID authentication level name wrong or not set');
+        config(['spid-auth.sp_spid_level' => 'https://www.spid.gov.it/SpidL4']);
+        $this->getSPIDAuthConfig();
+    }
+
     protected function getPackageProviders($app)
     {
         return ['Italia\SPIDAuth\ServiceProvider'];
