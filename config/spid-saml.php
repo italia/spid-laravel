@@ -26,7 +26,7 @@ return [
     // friendlyName can be omitted. Otherwise remove this section.
     'attributeConsumingService' => [
         'serviceName' => '',
-        'requestedAttributes' => []
+        'requestedAttributes' => [],
     ],
     // Specifies info about where and how the <Logout Response> message MUST be
     // returned to the requester, in this case our SP.
@@ -46,7 +46,7 @@ return [
     // Usually x509cert and privateKey of the SP are provided by files placed at
     // the certs folder. But we can also provide them with the following parameters
     'x509cert' => '',
-    'privateKey' => ''
+    'privateKey' => '',
   ],
   'security' => [
     'authnRequestsSigned' => true,
@@ -55,9 +55,7 @@ return [
     'wantAssertionsSigned' => true,
     'signatureAlgorithm' => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
     'digestAlgorithm' => 'http://www.w3.org/2001/04/xmlenc#sha256',
-    'requestedAuthnContext' => [
-      'https://www.spid.gov.it/SpidL1',
-    ],
+    'requestedAuthnContext' => [],
     'requestedAuthnContextComparison' => 'minimum',
   ],
   'strict' => true,
@@ -67,12 +65,12 @@ return [
     'en' => [
       'name' => '',
       'displayname' => '',
-      'url' => ''
+      'url' => '',
     ],
     'it' => [
       'name' => '',
       'displayname' => '',
-      'url' => ''
-    ]
-  ]
+      'url' => '',
+    ],
+  ],
 ];
