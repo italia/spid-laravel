@@ -1,7 +1,7 @@
 {
   "name": "italia/spid-laravel",
-  "description": "Laravel 5 Package for SPID authentication",
-  "keywords": ["SPID", "Laravel", "Laravel 5"],
+  "description": "Laravel Package for SPID authentication",
+  "keywords": ["SPID", "Laravel", "PHP"],
   "homepage": "https://github.com/italia/spid-laravel",
   "license": "BSD-3-Clause",
   "authors": [
@@ -28,6 +28,11 @@
   "autoload": {
     "psr-4": {
       "Italia\\SPIDAuth\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Italia\\SPIDAuth\\Tests\\": "tests/"
     }
   },
   "extra": {
