@@ -7,8 +7,6 @@
 
 namespace Italia\SPIDAuth\Exceptions;
 
-use Exception;
-
-class SPIDMetadataException extends Exception
+class SPIDMetadataException extends SPIDException
 {
 }

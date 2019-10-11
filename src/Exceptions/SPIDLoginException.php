@@ -7,11 +7,11 @@
 
 namespace Italia\SPIDAuth\Exceptions;
 
-use Exception;
-
-class SPIDLoginException extends Exception
+class SPIDLoginException extends SPIDException
 {
     const SAML_VALIDATION_ERROR = 0;
     const SAML_RESPONSE_ALREADY_PROCESSED = 1;
     const SAML_AUTHENTICATION_ERROR = 2;
+    const SAML_REQUEST_ID_MISSING = 3;
+    const MISSING_IDP_IN_USER_REQUEST = 4;
 }

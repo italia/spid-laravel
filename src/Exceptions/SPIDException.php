@@ -7,6 +7,8 @@
 
 namespace Italia\SPIDAuth\Exceptions;
 
-class SPIDConfigurationException extends SPIDException
+use Exception;
+
+abstract class SPIDException extends Exception
 {
 }
