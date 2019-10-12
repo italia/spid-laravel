@@ -133,7 +133,8 @@ class SPIDAuth extends Controller
         cache([$assertionId => ''], $assertionExpiry);
 
         $attributes = $this->getSAML()->getAttributes();
-        if (config('spid-auth.sp_requested_attributes') != array_keys($attributes)) {
+        $requestedAttributes = config('spid-auth.sp_requested_attributes');
+        if (array_intersect($requestedAttributes, array_keys($attributes)) !== $requestedAttributes) {
             throw new SPIDLoginException('SAML response validation error: requested attributes not present', SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
