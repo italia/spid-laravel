@@ -372,8 +372,8 @@ in your `config/spid-auth.php` file.
     'entityId' => '<Test IdP entityId>',
     'sso_endpoint' => '<Test IdP SingleSignOnService endpoint>',
     'slo_endpoint' => '<Test IdP SingleLogoutService endpoint>',
-    'x509cert' => '<Test IdP x509 certificate>'
-    ],
+    'x509cert' => '<Test IdP x509 certificate>',
+],
 ```
 
 **Set ```'test_idp' => false``` to disable**.
