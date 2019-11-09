@@ -2,7 +2,6 @@
 /**
  * This class implements a Laravel Service Provider for SPIDAuth Package.
  *
- *
  * @license BSD-3-clause
  */
 
