@@ -21,6 +21,7 @@ $rules = [
     'concat_space' => ['spacing' => 'one'],
     'linebreak_after_opening_tag' => true,
     'no_empty_comment' => false,
+    'no_superfluous_phpdoc_tags' => false,
     'ordered_imports' => true,
     'phpdoc_align' => ['align' => 'left'],
     'phpdoc_order' => true,
