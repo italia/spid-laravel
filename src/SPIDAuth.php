@@ -64,6 +64,8 @@ class SPIDAuth extends Controller
                 throw new SPIDLoginException('Malformed request: "provider" parameter not present', SPIDLoginException::MISSING_IDP_IN_USER_REQUEST);
             }
 
+            session(['spid_idp' => $idp]);
+
             $idpRedirectTo = $this->getSAML()->login(null, [], true, false, true);
             $requestDocument = new DOMDocument();
             SAMLUtils::loadXML($requestDocument, $this->getSAML()->getLastRequestXML());
@@ -71,7 +73,6 @@ class SPIDAuth extends Controller
 
             session(['spid_lastRequestId' => $this->getSAML()->getLastRequestID()]);
             session(['spid_lastRequestIssueInstant' => $requestIssueInstant]);
-            session(['spid_idp' => $idp]);
             session()->save();
 
             return redirect($idpRedirectTo);
