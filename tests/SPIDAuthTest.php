@@ -338,4 +338,21 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
 
         $response->assertJsonMissing(['entityId' => $this->app['config']->get('spid-idps.test')['entityId']]);
     }
+
+    public function testProvidersWithValidator()
+    {
+        $response = $this->get($this->providersURL);
+
+        $response->assertJson(['spidProviders' => array_values($this->app['config']->get('spid-idps'))]);
+        $response->assertJsonFragment(['entityId' => $this->app['config']->get('spid-idps.validator')['entityId']]);
+    }
+
+    public function testProvidersWithoutValidator()
+    {
+        $this->app['config']->set('spid-auth.validator_idp', false);
+
+        $response = $this->get($this->providersURL);
+
+        $response->assertJsonMissing(['entityId' => $this->app['config']->get('spid-idps.validator')['entityId']]);
+    }
 }

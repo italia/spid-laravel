@@ -178,4 +178,21 @@ return [
     ],
     'x509cert' => 'spid-testenv-cert',
   ],
+  'validator' => [
+    'provider' => 'validator',
+    'title' => 'SPID Validator',
+    'entityName' => 'SPID Validator',
+    'logo' => 'spid-validator.svg',
+    'isActive' => true,
+    'entityId' => 'spid-validator',
+    'singleSignOnService' => [
+      'url' => 'https://spid-validator/sso',
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+    ],
+    'singleLogoutService' => [
+      'url' => 'https://spid-validator/slo',
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+    ],
+    'x509cert' => 'spid-validator-cert',
+  ],
 ];
