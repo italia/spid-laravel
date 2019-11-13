@@ -394,6 +394,15 @@ class SPIDAuth extends Controller
             $idps['test']['x509cert'] = config('spid-auth.test_idp.x509cert');
         }
 
+        if (!config('spid-auth.validator_idp')) {
+            unset($idps['validator']);
+        } else {
+            $idps['validator']['entityId'] = config('spid-auth.validator_idp.entityId');
+            $idps['validator']['singleSignOnService']['url'] = config('spid-auth.validator_idp.sso_endpoint');
+            $idps['validator']['singleLogoutService']['url'] = config('spid-auth.validator_idp.slo_endpoint');
+            $idps['validator']['x509cert'] = config('spid-auth.validator_idp.x509cert');
+        }
+
         return $idps;
     }
 
@@ -511,7 +520,7 @@ class SPIDAuth extends Controller
      */
     protected function getSAML(string $idp = null): SAMLAuth
     {
-        $session_idp = session('spid_idp') ?: 'test';
+        $session_idp = session('spid_idp') ?: 'validator';
         $idp = $idp ?: $session_idp;
 
         if (empty($this->saml) || $this->saml->getSettings()->getIdPData()['provider'] !== $idp) {
