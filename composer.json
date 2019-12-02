@@ -15,7 +15,8 @@
     "illuminate/config": ">=5.0",
     "illuminate/support": ">=5.0",
     "onelogin/php-saml": "3.3.0",
-    "cweagans/composer-patches": "^1.6"
+    "cweagans/composer-patches": "^1.6",
+    "sensiolabs/security-checker": "^6.0"
   },
   "require-dev": {
     "pds/skeleton": "~1.0",
