@@ -14,7 +14,8 @@
       "entra_con_SPID": "Entra con SPID",
       "aria_chiudi_modale": "Chiudi modale informativo",
       "accedi_con_idp": "Accedi a SPID con {0}",
-      "idp_disabled": "Fornitore non attivo"
+      "idp_disabled": "Fornitore non attivo",
+      "agid": "Agenzia per l'Italia Digitale"
     },
     "en": {
       "naviga_indietro": "Go back",
@@ -26,7 +27,8 @@
       "entra_con_SPID": "Sign in with SPID",
       "aria_chiudi_modale": "Close informative modal",
       "accedi_con_idp": "Access to SPID with {0}",
-      "idp_disabled": "Provider not enabled"
+      "idp_disabled": "Provider not enabled",
+      "agid": "Agency for Digital Italy"
     }
   }
 }
