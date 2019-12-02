@@ -19,6 +19,7 @@ install:
 script:
   - vendor/bin/pds-skeleton validate
   - vendor/bin/php-cs-fixer fix --diff --dry-run --verbose
+  - vendor/bin/security-checker security:check
   - vendor/bin/phpunit
 
 after_success:
