@@ -326,7 +326,9 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
     {
         $response = $this->get($this->providersURL);
 
-        $response->assertJson(['spidProviders' => array_values($this->app['config']->get('spid-idps'))]);
+        $expectedIdps = $this->app['config']->get('spid-idps');
+        unset($expectedIdps['empty']);
+        $response->assertJson(['spidProviders' => array_values($expectedIdps)]);
         $response->assertJsonFragment(['entityId' => $this->app['config']->get('spid-idps.test')['entityId']]);
     }
 
@@ -343,7 +345,9 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
     {
         $response = $this->get($this->providersURL);
 
-        $response->assertJson(['spidProviders' => array_values($this->app['config']->get('spid-idps'))]);
+        $expectedIdps = $this->app['config']->get('spid-idps');
+        unset($expectedIdps['empty']);
+        $response->assertJson(['spidProviders' => array_values($expectedIdps)]);
         $response->assertJsonFragment(['entityId' => $this->app['config']->get('spid-idps.validator')['entityId']]);
     }
 
