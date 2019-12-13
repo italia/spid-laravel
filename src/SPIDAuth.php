@@ -246,6 +246,7 @@ class SPIDAuth extends Controller
     public function providers(): JsonResponse
     {
         $idps_values = array_values($this->getIdps());
+        unset($idps_values['empty']);
 
         return response()->json(['spidProviders' => $idps_values]);
     }
@@ -520,7 +521,7 @@ class SPIDAuth extends Controller
      */
     protected function getSAML(string $idp = null): SAMLAuth
     {
-        $session_idp = session('spid_idp') ?: 'validator';
+        $session_idp = session('spid_idp') ?: 'empty';
         $idp = $idp ?: $session_idp;
 
         if (empty($this->saml) || $this->saml->getSettings()->getIdPData()['provider'] !== $idp) {
