@@ -245,10 +245,10 @@ class SPIDAuth extends Controller
      */
     public function providers(): JsonResponse
     {
-        $idps_values = array_values($this->getIdps());
-        unset($idps_values['empty']);
+        $idps = $this->getIdps();
+        unset($idps['empty']);
 
-        return response()->json(['spidProviders' => $idps_values]);
+        return response()->json(['spidProviders' => array_values($idps)]);
     }
 
     /**
