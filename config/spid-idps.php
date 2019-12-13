@@ -195,4 +195,12 @@ return [
     ],
     'x509cert' => 'spid-validator-cert',
   ],
+  'empty' => [
+    'provider' => 'empty',
+    'entityId' => 'empty',
+    'singleSignOnService' => [
+      'url' => 'https://empty',
+    ],
+    'x509cert' => 'empty',
+  ],
 ];
