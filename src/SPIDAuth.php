@@ -60,8 +60,14 @@ class SPIDAuth extends Controller
     {
         if (!$this->isAuthenticated()) {
             $idp = request('provider');
-            if (empty($idp)) {
-                throw new SPIDLoginException('Malformed request: "provider" parameter not present', SPIDLoginException::MISSING_IDP_IN_USER_REQUEST);
+            $idps = $this->getIdps();
+            unset($idps['empty']);
+
+            if (empty($idp) || !is_string($idp)) {
+                throw new SPIDLoginException('Malformed request: "provider" parameter not present', SPIDLoginException::MALFORMED_IDP_IN_USER_REQUEST);
+            }
+            if (!array_key_exists($idp, $idps)) {
+                throw new SPIDLoginException('Malformed request: wrong "provider" parameter', SPIDLoginException::NONEXISTENT_IDP_IN_USER_REQUEST);
             }
 
             session(['spid_idp' => $idp]);
