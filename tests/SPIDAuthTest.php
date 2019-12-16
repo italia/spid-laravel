@@ -53,9 +53,35 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
     {
         $this->withoutExceptionHandling();
         $this->expectException(SPIDLoginException::class);
-        $this->expectExceptionCode(SPIDLoginException::MISSING_IDP_IN_USER_REQUEST);
+        $this->expectExceptionCode(SPIDLoginException::MALFORMED_IDP_IN_USER_REQUEST);
 
         $response = $this->post($this->doLoginURL);
+
+        $response->assertSessionMissing('spid_idp');
+        $response->assertSessionMissing('spid_lastRequestId');
+        $response->assertStatus(500);
+    }
+
+    public function testDoLoginWithMalformedProvider()
+    {
+        $this->withoutExceptionHandling();
+        $this->expectException(SPIDLoginException::class);
+        $this->expectExceptionCode(SPIDLoginException::MALFORMED_IDP_IN_USER_REQUEST);
+
+        $response = $this->post($this->doLoginURL, ['provider' => ['fake' => 'nonexistent']]);
+
+        $response->assertSessionMissing('spid_idp');
+        $response->assertSessionMissing('spid_lastRequestId');
+        $response->assertStatus(500);
+    }
+
+    public function testDoLoginWithNonExistentProvider()
+    {
+        $this->withoutExceptionHandling();
+        $this->expectException(SPIDLoginException::class);
+        $this->expectExceptionCode(SPIDLoginException::NONEXISTENT_IDP_IN_USER_REQUEST);
+
+        $response = $this->post($this->doLoginURL, ['provider' => 'nonexistent']);
 
         $response->assertSessionMissing('spid_idp');
         $response->assertSessionMissing('spid_lastRequestId');
