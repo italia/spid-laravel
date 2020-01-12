@@ -231,11 +231,11 @@ class SPIDAuth extends Controller
     public function metadata(): Response
     {
         try {
-            $metadata = $this->getSAML()->getSettings()->getSPMetadata();
+            $metadata = $this->getSAML(null)->getSettings()->getSPMetadata();
         } catch (Exception $e) {
             throw new SPIDMetadataException('Invalid SP metadata: ' . $e->getMessage(), 0, $e);
         }
-        $errors = $this->getSAML()->getSettings()->validateMetadata($metadata);
+        $errors = $this->getSAML(null)->getSettings()->validateMetadata($metadata);
         if (empty($errors)) {
             return response($metadata, '200')->header('Content-Type', 'text/xml');
         } else {
@@ -397,7 +397,7 @@ class SPIDAuth extends Controller
      */
     protected function checkAnomalies(): void
     {
-        $lastErrorReason = $this->getSAML()->getLastErrorReason();
+        $lastErrorReason = $this->getSAML(null)->getLastErrorReason();
 
         foreach (SPIDLoginAnomalyException::ERROR_CODES as $errorCode => $errorMessage) {
             if (false !== strpos($lastErrorReason, $errorMessage)) {
@@ -548,13 +548,10 @@ class SPIDAuth extends Controller
      *
      * @return SAMLAuth SAML instance configured for the current selected Identity Provider
      */
-    protected function getSAML(string $idp = null): SAMLAuth
+    protected function getSAML(?string $idp): SAMLAuth
     {
-        $session_idp = session('spid_idp') ?: 'empty';
-        $idp = $idp ?: $session_idp;
-
         if (empty($this->saml) || $this->saml->getSettings()->getIdPData()['provider'] !== $idp) {
-            $this->saml = new SAMLAuth($this->getSAMLConfig($idp));
+            $this->saml = new SAMLAuth($this->getSAMLConfig($idp ?? 'empty'));
         }
 
         return $this->saml;
