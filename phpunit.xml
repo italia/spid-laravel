@@ -11,6 +11,9 @@
          stopOnError="false"
          stopOnFailure="false"
          verbose="true">
+    <php>
+        <env name="APP_KEY" value="AckfSECXIvnK5r28GVIWUAxmbBSjTsmF"/>
+    </php>
     <testsuites>
         <testsuite name="SPID Laravel Test Suite">
             <directory suffix="Test.php">tests/</directory>
