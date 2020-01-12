@@ -23,28 +23,38 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
 
     public function testLoginIfAuthenticated()
     {
-        $response = $this->withSession(['spid_sessionIndex' => 'sessionIndex'])->get($this->loginURL);
+        $response = $this->withSession([
+            'spid_sessionIndex' => 'sessionIndex',
+        ])->get($this->loginURL);
 
         $response->assertRedirect($this->afterLoginURL);
     }
 
     public function testLoginIfAuthenticatedWithIntendedURL()
     {
-        $response = $this->withSession(['spid_sessionIndex' => 'sessionIndex', 'url.intended' => 'intendedURL'])->get($this->loginURL);
+        $response = $this->withSession([
+            'spid_sessionIndex' => 'sessionIndex',
+            'url.intended' => 'intendedURL',
+        ])->get($this->loginURL);
 
         $response->assertRedirect('intendedURL');
     }
 
     public function testDoLoginIfAuthenticated()
     {
-        $response = $this->withSession(['spid_sessionIndex' => 'sessionIndex'])->post($this->doLoginURL);
+        $response = $this->withSession([
+            'spid_sessionIndex' => 'sessionIndex',
+        ])->post($this->doLoginURL);
 
         $response->assertRedirect($this->afterLoginURL);
     }
 
     public function testDoLoginIfAuthenticatedWithIntendedURL()
     {
-        $response = $this->withSession(['spid_sessionIndex' => 'sessionIndex', 'url.intended' => 'intendedURL'])->post($this->doLoginURL);
+        $response = $this->withSession([
+            'spid_sessionIndex' => 'sessionIndex',
+            'url.intended' => 'intendedURL',
+        ])->post($this->doLoginURL);
 
         $response->assertRedirect('intendedURL');
     }
@@ -94,8 +104,9 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
 
         $response = $this->post($this->doLoginURL, ['provider' => 'test']);
 
-        $response->assertSessionHas('spid_idp');
-        $response->assertSessionHas('spid_lastRequestId');
+        $response->assertCookie('spid_idp', 'test');
+        $response->assertCookie('spid_lastRequestId');
+        $response->assertCookie('spid_lastRequestIssueInstant');
         $response->assertRedirect();
     }
 
@@ -104,9 +115,10 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         Event::fake();
         $this->setSPIDAuthMock();
 
-        $response = $this->withSession([
+        $response = $this->withCookies([
             'spid_lastRequestId' => 'UNIQUE_ID',
             'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+            'spid_idp' => 'test',
         ])->post($this->acsURL);
 
         $response->assertSessionHas('spid_idpEntityName', 'Test IdP');
@@ -134,9 +146,11 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
     {
         $this->setSPIDAuthMock();
 
-        $response = $this->withSession([
+        $response = $this->withCookies([
             'spid_lastRequestId' => 'UNIQUE_ID',
             'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+            'spid_idp' => 'test',
+        ])->withSession([
             'url.intended' => 'intendedURL',
         ])->post($this->acsURL);
 
@@ -154,7 +168,10 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $this->expectException(SPIDLoginException::class);
         $this->expectExceptionCode(SPIDLoginException::SAML_REQUEST_ID_MISSING);
 
-        $response = $this->post($this->acsURL);
+        $response = $this->withCookies([
+            'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+            'spid_idp' => 'test',
+        ])->post($this->acsURL);
 
         $response->assertStatus(500);
     }
@@ -167,9 +184,10 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $this->expectExceptionCode(SPIDLoginException::SAML_VALIDATION_ERROR);
         $this->expectExceptionMessage('SAML response validation error: test-error');
 
-        $response = $this->withSession([
+        $response = $this->withCookies([
             'spid_lastRequestId' => 'UNIQUE_ID',
             'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+            'spid_idp' => 'test',
         ])->post($this->acsURL);
 
         $response->assertStatus(500);
@@ -183,9 +201,10 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $this->expectExceptionCode(SPIDLoginException::SAML_VALIDATION_ERROR);
         $this->expectExceptionMessage('SAML response validation error: SAML Response not found, Only supported HTTP_POST Binding');
 
-        $response = $this->withSession([
+        $response = $this->withCookies([
             'spid_lastRequestId' => 'UNIQUE_ID',
             'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+            'spid_idp' => 'test',
         ])->post($this->acsURL);
 
         $response->assertStatus(500);
@@ -199,9 +218,10 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $this->expectExceptionCode(SPIDLoginException::SAML_AUTHENTICATION_ERROR);
         $this->expectExceptionMessage('SAML authentication error: errorReason');
 
-        $response = $this->withSession([
+        $response = $this->withCookies([
             'spid_lastRequestId' => 'UNIQUE_ID',
             'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+            'spid_idp' => 'test',
         ])->post($this->acsURL);
 
         $response->assertStatus(500);
@@ -214,13 +234,17 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $this->expectException(SPIDLoginException::class);
         $this->expectExceptionCode(SPIDLoginException::SAML_RESPONSE_ALREADY_PROCESSED);
 
-        $response = $this->withSession([
+        $lastRequestIssueInstant = SAMLUtils::parseTime2SAML(time());
+
+        $response = $this->withCookies([
             'spid_lastRequestId' => 'UNIQUE_ID',
-            'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+            'spid_lastRequestIssueInstant' => $lastRequestIssueInstant,
+            'spid_idp' => 'test',
         ])->post($this->acsURL);
-        $response = $this->withSession([
+        $response = $this->withCookies([
             'spid_lastRequestId' => 'UNIQUE_ID',
-            'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+            'spid_lastRequestIssueInstant' => $lastRequestIssueInstant,
+            'spid_idp' => 'test',
         ])->post($this->acsURL);
 
         $response->assertStatus(500);
@@ -230,7 +254,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
     {
         $this->testAcs();
 
-        $response = $this->withSession(['spid_idp' => 'test'])->get($this->logoutURL);
+        $response = $this->get($this->logoutURL);
 
         $response->assertSessionMissing('spid_sessionIndex');
         $response->assertSessionMissing('spid_nameId');
@@ -274,6 +298,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $response = $this->withSession([
             'spid_idpEntityName' => 'spid_idpEntityName',
             'spid_user' => new SPIDUser([]),
+            'spid_idp' => 'test',
         ])->get($this->logoutURL . '?SAMLResponse');
 
         $response->assertStatus(500);
@@ -287,7 +312,11 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $this->expectExceptionCode(SPIDLogoutException::SAML_VALIDATION_ERROR);
         $this->expectExceptionMessage('SAML response validation error: test-error');
 
-        $response = $this->withSession(['spid_idpEntityName' => 'spid_idpEntityName', 'spid_user' => new SPIDUser([])])->get($this->logoutURL . '?SAMLResponse');
+        $response = $this->withSession([
+            'spid_idpEntityName' => 'spid_idpEntityName',
+            'spid_user' => new SPIDUser([]),
+            'spid_idp' => 'test',
+        ])->get($this->logoutURL . '?SAMLResponse');
 
         $response->assertStatus(500);
     }
