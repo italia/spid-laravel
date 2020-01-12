@@ -192,7 +192,9 @@ class SPIDAuth extends Controller
             $idpEntityName = session()->pull('spid_idpEntityName');
             $SPIDUser = session()->pull('spid_user');
             $idp = session()->pull('spid_idp');
+
             event(new LogoutEvent($SPIDUser, $idpEntityName));
+
             try {
                 $this->getSAML($idp)->processSLO();
             } catch (SAMLError | SAMLValidationError $e) {
@@ -235,7 +237,9 @@ class SPIDAuth extends Controller
         } catch (Exception $e) {
             throw new SPIDMetadataException('Invalid SP metadata: ' . $e->getMessage(), 0, $e);
         }
+
         $errors = $this->getSAML(null)->getSettings()->validateMetadata($metadata);
+
         if (empty($errors)) {
             return response($metadata, '200')->header('Content-Type', 'text/xml');
         } else {
