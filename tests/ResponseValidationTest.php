@@ -14,10 +14,11 @@ class ResponseValidationTest extends SPIDAuthBaseTestCase
         $this->withoutExceptionHandling();
         $this->expectException(SPIDLoginException::class);
         $this->expectExceptionCode(SPIDLoginException::SAML_AUTHENTICATION_ERROR);
-        $this->expectExceptionMessage('SAML authentication error: missing spid_lastRequestIssueInstant in session');
+        $this->expectExceptionMessage('SAML authentication error: missing spid_lastRequestIssueInstant');
 
-        $response = $this->withSession([
+        $response = $this->withCookies([
             'spid_lastRequestId' => 'UNIQUE_ID',
+            'spid_idp' => 'test',
         ])->post($this->acsURL);
 
         $response->assertStatus(500);
@@ -31,9 +32,10 @@ class ResponseValidationTest extends SPIDAuthBaseTestCase
         $this->expectExceptionCode(SPIDLoginException::SAML_VALIDATION_ERROR);
         $this->expectExceptionMessage('SAML response validation error: invalid NotOnOrAfter attribute');
 
-        $response = $this->withSession([
+        $response = $this->withCookies([
             'spid_lastRequestId' => 'UNIQUE_ID',
             'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+            'spid_idp' => 'test',
         ])->post($this->acsURL);
 
         $response->assertStatus(500);
@@ -47,9 +49,10 @@ class ResponseValidationTest extends SPIDAuthBaseTestCase
         $this->expectExceptionCode(SPIDLoginException::SAML_VALIDATION_ERROR);
         $this->expectExceptionMessage('SAML response validation error: requested attributes not present');
 
-        $response = $this->withSession([
+        $response = $this->withCookies([
             'spid_lastRequestId' => 'UNIQUE_ID',
             'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+            'spid_idp' => 'test',
         ])->post($this->acsURL);
 
         $response->assertStatus(500);
@@ -63,9 +66,10 @@ class ResponseValidationTest extends SPIDAuthBaseTestCase
         $this->expectExceptionCode(SPIDLoginException::SAML_VALIDATION_ERROR);
         $this->expectExceptionMessage('SAML response validation error: empty attribute');
 
-        $response = $this->withSession([
+        $response = $this->withCookies([
             'spid_lastRequestId' => 'UNIQUE_ID',
             'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+            'spid_idp' => 'test',
         ])->post($this->acsURL);
 
         $response->assertStatus(500);
@@ -246,9 +250,10 @@ class ResponseValidationTest extends SPIDAuthBaseTestCase
             $this->withoutExceptionHandling();
 
             try {
-                $response = $this->withSession([
+                $response = $this->withCookies([
                     'spid_lastRequestId' => 'UNIQUE_ID',
                     'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+                    'spid_idp' => 'test',
                 ])->post($this->acsURL);
             } catch (SPIDLoginAnomalyException $e) {
                 $this->assertEquals($errorCode, $e->getErrorCode());
@@ -273,9 +278,10 @@ class ResponseValidationTest extends SPIDAuthBaseTestCase
         $this->expectExceptionCode(SPIDLoginException::SAML_VALIDATION_ERROR);
         $this->expectExceptionMessage($testSettings['exceptionMessage']);
 
-        $response = $this->withSession([
+        $response = $this->withCookies([
             'spid_lastRequestId' => 'UNIQUE_ID',
             'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+            'spid_idp' => 'test',
         ])->post($this->acsURL);
 
         $response->assertStatus(500);

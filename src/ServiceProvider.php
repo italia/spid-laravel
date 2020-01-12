@@ -18,10 +18,6 @@ class ServiceProvider extends LaravelServiceProvider
      */
     public function boot(Router $router)
     {
-        $this->loadRoutesFrom(dirname(__DIR__) . '/routes/spid-auth.php');
-        $this->loadViewsFrom(dirname(__DIR__) . '/resources/views', 'spid-auth');
-        $this->loadTranslationsFrom(dirname(__DIR__) . '/resources/lang', 'spid-auth');
-
         $configAuth = dirname(__DIR__) . '/config/spid-auth.php';
         $configSAML = dirname(__DIR__) . '/config/spid-saml.php';
         $configIdps = dirname(__DIR__) . '/config/spid-idps.php';
@@ -30,6 +26,10 @@ class ServiceProvider extends LaravelServiceProvider
         $this->mergeConfigFrom($configAuth, 'spid-auth');
         $this->mergeConfigFrom($configSAML, 'spid-saml');
         $this->mergeConfigFrom($configIdps, 'spid-idps');
+
+        $this->loadRoutesFrom(dirname(__DIR__) . '/routes/spid-auth.php');
+        $this->loadViewsFrom(dirname(__DIR__) . '/resources/views', 'spid-auth');
+        $this->loadTranslationsFrom(dirname(__DIR__) . '/resources/lang', 'spid-auth');
 
         $this->publishes([$configAuth => config_path('spid-auth.php')], 'spid-config');
         $this->publishes([$assets => public_path('vendor/spid-auth')], 'spid-assets');

@@ -5,8 +5,8 @@
  * @license BSD-3-clause
  */
 Route::group([
-      'prefix' => config('spid-auth.routes_prefix'),
-      'middleware' => config('spid-auth.middleware_group'),
+        'prefix' => config('spid-auth.routes_prefix'),
+        'middleware' => config('spid-auth.middleware_group'),
     ], function () {
         Route::get('login', [
             'as' => 'spid-auth_login',
