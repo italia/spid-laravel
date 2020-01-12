@@ -60,19 +60,12 @@ class SPIDAuth extends Controller
     {
         if (!$this->isAuthenticated()) {
             $idp = request('provider');
-            $idps = $this->getIdps();
-            unset($idps['empty']);
+            $this->checkIdp($idp);
 
-            if (empty($idp) || !is_string($idp)) {
-                throw new SPIDLoginException('Malformed request: "provider" parameter not present', SPIDLoginException::MALFORMED_IDP_IN_USER_REQUEST);
-            }
-            if (!array_key_exists($idp, $idps)) {
-                throw new SPIDLoginException('Malformed request: wrong "provider" parameter', SPIDLoginException::NONEXISTENT_IDP_IN_USER_REQUEST);
-            }
+            $idpRedirectTo = $this->getSAML($idp)->login(null, [], true, false, true);
 
             session(['spid_idp' => $idp]);
 
-            $idpRedirectTo = $this->getSAML()->login(null, [], true, false, true);
             $requestDocument = new DOMDocument();
             SAMLUtils::loadXML($requestDocument, $this->getSAML()->getLastRequestXML());
             $requestIssueInstant = $requestDocument->documentElement->getAttribute('IssueInstant');
@@ -265,6 +258,27 @@ class SPIDAuth extends Controller
     public function getSPIDUser()
     {
         return session()->get('spid_user', null);
+    }
+
+    /**
+     * Check if the specified IdP is present in the configure IdP list.
+     *
+     * @param mixed $idp
+     *
+     * @throws SPIDLoginException if the specified IdP is not present in the configured IdP list
+     */
+    protected function checkIdp($idp): void
+    {
+        $idps = $this->getIdps();
+        unset($idps['empty']);
+
+        if (empty($idp) || !is_string($idp)) {
+            throw new SPIDLoginException('Malformed request: idp value not present or wrong', SPIDLoginException::MALFORMED_IDP_IN_USER_REQUEST);
+        }
+
+        if (!array_key_exists($idp, $idps)) {
+            throw new SPIDLoginException('Malformed request: idp value not present or wrong', SPIDLoginException::NONEXISTENT_IDP_IN_USER_REQUEST);
+        }
     }
 
     /**
