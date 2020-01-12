@@ -116,7 +116,8 @@ endpoint and the `HTTP-Redirect` for the the SingleLogoutService endpoint.
   the [middleware group](https://laravel.com/docs/5.5/middleware#middleware-groups)
   assigned to the packages routes. The default value is `web` which comes with
   Laravel out of the box and provides some common features like session
-  management.
+  management and cookies. You can add more middlewares using an array but `web`
+  must be always included.
 - `routes_prefix`:
   the [route prefix](https://laravel.com/docs/5.5/routing#route-group-prefixes)
   applied to the package routes. If you change the default `spid` value make
@@ -138,6 +139,12 @@ endpoint and the `HTTP-Redirect` for the the SingleLogoutService endpoint.
 command will copy some static assets to your `public` directory. You can publish
 configuration and assets separately adding `--tag=spid-config` and
 `--tag=spid-assets` options on the command line.*
+
+### Cookies
+
+Due to the specific working mode of the SameSite cookie parameter, this package
+**can only work** with `lax` or `none` policy. Thus the config option
+`session.same_site` **MUST** be set accordingly.
 
 ## Usage
 
