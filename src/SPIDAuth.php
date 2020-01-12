@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Cookie;
 use Italia\SPIDAuth\Events\LoginEvent;
 use Italia\SPIDAuth\Events\LogoutEvent;
 use Italia\SPIDAuth\Exceptions\SPIDConfigurationException;
@@ -63,16 +64,13 @@ class SPIDAuth extends Controller
             $this->checkIdp($idp);
 
             $idpRedirectTo = $this->getSAML($idp)->login(null, [], true, false, true);
-
-            session(['spid_idp' => $idp]);
-
             $requestDocument = new DOMDocument();
-            SAMLUtils::loadXML($requestDocument, $this->getSAML()->getLastRequestXML());
+            SAMLUtils::loadXML($requestDocument, $this->getSAML($idp)->getLastRequestXML());
             $requestIssueInstant = $requestDocument->documentElement->getAttribute('IssueInstant');
 
-            session(['spid_lastRequestId' => $this->getSAML()->getLastRequestID()]);
-            session(['spid_lastRequestIssueInstant' => $requestIssueInstant]);
-            session()->save();
+            Cookie::queue('spid_idp', $idp, 10, null, null, true, true, false, 'none');
+            Cookie::queue('spid_lastRequestId', $this->getSAML($idp)->getLastRequestID(), 10, null, null, true, true, false, 'none');
+            Cookie::queue('spid_lastRequestIssueInstant', $requestIssueInstant, 10, null, null, true, true, false, 'none');
 
             return redirect($idpRedirectTo);
         }
@@ -93,21 +91,28 @@ class SPIDAuth extends Controller
      */
     public function acs(): RedirectResponse
     {
-        $lastRequestId = session()->pull('spid_lastRequestId');
+        $lastRequestId = Cookie::get('spid_lastRequestId') ?? '';
+        $lastRequestIssueInstant = Cookie::get('spid_lastRequestIssueInstant') ?? '';
+        $idp = Cookie::get('spid_idp') ?? '';
+        Cookie::queue(Cookie::forget('spid_lastRequestId'));
+        Cookie::queue(Cookie::forget('spid_lastRequestIssueInstant'));
+        Cookie::queue(Cookie::forget('spid_idp'));
 
-        if (!$lastRequestId) {
-            throw new SPIDLoginException('Last request id not found in session', SPIDLoginException::SAML_REQUEST_ID_MISSING);
+        $this->checkIdp($idp);
+
+        if (empty($lastRequestId)) {
+            throw new SPIDLoginException('Last request id not found', SPIDLoginException::SAML_REQUEST_ID_MISSING);
         }
 
         try {
-            $this->getSAML()->processResponse($lastRequestId);
+            $this->getSAML($idp)->processResponse($lastRequestId);
         } catch (SAMLError | SAMLValidationError $e) {
             throw new SPIDLoginException('SAML response validation error: ' . $e->getMessage(), SPIDLoginException::SAML_VALIDATION_ERROR, $e);
         }
 
-        $errors = $this->getSAML()->getErrors();
-        $assertionId = $this->getSAML()->getLastAssertionId();
-        $assertionNotOnOrAfter = $this->getSAML()->getLastAssertionNotOnOrAfter();
+        $errors = $this->getSAML($idp)->getErrors();
+        $assertionId = $this->getSAML($idp)->getLastAssertionId();
+        $assertionNotOnOrAfter = $this->getSAML($idp)->getLastAssertionNotOnOrAfter();
 
         if (!empty($errors)) {
             $this->checkAnomalies();
@@ -116,12 +121,12 @@ class SPIDAuth extends Controller
         if (cache()->has($assertionId)) {
             throw new SPIDLoginException('SAML response validation error: assertion with id ' . $assertionId . ' was already processed', SPIDLoginException::SAML_RESPONSE_ALREADY_PROCESSED);
         }
-        if (!$this->getSAML()->isAuthenticated()) {
-            throw new SPIDLoginException('SAML authentication error: ' . $this->getSAML()->getLastErrorReason(), SPIDLoginException::SAML_AUTHENTICATION_ERROR);
+        if (!$this->getSAML($idp)->isAuthenticated()) {
+            throw new SPIDLoginException('SAML authentication error: ' . $this->getSAML($idp)->getLastErrorReason(), SPIDLoginException::SAML_AUTHENTICATION_ERROR);
         }
 
-        $lastResponseXML = $this->getSAML()->getLastResponseXML();
-        $this->validateLoginResponse($lastResponseXML);
+        $lastResponseXML = $this->getSAML($idp)->getLastResponseXML();
+        $this->validateLoginResponse($lastResponseXML, $lastRequestIssueInstant);
 
         try {
             $assertionExpiry = Carbon::createFromTimestampUTC($assertionNotOnOrAfter);
@@ -132,7 +137,7 @@ class SPIDAuth extends Controller
         $assertionExpiry->timezone = config('app.timezone');
         cache([$assertionId => ''], $assertionExpiry);
 
-        $attributes = $this->getSAML()->getAttributes();
+        $attributes = $this->getSAML($idp)->getAttributes();
         $requestedAttributes = config('spid-auth.sp_requested_attributes');
         if (array_intersect($requestedAttributes, array_keys($attributes)) !== $requestedAttributes) {
             throw new SPIDLoginException('SAML response validation error: requested attributes not present', SPIDLoginException::SAML_VALIDATION_ERROR);
@@ -146,9 +151,10 @@ class SPIDAuth extends Controller
         $SPIDUser = new SPIDUser($attributes);
         $idpEntityName = $this->getIdpEntityName($lastResponseXML);
 
+        session(['spid_idp' => $idp]);
         session(['spid_idpEntityName' => $idpEntityName]);
-        session(['spid_sessionIndex' => $this->getSAML()->getSessionIndex()]);
-        session(['spid_nameId' => $this->getSAML()->getNameId()]);
+        session(['spid_sessionIndex' => $this->getSAML($idp)->getSessionIndex()]);
+        session(['spid_nameId' => $this->getSAML($idp)->getNameId()]);
         session(['spid_user' => $SPIDUser]);
 
         event(new LoginEvent($SPIDUser, session('spid_idpEntityName')));
@@ -171,11 +177,12 @@ class SPIDAuth extends Controller
             $sessionIndex = session()->pull('spid_sessionIndex');
             $nameId = session()->pull('spid_nameId');
             $returnTo = url(config('spid-auth.after_logout_url'));
-            $idpEntityId = $this->getIdps()[session()->get('spid_idp')]['entityId'];
+            $idp = session()->get('spid_idp');
+            $idpEntityId = $this->getIdps()[$idp]['entityId'];
             session()->save();
 
             try {
-                return $this->getSAML()->logout($returnTo, [], $nameId, $sessionIndex, false, SAMLConstants::NAMEID_TRANSIENT, $idpEntityId);
+                return $this->getSAML($idp)->logout($returnTo, [], $nameId, $sessionIndex, false, SAMLConstants::NAMEID_TRANSIENT, $idpEntityId);
             } catch (SAMLError $e) {
                 throw new SPIDLogoutException($e->getMessage(), SPIDLogoutException::SAML_LOGOUT_ERROR, $e);
             }
@@ -192,7 +199,7 @@ class SPIDAuth extends Controller
                 throw new SPIDLogoutException('SAML response validation error: ' . $e->getMessage(), SPIDLogoutException::SAML_VALIDATION_ERROR, $e);
             }
 
-            $errors = $this->getSAML()->getErrors();
+            $errors = $this->getSAML($idp)->getErrors();
 
             if (!empty($errors)) {
                 throw new SPIDLogoutException('SAML response validation error: ' . implode(', ', $errors), SPIDLogoutException::SAML_VALIDATION_ERROR);
@@ -284,9 +291,12 @@ class SPIDAuth extends Controller
     /**
      * Perform additional checks on the SAML Response.
      *
+     * @param string $lastResponseXML the XML representation of the response
+     * @param string $lastRequestIssueInstant the issue instant of the last request
+     *
      * @throws SPIDLoginException if login response is not valid
      */
-    protected function validateLoginResponse($lastResponseXML): void
+    protected function validateLoginResponse(string $lastResponseXML, string $lastRequestIssueInstant): void
     {
         $responseDocument = new DOMDocument();
         SAMLUtils::loadXML($responseDocument, $lastResponseXML);
@@ -298,10 +308,9 @@ class SPIDAuth extends Controller
         $nameId = SAMLUtils::query($responseDocument, '/samlp:Response/saml:Assertion/saml:Subject/saml:NameID')->item(0);
         $subjectConfirmationData = SAMLUtils::query($responseDocument, '/samlp:Response/saml:Assertion/saml:Subject/saml:SubjectConfirmation/saml:SubjectConfirmationData')->item(0);
         $authContextClassRef = SAMLUtils::query($responseDocument, '/samlp:Response/saml:Assertion/saml:AuthnStatement/saml:AuthnContext/saml:AuthnContextClassRef')->item(0);
-        $requestIssueInstant = session()->pull('spid_lastRequestIssueInstant');
 
-        if (empty($requestIssueInstant)) {
-            throw new SPIDLoginException('SAML authentication error: missing spid_lastRequestIssueInstant in session', SPIDLoginException::SAML_AUTHENTICATION_ERROR);
+        if (empty($lastRequestIssueInstant)) {
+            throw new SPIDLoginException('SAML authentication error: missing spid_lastRequestIssueInstant', SPIDLoginException::SAML_AUTHENTICATION_ERROR);
         }
 
         if (!$responseDocument->documentElement->hasAttribute('Destination')) {
@@ -365,7 +374,7 @@ class SPIDAuth extends Controller
         }
 
         try {
-            $requestIssueInstantTime = SAMLUtils::parseSAML2Time($requestIssueInstant);
+            $requestIssueInstantTime = SAMLUtils::parseSAML2Time($lastRequestIssueInstant);
             $responseIssueInstantTime = SAMLUtils::parseSAML2Time($responseDocument->documentElement->getAttribute('IssueInstant'));
             $assertionIssueInstantTime = SAMLUtils::parseSAML2Time($assertionIssueInstant = $assertion->getAttribute('IssueInstant'));
         } catch (Exception $e) {
