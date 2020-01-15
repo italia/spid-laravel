@@ -203,9 +203,10 @@ class SPIDAuth extends Controller
             }
 
             $errors = $this->getSAML($idp)->getErrors();
+            $lastErrorReason = $this->getSAML($idp)->getLastErrorReason();
 
             if (!empty($errors)) {
-                throw new SPIDLogoutException('SAML response validation error: ' . implode(', ', $errors), SPIDLogoutException::SAML_VALIDATION_ERROR);
+                throw new SPIDLogoutException('SAML response validation error: ' . $lastErrorReason, SPIDLogoutException::SAML_VALIDATION_ERROR);
             }
         }
 
