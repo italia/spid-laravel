@@ -182,7 +182,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $this->withoutExceptionHandling();
         $this->expectException(SPIDLoginException::class);
         $this->expectExceptionCode(SPIDLoginException::SAML_VALIDATION_ERROR);
-        $this->expectExceptionMessage('SAML response validation error: test-error');
+        $this->expectExceptionMessage('SAML response validation error: errorReason');
 
         $response = $this->withCookies([
             'spid_lastRequestId' => 'UNIQUE_ID',
@@ -310,7 +310,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $this->withoutExceptionHandling();
         $this->expectException(SPIDLogoutException::class);
         $this->expectExceptionCode(SPIDLogoutException::SAML_VALIDATION_ERROR);
-        $this->expectExceptionMessage('SAML response validation error: test-error');
+        $this->expectExceptionMessage('SAML response validation error: errorReason');
 
         $response = $this->withSession([
             'spid_idpEntityName' => 'spid_idpEntityName',

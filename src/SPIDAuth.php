@@ -113,16 +113,17 @@ class SPIDAuth extends Controller
         $errors = $this->getSAML($idp)->getErrors();
         $assertionId = $this->getSAML($idp)->getLastAssertionId();
         $assertionNotOnOrAfter = $this->getSAML($idp)->getLastAssertionNotOnOrAfter();
+        $lastErrorReason = $this->getSAML($idp)->getLastErrorReason();
 
         if (!empty($errors)) {
-            $this->checkAnomalies();
-            throw new SPIDLoginException('SAML response validation error: ' . implode(', ', $errors), SPIDLoginException::SAML_VALIDATION_ERROR);
+            $this->checkAnomalies($lastErrorReason);
+            throw new SPIDLoginException('SAML response validation error: ' . $lastErrorReason, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
         if (cache()->has($assertionId)) {
             throw new SPIDLoginException('SAML response validation error: assertion with id ' . $assertionId . ' was already processed', SPIDLoginException::SAML_RESPONSE_ALREADY_PROCESSED);
         }
         if (!$this->getSAML($idp)->isAuthenticated()) {
-            throw new SPIDLoginException('SAML authentication error: ' . $this->getSAML($idp)->getLastErrorReason(), SPIDLoginException::SAML_AUTHENTICATION_ERROR);
+            throw new SPIDLoginException('SAML authentication error: ' . $lastErrorReason, SPIDLoginException::SAML_AUTHENTICATION_ERROR);
         }
 
         $lastResponseXML = $this->getSAML($idp)->getLastResponseXML();
@@ -202,9 +203,10 @@ class SPIDAuth extends Controller
             }
 
             $errors = $this->getSAML($idp)->getErrors();
+            $lastErrorReason = $this->getSAML($idp)->getLastErrorReason();
 
             if (!empty($errors)) {
-                throw new SPIDLogoutException('SAML response validation error: ' . implode(', ', $errors), SPIDLogoutException::SAML_VALIDATION_ERROR);
+                throw new SPIDLogoutException('SAML response validation error: ' . $lastErrorReason, SPIDLogoutException::SAML_VALIDATION_ERROR);
             }
         }
 
@@ -325,7 +327,7 @@ class SPIDAuth extends Controller
             throw new SPIDLoginException('SAML response validation error: missing InResponseTo attribute', SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
-        if ('urn:oasis:names:tc:SAML:2.0:nameid-format:entity' !== $issuer->getAttribute('Format')) {
+        if (!empty($issuer->getAttribute('Format')) && 'urn:oasis:names:tc:SAML:2.0:nameid-format:entity' !== $issuer->getAttribute('Format')) {
             throw new SPIDLoginException('SAML response validation error: wrong Issuer Format attribute', SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
@@ -397,12 +399,12 @@ class SPIDAuth extends Controller
     /**
      * Check wheter the login response contains a known anomaly.
      *
+     * @param string $lastErrorReason the returned error to check
+     *
      * @throws SPIDLoginAnomalyException if a known anomaly is found in the response
      */
-    protected function checkAnomalies(): void
+    protected function checkAnomalies(string $lastErrorReason): void
     {
-        $lastErrorReason = $this->getSAML(null)->getLastErrorReason();
-
         foreach (SPIDLoginAnomalyException::ERROR_CODES as $errorCode => $errorMessage) {
             if (false !== strpos($lastErrorReason, $errorMessage)) {
                 throw new SPIDLoginAnomalyException($errorCode);
