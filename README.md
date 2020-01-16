@@ -191,6 +191,13 @@ Optionally you can specify the button size (`s`, `m`, `l` or `xl`):
 @include('spid-auth::spid-button', ['size' => 'm'])
 ```
 
+Your templates **must include** a `@stack('styles')` directive inside the `head`
+tag and a `@stack('styles')` directive inside the `body` tag.
+
+The button is the official
+[spid-sp-access-button](https://github.com/italia/spid-sp-access-button) and
+requires jQuery.
+
 **Scenario**
 
 1. The user clicks on the button and a list of Identity Provider is displayed;
@@ -402,12 +409,6 @@ paths to files. If both are specified in your `config/spid-auth.php` then the
 ones specified as strings will take precedence.
 
 **Change the values and keep the private key secret**.
-
-### SPID smart button
-
-This package uses the
-[SPID Smart Button](https://github.com/italia/spid-smart-button) as proposed in
-this [pull request](https://github.com/italia/spid-smart-button/pull/10).
 
 ## Licenses
 
