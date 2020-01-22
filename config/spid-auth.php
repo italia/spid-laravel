@@ -39,6 +39,8 @@ return [
     'sp_spid_level' => 'https://www.spid.gov.it/SpidL1',
 
     'hide_real_idps' => false,
+    'expose_sp_metadata' => true,
+    'expose_idps_json' => true,
     // 'test_idp' => false,
     'test_idp' => [
         'entityId' => 'spid-testenv',

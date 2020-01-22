@@ -234,6 +234,10 @@ class SPIDAuth extends Controller
      */
     public function metadata(): Response
     {
+        if (!config('spid-auth.expose_sp_metadata')) {
+            abort(404);
+        }
+
         try {
             $metadata = $this->getSAML(null)->getSettings()->getSPMetadata();
         } catch (Exception $e) {
@@ -257,6 +261,10 @@ class SPIDAuth extends Controller
      */
     public function providers(): JsonResponse
     {
+        if (!config('spid-auth.expose_idps_json')) {
+            abort(404);
+        }
+
         $idps = $this->getIdps();
         unset($idps['empty']);
 
