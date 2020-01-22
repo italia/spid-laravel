@@ -377,6 +377,15 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $response->assertStatus(500);
     }
 
+    public function testMetadataNotExposed()
+    {
+        $this->app['config']->set('spid-auth.expose_sp_metadata', false);
+
+        $response = $this->get($this->metadataURL);
+
+        $response->assertStatus(404);
+    }
+
     public function testProvidersWithTestIdp()
     {
         $response = $this->get($this->providersURL);
@@ -413,5 +422,14 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $response = $this->get($this->providersURL);
 
         $response->assertJsonMissing(['entityId' => $this->app['config']->get('spid-idps.validator')['entityId']]);
+    }
+
+    public function testProvidersNotExposed()
+    {
+        $this->app['config']->set('spid-auth.expose_idps_json', false);
+
+        $response = $this->get($this->providersURL);
+
+        $response->assertStatus(404);
     }
 }
