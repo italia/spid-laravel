@@ -191,6 +191,13 @@ Optionally you can specify the button size (`s`, `m`, `l` or `xl`):
 @include('spid-auth::spid-button', ['size' => 'm'])
 ```
 
+To display the button dropdown right aligned you can set the `rightAlign`
+parameter to `true`.
+
+```blade
+@include('spid-auth::spid-button', ['rightAlign' => true])
+```
+
 Your templates **must include** a `@stack('styles')` directive inside the `head`
 tag and a `@stack('styles')` directive inside the `body` tag.
 
