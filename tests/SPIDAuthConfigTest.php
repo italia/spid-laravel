@@ -17,6 +17,24 @@ class SPIDAuthConfigTest extends TestCase
         $this->getSPIDAuthConfig();
     }
 
+    public function testMissingAcsIndex()
+    {
+        $this->withoutExceptionHandling();
+        $this->expectException(SPIDConfigurationException::class);
+        $this->expectExceptionMessage('Service provider AssertionConsumerService index not set');
+        config(['spid-auth.sp_acs_index' => null]);
+        $this->getSPIDAuthConfig();
+    }
+
+    public function testMissingAttributeIndex()
+    {
+        $this->withoutExceptionHandling();
+        $this->expectException(SPIDConfigurationException::class);
+        $this->expectExceptionMessage('Service provider AttributeConsumingService index not set');
+        config(['spid-auth.sp_attributes_index' => null]);
+        $this->getSPIDAuthConfig();
+    }
+
     public function testMissingBaseURL()
     {
         $this->withoutExceptionHandling();

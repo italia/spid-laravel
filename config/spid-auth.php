@@ -13,6 +13,8 @@ return [
     'sp_organization_name' => 'Example',
     'sp_organization_display_name' => 'Example Organization',
     'sp_organization_url' => 'https://example.org',
+    'sp_acs_index' => 0,
+    'sp_attributes_index' => 0,
     'sp_requested_attributes' => [
         'spidCode',
         'name',
