@@ -473,6 +473,14 @@ class SPIDAuth extends Controller
             return 'Service provider requested attributes not set';
         }
 
+        if (!is_int(config('spid-auth.sp_attributes_index'))) {
+            return 'Service provider AttributeConsumingService index not set';
+        }
+
+        if (!is_int(config('spid-auth.sp_acs_index'))) {
+            return 'Service provider AssertionConsumerService index not set';
+        }
+
         if (!is_string(config('spid-auth.sp_certificate')) || empty(config('spid-auth.sp_certificate'))) {
             if (!is_readable(config('spid-auth.sp_certificate_file'))) {
                 return 'Service provider certificate not set';
@@ -539,6 +547,9 @@ class SPIDAuth extends Controller
         } else {
             $config['sp']['x509cert'] = config('spid-auth.sp_certificate');
         }
+
+        $config['sp']['assertionConsumerService']['index'] = config('spid-auth.sp_acs_index');
+        $config['sp']['attributeConsumingService']['index'] = config('spid-auth.sp_attributes_index');
 
         foreach (config('spid-auth.sp_requested_attributes') as $attr) {
             $config['sp']['attributeConsumingService']['requestedAttributes'][] = ['name' => $attr];

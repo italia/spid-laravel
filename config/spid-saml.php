@@ -20,6 +20,7 @@ return [
         // message.  Onelogin Toolkit supports for this endpoint the
         // HTTP-POST binding only
         'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
+        'index' => '',
     ],
     // If you need to specify requested attributes, set a
     // attributeConsumingService. nameFormat, attributeValue and
@@ -27,6 +28,7 @@ return [
     'attributeConsumingService' => [
         'serviceName' => '',
         'requestedAttributes' => [],
+        'index' => '',
     ],
     // Specifies info about where and how the <Logout Response> message MUST be
     // returned to the requester, in this case our SP.
