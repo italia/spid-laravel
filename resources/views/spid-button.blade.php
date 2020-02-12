@@ -5,7 +5,7 @@
         <span class="italia-it-button-text">Entra con SPID</span>
     </a>
     <div id="spid-idp-button-{{ $size ?? 'm' }}-post" class="spid-idp-button spid-idp-button-tip spid-idp-button-relative{{ $rightAlign ?? false ? ' spid-idp-button-anchor-right' : ''}}">
-        <ul id="spid-idp-list-{{ $size ?? 'm' }}-root-post" class="spid-idp-button-menu" aria-labelledby="spid-idp">
+        <ul id="spid-idp-list-{{ $size ?? 'm' }}-root-post" class="spid-idp-button-menu">
             @unless(config('spid-auth.hide_real_idps'))
             <li class="spid-idp-button-link" data-idp="aruba">
                 <button class="idp-button-idp-logo" name="aruba_id" type="submit"><span class="spid-sr-only">Aruba ID</span><img class="spid-idp-button-logo" src="{{ asset('/vendor/spid-auth/img/spid-idp-arubaid.svg') }}" onerror="this.src='{{ asset('/vendor/spid-auth/img/spid-idp-arubaid.png') }}'; this.onerror=null;" alt="Aruba ID" /></button>
