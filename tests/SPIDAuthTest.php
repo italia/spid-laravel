@@ -328,6 +328,34 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $response->assertRedirect($this->afterLogoutURL);
     }
 
+    public function testLogoutSpOnly()
+    {
+        $this->app['config']->set('spid-auth.only_sp_logout', true);
+        $this->setSPIDAuthMock()->shouldReceive('logout')->never();
+
+        $this->testAcs();
+
+        $response = $this->get($this->logoutURL);
+
+        $response->assertSessionMissing('spid_sessionIndex');
+        $response->assertSessionMissing('spid_nameId');
+        $response->assertRedirect($this->afterLogoutURL);
+        Event::assertDispatched(LogoutEvent::class, function ($e) {
+            $SPIDUser = $e->getSPIDUser();
+            $isSPIDUserReturned = SPIDUser::class == get_class($SPIDUser);
+            $areSPIDUserFieldsSet =
+                'Nome' == $SPIDUser->name &&
+                'Cognome' == $SPIDUser->familyName &&
+                'FSCLNB17A01H501X' == $SPIDUser->fiscalNumber &&
+                'TEST0123456789' == $SPIDUser->spidCode &&
+                null == $SPIDUser->nonExistent;
+            $isIdpReturned = 'Test IdP' == $e->getIdp();
+
+            return $isSPIDUserReturned && $areSPIDUserFieldsSet && $isIdpReturned;
+        });
+        $this->assertNull($this->app->make('SPIDAuth')->getSPIDUser());
+    }
+
     public function testLogoutWithErrors()
     {
         $this->withoutExceptionHandling();
