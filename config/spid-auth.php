@@ -43,6 +43,7 @@ return [
     'hide_real_idps' => false,
     'expose_sp_metadata' => true,
     'expose_idps_json' => true,
+    'only_sp_logout' => false,
     // 'test_idp' => false,
     'test_idp' => [
         'entityId' => 'spid-testenv',

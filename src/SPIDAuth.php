@@ -182,6 +182,18 @@ class SPIDAuth extends Controller
             $idpEntityId = $this->getIdps()[$idp]['entityId'];
             session()->save();
 
+            if (config('spid-auth.only_sp_logout')) {
+                $idpEntityName = session()->pull('spid_idpEntityName');
+                $SPIDUser = session()->pull('spid_user');
+                session()->forget('spid_idp');
+
+                event(new LogoutEvent($SPIDUser, $idpEntityName));
+
+                session()->reflash();
+
+                return redirect(config('spid-auth.after_logout_url'));
+            }
+
             try {
                 return $this->getSAML($idp)->logout($returnTo, [], $nameId, $sessionIndex, false, SAMLConstants::NAMEID_TRANSIENT, $idpEntityId);
             } catch (SAMLError $e) {
