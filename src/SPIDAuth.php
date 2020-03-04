@@ -67,10 +67,17 @@ class SPIDAuth extends Controller
             $requestDocument = new DOMDocument();
             SAMLUtils::loadXML($requestDocument, $this->getSAML($idp)->getLastRequestXML());
             $requestIssueInstant = $requestDocument->documentElement->getAttribute('IssueInstant');
+            $lastRequestId = $this->getSAML($idp)->getLastRequestID();
 
             Cookie::queue('spid_idp', $idp, 10, null, null, true, true, false, 'none');
-            Cookie::queue('spid_lastRequestId', $this->getSAML($idp)->getLastRequestID(), 10, null, null, true, true, false, 'none');
+            Cookie::queue('spid_lastRequestId', $lastRequestId, 10, null, null, true, true, false, 'none');
             Cookie::queue('spid_lastRequestIssueInstant', $requestIssueInstant, 10, null, null, true, true, false, 'none');
+
+            if (session()->has('url.intended')) {
+                cache([$lastRequestId => [
+                    'url.intended' => session('url.intended'),
+                ]], 300);
+            }
 
             return redirect($idpRedirectTo);
         }
@@ -161,6 +168,10 @@ class SPIDAuth extends Controller
         event(new LoginEvent($SPIDUser, session('spid_idpEntityName')));
 
         session()->reflash();
+
+        if (cache()->has($lastRequestId)) {
+            session(cache()->pull($lastRequestId));
+        }
 
         return redirect()->intended(config('spid-auth.after_login_url'));
     }
