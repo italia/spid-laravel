@@ -9,8 +9,6 @@
 [![PDS Skeleton](https://img.shields.io/badge/pds-skeleton-blue.svg?colorB=0066cc)](https://github.com/php-pds/skeleton)
 [![License](https://img.shields.io/packagist/l/italia/spid-laravel.svg?colorB=0066cc)](https://github.com/italia/spid-laravel/blob/master/LICENSE)
 
-⚠️ **This package is under development and is not suitable for production use.**
-
 This is a package to provide a simple SPID authentication system to web
 applications based on [Laravel](https://www.laravel.com).
 
