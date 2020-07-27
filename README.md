@@ -42,7 +42,10 @@ for SPID compatibility.
    composer config minimum-stability beta
    composer config prefer-stable true
    ```
-
+   ***For Windows only***
+   
+   Composer needs the [patch command](https://en.wikipedia.org/wiki/Patch_%28Unix%29) to be installed (it is not part of Windows) to install the patch
+   
     **This installation step will be removed before the first stable release of
    this package.**
 
