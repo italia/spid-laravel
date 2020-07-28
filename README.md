@@ -42,6 +42,10 @@ for SPID compatibility.
    composer config minimum-stability beta
    composer config prefer-stable true
    ```
+   ***For Windows only***
+
+   Composer needs the [patch command](https://en.wikipedia.org/wiki/Patch_%28Unix%29) to be installed (it is not part of Windows). To enable it [install Git](https://git-scm.com/download/win) then add the C:\Program Files\Git\usr\bin folder to the system path.
+
 
     **This installation step will be removed before the first stable release of
    this package.**
