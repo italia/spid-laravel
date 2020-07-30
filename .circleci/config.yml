@@ -1,0 +1,83 @@
+version: 2.1
+
+commands:
+  restore_all_caches:
+    description: Restore php dependencies
+    steps:
+      - restore_cache:
+          keys:
+          - v1-php-{{ checksum "composer.lock" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-php-
+
+  composer:
+    description: Ensure all php dependencies are installed
+    steps:
+      - run:
+          name: Self-update composer
+          command: composer self-update
+
+      - run:
+          name: Run composer install
+          command: composer install --prefer-dist --no-interaction --no-suggest --no-progress --ignore-platform-reqs
+
+  structure-validation:
+    description: Ensure package directory strucure is valid
+    steps:
+      - run:
+          name: Run pds-skeleton validator
+          command: vendor/bin/pds-skeleton validate
+
+  php-cs-fixer:
+    description: Ensure php code follows style rules
+    steps:
+      - run:
+          name: Run php-cs-fixer (future mode)
+          command: |
+            PHP_CS_FIXER_FUTURE_MODE=1
+            vendor/bin/php-cs-fixer fix --diff --dry-run --verbose
+
+  security:
+    description: Check known security issues in php dependencies
+    steps:
+      - run:
+          name: Run security-checker
+          command: vendor/bin/security-checker security:check
+
+  save_all_caches:
+    description: Save php and javascript dependencies
+    steps:
+      - save_cache:
+          paths:
+            - ./vendor
+          key: v1-php-{{ checksum "composer.lock" }}
+
+jobs:
+  build:
+    parameters:
+      php-version:
+        type: string
+    docker:
+      - image: circleci/php:<< parameters.php-version >>-cli
+    environment:
+      - APP_ENV: "testing"
+    steps:
+      - checkout
+      - restore_all_caches
+      - composer
+      - structure-validation
+      - php-cs-fixer
+      - security
+      - save_all_caches
+      # test
+      - run:
+          name: Run phpunit
+          command: vendor/bin/phpunit
+
+workflows:
+  build:
+    jobs:
+      - build:
+          matrix:
+            parameters:
+              php-version: ["7.2", "7.3"]
