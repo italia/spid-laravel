@@ -13,12 +13,10 @@
 namespace Italia\SPIDAuth\Console;
 
 use Illuminate\Console\Command;
-use Illuminate\Console\DetectsApplicationNamespace;
+use Illuminate\Container\Container;
 
 class CommandExample extends Command
 {
-    use DetectsApplicationNamespace;
-
     /**
      * The name and signature of the console command.
      *
@@ -121,7 +119,7 @@ class CommandExample extends Command
     {
         return str_replace(
             '{{namespace}}',
-            $this->getAppNamespace(),
+            Container::getInstance()->getNamespace(),
             file_get_contents(__DIR__ . '/stubs/example/' . $stubName . '.stub')
         );
     }
