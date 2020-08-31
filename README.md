@@ -201,7 +201,7 @@ parameter to `true`.
 ```
 
 Your templates **must include** a `@stack('styles')` directive inside the `head`
-tag and a `@stack('styles')` directive inside the `body` tag.
+tag and a `@stack('scripts')` directive inside the `body` tag.
 
 The button is the official
 [spid-sp-access-button](https://github.com/italia/spid-sp-access-button) and
