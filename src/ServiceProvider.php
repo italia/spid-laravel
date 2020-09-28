@@ -34,6 +34,8 @@ class ServiceProvider extends LaravelServiceProvider
         $this->publishes([$configAuth => config_path('spid-auth.php')], 'spid-config');
         $this->publishes([$assets => public_path('vendor/spid-auth')], 'spid-assets');
 
+        $this->registerHelpers();
+
         $router->aliasMiddleware('spid.auth', \Italia\SPIDAuth\Middleware::class);
 
         View::share('SPIDActionUrl', route('spid-auth_do-login'));
@@ -49,5 +51,16 @@ class ServiceProvider extends LaravelServiceProvider
         });
 
         $this->commands(\Italia\SPIDAuth\Console\CommandExample::class);
+    }
+
+    public function registerHelpers()
+    {
+        // Load the helpers in app/Http/helpers.php
+        $helpers_dir = glob(__DIR__ . '/Helpers/*.php');
+
+        foreach ($helpers_dir as $file)
+        {
+            require_once($file);
+        }
     }
 }

@@ -11,45 +11,23 @@
         </span>
         <span class="italia-it-button-text">Entra con SPID</span>
     </a>
+
     <div class="spid-menu-container">
         <div id="spid-idp-button-{{ $size ?? 'm' }}-post{{ isset($button_id) ? ('_' . $button_id) : '' }}"
              class="spid-idp-button spid-idp-button-tip spid-idp-button-relative{{ $rightAlign ?? false ? ' spid-idp-button-anchor-right' : ''}}">
             <ul id="spid-idp-list-{{ $size ?? 'm' }}-root-post{{ isset($button_id) ? ('_' . $button_id) : '' }}"
                 class="spid-idp-button-menu">
-                @unless(config('spid-auth.hide_real_idps'))
-                    @foreach(collect(Config::get('spid-auth.idps'))->map(function($idp){ return (object) $idp; })->shuffle()->all() as $idp)
-                        <li class="spid-idp-button-link" data-idp="{{ $idp->idp }}">
-                            <button class="idp-button-idp-logo" name="{{ $idp->name }}" type="submit">
-                                <span class="spid-sr-only">{{ $idp->description }}</span>
-                                <img class="spid-idp-button-logo" src="{{ asset($idp->svg_logo) }}"
-                                     onerror="this.src='{{ asset($idp->png_logo) }}'; this.onerror=null;"
-                                     alt="{{ $idp->description }}" />
-                            </button>
-                        </li>
-                    @endforeach
-                @endunless
-                @if (config('spid-auth.test_idp'))
-                    <li class="spid-idp-button-link" data-idp="test">
-                        <button class="idp-button-idp-logo" name="test" type="submit">
-                            <span class="spid-sr-only">Test IdP</span>
+                @foreach(smart_button_providers() as $idp)
+                    <li class="spid-idp-button-link" data-idp="{{ $idp->provider ?? '' }}">
+                        <button class="idp-button-idp-logo" name="{{ $idp->provider ?? '' }}" type="submit">
+                            <span class="spid-sr-only">{{ $idp->title ?? '' }}</span>
                             <img class="spid-idp-button-logo"
-                                 src="{{ asset('/vendor/spid-auth/img/spid-idp-test.svg') }}"
-                                 onerror="this.src='{{ asset('/vendor/spid-auth/img/spid-idp-test.png') }}'; this.onerror=null;"
-                                 alt="Test IdP" />
+                                 src="{{ asset('/vendor/spid-auth/img/' . $idp->logo ?? '') }}"
+                                 onerror="this.src='{{ asset('/vendor/spid-auth/img/' . $idp->logoPng ?? '') }}'; this.onerror=null;"
+                                 alt="{{ $idp->title ?? '' }}" />
                         </button>
                     </li>
-                @endif
-                @if (config('spid-auth.validator_idp'))
-                    <li class="spid-idp-button-link" data-idp="validator">
-                        <button class="idp-button-idp-logo" name="validator" type="submit">
-                            <span class="spid-sr-only">Validator IdP</span>
-                            <img class="spid-idp-button-logo"
-                                 src="{{ asset('/vendor/spid-auth/img/spid-validator.svg') }}"
-                                 onerror="this.src='{{ asset('/vendor/spid-auth/img/spid-validator.png') }}'; this.onerror=null;"
-                                 alt="Validator" />
-                        </button>
-                    </li>
-                @endif
+                @endforeach
             </ul>
             <ul id="spid-idp-footer" class="spid-idp-button-menu">
                 <li class="spid-idp-support-link" data-spidlink="info">
