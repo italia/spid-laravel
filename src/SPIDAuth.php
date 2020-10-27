@@ -165,7 +165,7 @@ class SPIDAuth extends Controller
             throw new SPIDLoginException($message, SPIDLoginException::SAML_AUTHENTICATION_ERROR);
         }
 
-        $this->validateLoginResponse($lastResponseXML, $lastRequestIssueInstant);
+        $this->validateLoginResponse($lastResponseXML, $lastRequestIssueInstant, $idp, $SPIDLogger);
 
         try {
             $assertionExpiry = Carbon::createFromTimestampUTC($assertionNotOnOrAfter);
