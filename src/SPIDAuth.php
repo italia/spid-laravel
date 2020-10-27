@@ -15,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Cookie;
+use Italia\SPIDAuth\Events\LoggerEvent;
 use Italia\SPIDAuth\Events\LoginEvent;
 use Italia\SPIDAuth\Events\LogoutEvent;
 use Italia\SPIDAuth\Exceptions\SPIDConfigurationException;
@@ -68,6 +69,11 @@ class SPIDAuth extends Controller
             SAMLUtils::loadXML($requestDocument, $this->getSAML($idp)->getLastRequestXML());
             $requestIssueInstant = $requestDocument->documentElement->getAttribute('IssueInstant');
             $lastRequestId = $this->getSAML($idp)->getLastRequestID();
+            $lastRequestXML = $this->getSAML($idp)->getLastRequestXML();
+
+            $SPIDLogger = new SPIDLogger('LOGIN', $lastRequestId);
+            $SPIDLogger->setRequestData($requestIssueInstant, $lastRequestXML);
+            event(new LoggerEvent($idp, $SPIDLogger));
 
             Cookie::queue('spid_idp', $idp, 10, null, null, true, true, false, 'none');
             Cookie::queue('spid_lastRequestId', $lastRequestId, 10, null, null, true, true, false, 'none');
@@ -111,35 +117,62 @@ class SPIDAuth extends Controller
             throw new SPIDLoginException('Last request id not found', SPIDLoginException::SAML_REQUEST_ID_MISSING);
         }
 
+        $SPIDLogger = new SPIDLogger('LOGIN', $lastRequestId);
+
         try {
             $this->getSAML($idp)->processResponse($lastRequestId);
         } catch (SAMLError | SAMLValidationError $e) {
-            throw new SPIDLoginException('SAML response validation error: ' . $e->getMessage(), SPIDLoginException::SAML_VALIDATION_ERROR, $e);
+            $message = 'SAML response validation error: ' . $e->getMessage();
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR, $e);
         }
 
         $errors = $this->getSAML($idp)->getErrors();
         $assertionId = $this->getSAML($idp)->getLastAssertionId();
         $assertionNotOnOrAfter = $this->getSAML($idp)->getLastAssertionNotOnOrAfter();
         $lastErrorReason = $this->getSAML($idp)->getLastErrorReason();
+        $lastMessageId = $this->getSAML($idp)->getLastMessageId();
+        $nameId = $this->getSAML($idp)->getNameId();
+        $nameIdNameQualifier = $this->getSAML($idp)->getNameIdNameQualifier();
+        $lastResponseXML = $this->getSAML($idp)->getLastResponseXML();
+        $responseDocument = new DOMDocument();
+        SAMLUtils::loadXML($responseDocument, $lastResponseXML);
+        $responseIssueInstant = $responseDocument->documentElement->getAttribute('IssueInstant');
+
+        $SPIDLogger->setResponseData(
+            $lastMessageId,
+            $lastResponseXML,
+            $responseIssueInstant,
+            $assertionId,
+            $nameId,
+            $nameIdNameQualifier
+        );
 
         if (!empty($errors)) {
-            $this->checkAnomalies($lastErrorReason);
-            throw new SPIDLoginException('SAML response validation error: ' . $lastErrorReason, SPIDLoginException::SAML_VALIDATION_ERROR);
+            $this->checkAnomalies($lastErrorReason, $idp, $SPIDLogger);
+            $message = 'SAML response validation error: ' . $lastErrorReason;
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
         if (cache()->has($assertionId)) {
-            throw new SPIDLoginException('SAML response validation error: assertion with id ' . $assertionId . ' was already processed', SPIDLoginException::SAML_RESPONSE_ALREADY_PROCESSED);
+            $message = 'SAML response validation error: assertion with id ' . $assertionId . ' was already processed';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_RESPONSE_ALREADY_PROCESSED);
         }
         if (!$this->getSAML($idp)->isAuthenticated()) {
-            throw new SPIDLoginException('SAML authentication error: ' . $lastErrorReason, SPIDLoginException::SAML_AUTHENTICATION_ERROR);
+            $message = 'SAML authentication error: ' . $lastErrorReason;
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_AUTHENTICATION_ERROR);
         }
 
-        $lastResponseXML = $this->getSAML($idp)->getLastResponseXML();
         $this->validateLoginResponse($lastResponseXML, $lastRequestIssueInstant);
 
         try {
             $assertionExpiry = Carbon::createFromTimestampUTC($assertionNotOnOrAfter);
         } catch (Exception $e) {
-            throw new SPIDLoginException('SAML response validation error: invalid NotOnOrAfter attribute', SPIDLoginException::SAML_VALIDATION_ERROR, $e);
+            $message = 'SAML response validation error: invalid NotOnOrAfter attribute';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR, $e);
         }
 
         $assertionExpiry->timezone = config('app.timezone');
@@ -148,12 +181,16 @@ class SPIDAuth extends Controller
         $attributes = $this->getSAML($idp)->getAttributes();
         $requestedAttributes = config('spid-auth.sp_requested_attributes');
         if (array_intersect($requestedAttributes, array_keys($attributes)) !== $requestedAttributes) {
-            throw new SPIDLoginException('SAML response validation error: requested attributes not present', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: requested attributes not present';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         $emptyAttributes = array_filter($attributes);
         if ($emptyAttributes !== $attributes) {
-            throw new SPIDLoginException('SAML response validation error: empty attribute', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: empty attribute';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         $SPIDUser = new SPIDUser($attributes);
@@ -165,6 +202,7 @@ class SPIDAuth extends Controller
         session(['spid_nameId' => $this->getSAML($idp)->getNameId()]);
         session(['spid_user' => $SPIDUser]);
 
+        event(new LoggerEvent($idp, $SPIDLogger));
         event(new LoginEvent($SPIDUser, session('spid_idpEntityName')));
 
         session()->reflash();
@@ -198,6 +236,8 @@ class SPIDAuth extends Controller
                 $SPIDUser = session()->pull('spid_user');
                 session()->forget('spid_idp');
 
+                // TODO: Implement logging here.
+
                 event(new LogoutEvent($SPIDUser, $idpEntityName));
 
                 session()->reflash();
@@ -206,9 +246,23 @@ class SPIDAuth extends Controller
             }
 
             try {
-                return $this->getSAML($idp)->logout($returnTo, [], $nameId, $sessionIndex, false, SAMLConstants::NAMEID_TRANSIENT, $idpEntityId);
+                $logoutRedirectTo = $this->getSAML($idp)->logout($returnTo, [], $nameId, $sessionIndex, true, SAMLConstants::NAMEID_TRANSIENT, $idpEntityId);
+
+                $requestDocument = new DOMDocument();
+                SAMLUtils::loadXML($requestDocument, $this->getSAML($idp)->getLastRequestXML());
+                $requestIssueInstant = $requestDocument->documentElement->getAttribute('IssueInstant');
+                $lastRequestId = $this->getSAML($idp)->getLastRequestID();
+                $lastRequestXML = $this->getSAML($idp)->getLastRequestXML();
+
+                $SPIDLogger = new SPIDLogger('LOGOUT', $lastRequestId);
+                $SPIDLogger->setRequestData($requestIssueInstant, $lastRequestXML);
+                event(new LoggerEvent($idp, $SPIDLogger));
+
+                return SAMLUtils::redirect($logoutRedirectTo);
             } catch (SAMLError $e) {
-                throw new SPIDLogoutException($e->getMessage(), SPIDLogoutException::SAML_LOGOUT_ERROR, $e);
+                $message = $e->getMessage();
+                $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+                throw new SPIDLogoutException($message, SPIDLogoutException::SAML_LOGOUT_ERROR, $e);
             }
         }
 
@@ -216,11 +270,28 @@ class SPIDAuth extends Controller
             $idpEntityName = session()->pull('spid_idpEntityName');
             $SPIDUser = session()->pull('spid_user');
             $idp = session()->pull('spid_idp');
+            $SPIDLogger = null;
 
             event(new LogoutEvent($SPIDUser, $idpEntityName));
 
             try {
                 $this->getSAML($idp)->processSLO();
+
+                $lastMessageId = $this->getSAML($idp)->getLastMessageId();
+                $lastResponseXML = $this->getSAML($idp)->getLastResponseXML();
+                $responseDocument = new DOMDocument();
+                SAMLUtils::loadXML($responseDocument, $lastResponseXML);
+                $responseIssueInstant = $responseDocument->documentElement->getAttribute('IssueInstant');
+                $lastRequestId = $responseDocument->documentElement->getAttribute('InResponseTo');
+
+                $SPIDLogger = new SPIDLogger('LOGOUT', $lastRequestId);
+                $SPIDLogger->setResponseData(
+                    $lastMessageId,
+                    $lastResponseXML,
+                    $responseIssueInstant
+                );
+
+                event(new LoggerEvent($idp, $SPIDLogger));
             } catch (SAMLError | SAMLValidationError $e) {
                 throw new SPIDLogoutException('SAML response validation error: ' . $e->getMessage(), SPIDLogoutException::SAML_VALIDATION_ERROR, $e);
             }
@@ -229,7 +300,9 @@ class SPIDAuth extends Controller
             $lastErrorReason = $this->getSAML($idp)->getLastErrorReason();
 
             if (!empty($errors)) {
-                throw new SPIDLogoutException('SAML response validation error: ' . $lastErrorReason, SPIDLogoutException::SAML_VALIDATION_ERROR);
+                $message = 'SAML response validation error: ' . $lastErrorReason;
+                $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+                throw new SPIDLogoutException($message, SPIDLogoutException::SAML_VALIDATION_ERROR);
             }
         }
 
@@ -328,13 +401,18 @@ class SPIDAuth extends Controller
     /**
      * Perform additional checks on the SAML Response.
      *
-     * @param string $lastResponseXML the XML representation of the response
-     * @param string $lastRequestIssueInstant the issue instant of the last request
-     *
+     * @param string     $lastResponseXML         the XML representation of the response
+     * @param string     $lastRequestIssueInstant the issue instant of the last request
+     * @param string     $idp
+     * @param SPIDLogger $SPIDLogger
      * @throws SPIDLoginException if login response is not valid
      */
-    protected function validateLoginResponse(string $lastResponseXML, string $lastRequestIssueInstant): void
-    {
+    protected function validateLoginResponse(
+        string $lastResponseXML,
+        string $lastRequestIssueInstant,
+        string $idp,
+        SPIDLogger $SPIDLogger): void {
+
         $responseDocument = new DOMDocument();
         SAMLUtils::loadXML($responseDocument, $lastResponseXML);
         $issuer = SAMLUtils::query($responseDocument, '/samlp:Response/saml:Issuer')->item(0);
@@ -347,67 +425,99 @@ class SPIDAuth extends Controller
         $authContextClassRef = SAMLUtils::query($responseDocument, '/samlp:Response/saml:Assertion/saml:AuthnStatement/saml:AuthnContext/saml:AuthnContextClassRef')->item(0);
 
         if (empty($lastRequestIssueInstant)) {
-            throw new SPIDLoginException('SAML authentication error: missing spid_lastRequestIssueInstant', SPIDLoginException::SAML_AUTHENTICATION_ERROR);
+            $message = 'SAML authentication error: missing spid_lastRequestIssueInstant';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_AUTHENTICATION_ERROR);
         }
 
         if (!$responseDocument->documentElement->hasAttribute('Destination')) {
-            throw new SPIDLoginException('SAML response validation error: missing Destination attribute', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: missing Destination attribute';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         if (!$responseDocument->documentElement->hasAttribute('InResponseTo')) {
-            throw new SPIDLoginException('SAML response validation error: missing InResponseTo attribute', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: missing InResponseTo attribute';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         if (!empty($issuer->getAttribute('Format')) && 'urn:oasis:names:tc:SAML:2.0:nameid-format:entity' !== $issuer->getAttribute('Format')) {
-            throw new SPIDLoginException('SAML response validation error: wrong Issuer Format attribute', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: wrong Issuer Format attribute';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         if ('2.0' !== $assertion->getAttribute('Version')) {
-            throw new SPIDLoginException('SAML response validation error: wrong Assertion Version attribute', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: wrong Assertion Version attribute';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         if (empty(trim($nameId->textContent))) {
-            throw new SPIDLoginException('SAML response validation error: empty NameID', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: empty NameID';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         if ('urn:oasis:names:tc:SAML:2.0:nameid-format:transient' !== $nameId->getAttribute('Format')) {
-            throw new SPIDLoginException('SAML response validation error: wrong NameID Format attribute', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: wrong NameID Format attribute';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         if (empty($nameId->getAttribute('NameQualifier'))) {
-            throw new SPIDLoginException('SAML response validation error: empty or missing NameID NameQualifier attribute', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: empty or missing NameID NameQualifier attribute';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         if (empty($subjectConfirmationData->getAttribute('Recipient'))) {
-            throw new SPIDLoginException('SAML response validation error: empty or missing SubjectConfirmationData Recipient attribute', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: empty or missing SubjectConfirmationData Recipient attribute';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         if (!$subjectConfirmationData->hasAttribute('InResponseTo')) {
-            throw new SPIDLoginException('SAML response validation error: missing SubjectConfirmationData InResponseTo attribute', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: missing SubjectConfirmationData InResponseTo attribute';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         if ('urn:oasis:names:tc:SAML:2.0:nameid-format:entity' !== $assertionIssuer->getAttribute('Format')) {
-            throw new SPIDLoginException('SAML response validation error: wrong Assertion Issuer Format attribute', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: wrong Assertion Issuer Format attribute';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         if (!$conditions->hasChildNodes()) {
-            throw new SPIDLoginException('SAML response validation error: empty Conditions', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: empty Conditions';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         if (empty($conditions->getAttribute('NotBefore'))) {
-            throw new SPIDLoginException('SAML response validation error: empty Conditions NotBefore attribute', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: empty Conditions NotBefore attribute';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         if (empty($conditions->getAttribute('NotOnOrAfter'))) {
-            throw new SPIDLoginException('SAML response validation error: empty Conditions NotOnOrAfter attribute', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: empty Conditions NotOnOrAfter attribute';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         if (empty($audienceRestriction) || empty(trim($audienceRestriction->textContent))) {
-            throw new SPIDLoginException('SAML response validation error: empty or missing AudienceRestriction element', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: empty or missing AudienceRestriction element';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         if (0 === preg_match('/https:\/\/www\.spid\.gov\.it\/SpidL[123]/', $authContextClassRef->textContent)) {
-            throw new SPIDLoginException('SAML response validation error: wrong AuthContextClassRef element', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: wrong AuthContextClassRef element';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         try {
@@ -415,32 +525,53 @@ class SPIDAuth extends Controller
             $responseIssueInstantTime = SAMLUtils::parseSAML2Time($responseDocument->documentElement->getAttribute('IssueInstant'));
             $assertionIssueInstantTime = SAMLUtils::parseSAML2Time($assertionIssueInstant = $assertion->getAttribute('IssueInstant'));
         } catch (Exception $e) {
-            throw new SPIDLoginException('SAML response validation error: invalid IssueInstant attribute', SPIDLoginException::SAML_VALIDATION_ERROR, $e);
+            $message = 'SAML response validation error: invalid IssueInstant attribute';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR, $e);
         }
 
         if (abs($responseIssueInstantTime - $requestIssueInstantTime) > 300) {
-            throw new SPIDLoginException('SAML response validation error: wrong Response IssueInstant attribute', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: wrong Response IssueInstant attribute';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         if (abs($assertionIssueInstantTime - $requestIssueInstantTime) > 300) {
-            throw new SPIDLoginException('SAML response validation error: wrong Assertion IssueInstant attribute', SPIDLoginException::SAML_VALIDATION_ERROR);
+            $message = 'SAML response validation error: wrong Assertion IssueInstant attribute';
+            $this->fireLoggerEventWithErrorData($idp, $message, $SPIDLogger);
+            throw new SPIDLoginException($message, SPIDLoginException::SAML_VALIDATION_ERROR);
         }
     }
 
     /**
      * Check wheter the login response contains a known anomaly.
      *
-     * @param string $lastErrorReason the returned error to check
-     *
+     * @param string     $lastErrorReason the returned error to check
+     * @param string     $idp
+     * @param SPIDLogger $SPIDLogger
      * @throws SPIDLoginAnomalyException if a known anomaly is found in the response
      */
-    protected function checkAnomalies(string $lastErrorReason): void
+    protected function checkAnomalies(string $lastErrorReason, string $idp, SPIDLogger $SPIDLogger): void
     {
         foreach (SPIDLoginAnomalyException::ERROR_CODES as $errorCode => $errorMessage) {
             if (false !== strpos($lastErrorReason, $errorMessage)) {
+                $this->fireLoggerEventWithErrorData($idp, 'SPID login anomaly: error code ' . $errorCode, $SPIDLogger);
                 throw new SPIDLoginAnomalyException($errorCode);
             }
         }
+    }
+
+    /**
+     * Set error condition and fire LoggerEvent.
+     *
+     * @param string     $idp
+     * @param string     $error
+     * @param SPIDLogger $SPIDLogger
+     */
+    protected function fireLoggerEventWithErrorData(string $idp, string $error, SPIDLogger $SPIDLogger)
+    {
+        $SPIDLogger->setErrorData($error);
+        event(new LoggerEvent($idp, $SPIDLogger));
     }
 
     /**
