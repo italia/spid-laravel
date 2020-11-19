@@ -63,7 +63,7 @@ class SPIDAuth extends Controller
             $idp = request('provider');
             $this->checkIdp($idp);
 
-            $idpRedirectTo = $this->getSAML($idp)->login(null, [], true, false, true);
+            $idpRedirectTo = $this->getSAML($idp)->login(base64_encode(config('spid-auth.sp_relay_state')), [], true, false, true);
             $requestDocument = new DOMDocument();
             SAMLUtils::loadXML($requestDocument, $this->getSAML($idp)->getLastRequestXML());
             $requestIssueInstant = $requestDocument->documentElement->getAttribute('IssueInstant');
