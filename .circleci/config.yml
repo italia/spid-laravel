@@ -10,6 +10,11 @@ commands:
           # fallback to using the latest cache if no exact match is found
           - v1-php-
 
+  xdebug:
+    description: Ensure Xdebug is in coverage mode
+    steps:
+      - run: echo "xdebug.mode = coverage" | sudo tee -a $PHP_INI_DIR/conf.d/docker-php-ext-xdebug.ini
+
   composer:
     description: Ensure all php dependencies are installed
     steps:
@@ -60,10 +65,11 @@ jobs:
     docker:
       - image: circleci/php:<< parameters.php-version >>-cli
     environment:
-      - APP_ENV: "testing"
+      APP_ENV: "testing"
     steps:
       - checkout
       - restore_all_caches
+      - xdebug
       - composer
       - structure-validation
       - php-cs-fixer
