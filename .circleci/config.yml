@@ -20,7 +20,7 @@ commands:
     steps:
       - run:
           name: Self-update composer
-          command: composer self-update
+          command: sudo composer self-update
 
       - run:
           name: Run composer install
@@ -47,7 +47,10 @@ commands:
     steps:
       - run:
           name: Run security-checker
-          command: vendor/bin/security-checker security:check
+          command: |
+            wget https://get.symfony.com/cli/installer -O - | bash
+            sudo mv /home/circleci/.symfony/bin/symfony /usr/local/bin/symfony
+            symfony check:security
 
   save_all_caches:
     description: Save php and javascript dependencies
@@ -86,4 +89,4 @@ workflows:
       - build:
           matrix:
             parameters:
-              php-version: ["7.2", "7.3"]
+              php-version: ["7.2", "7.3", "7.4"]
