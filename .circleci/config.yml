@@ -89,4 +89,4 @@ workflows:
       - build:
           matrix:
             parameters:
-              php-version: ["7.2", "7.3"]
+              php-version: ["7.2", "7.3", "7.4"]
