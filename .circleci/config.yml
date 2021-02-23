@@ -47,7 +47,10 @@ commands:
     steps:
       - run:
           name: Run security-checker
-          command: vendor/bin/security-checker security:check
+          command: |
+            wget https://get.symfony.com/cli/installer -O - | bash
+            sudo mv /home/circleci/.symfony/bin/symfony /usr/local/bin/symfony
+            symfony check:security
 
   save_all_caches:
     description: Save php and javascript dependencies
