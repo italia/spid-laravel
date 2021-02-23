@@ -20,7 +20,7 @@ commands:
     steps:
       - run:
           name: Self-update composer
-          command: composer self-update
+          command: sudo composer self-update
 
       - run:
           name: Run composer install
