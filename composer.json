@@ -50,6 +50,6 @@
     }
   },
   "archive": {
-    "exclude": ["/tests", ".travis.yml", "/certs", ".editorconfig", "php_cs.dist"]
+    "exclude": ["/tests", "/certs", ".editorconfig", "php_cs.dist"]
   }
 }
