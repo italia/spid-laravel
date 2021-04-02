@@ -376,6 +376,12 @@ Make sure to set your timezone in `app/config/app.php` because the id of every
 assertion consumed is cached to prevent replay attacks. This feature rely on a
 correct timezone configuration of your app.
 
+### HTTPS
+
+As required in the [SPID technical specifications](https://docs.italia.it/italia/spid/spid-regole-tecniche/it/stabile/trasmissione.html#sicurezza), the Service Provider **MUST** accept messages in HTTPS only.
+According to this requirement, some cookies in this package are created with
+`Secure` policy, thus the authentication does not work in an unsecure context.
+
 ### Test Identity Provider
 
 In the
