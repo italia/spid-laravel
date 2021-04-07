@@ -1,5 +1,5 @@
 diff --git a/src/Saml2/AuthnRequest.php b/src/Saml2/AuthnRequest.php
-index a1311f7..ad9d2b6 100644
+index a1311f7..c13c467 100644
 --- a/src/Saml2/AuthnRequest.php
 +++ b/src/Saml2/AuthnRequest.php
 @@ -82,8 +82,7 @@ SUBJECT;
@@ -12,7 +12,7 @@ index a1311f7..ad9d2b6 100644
  NAMEIDPOLICY;
          }
 
-@@ -156,12 +155,19 @@ REQUESTEDAUTHN;
+@@ -156,12 +155,17 @@ REQUESTEDAUTHN;
      xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
      ID="$id"
      Version="2.0"
@@ -28,19 +28,17 @@ index a1311f7..ad9d2b6 100644
 +    AttributeConsumingServiceIndex="{$spData['attributeConsumingService']['index']}">
 +    <saml:Issuer
 +        NameQualifier="{$spEntityId}"
-+        Format="urn:oasis:names:tc:SAML:2.0:nameid-format:entity">
-+        {$spEntityId}
-+    </saml:Issuer>
++        Format="urn:oasis:names:tc:SAML:2.0:nameid-format:entity">{$spEntityId}</saml:Issuer>
 +{$nameIdPolicyStr}
 +{$requestedAuthnStr}
  </samlp:AuthnRequest>
  AUTHNREQUEST;
 
 diff --git a/src/Saml2/LogoutRequest.php b/src/Saml2/LogoutRequest.php
-index d540c22..aa3c417 100644
+index d540c22..2e6110d 100644
 --- a/src/Saml2/LogoutRequest.php
 +++ b/src/Saml2/LogoutRequest.php
-@@ -135,8 +135,12 @@ class LogoutRequest
+@@ -135,8 +135,10 @@ class LogoutRequest
      ID="{$id}"
      Version="2.0"
      IssueInstant="{$issueInstant}"
@@ -49,9 +47,7 @@ index d540c22..aa3c417 100644
 +    Destination="{$idpData['entityId']}">
 +    <saml:Issuer
 +        NameQualifier="{$spEntityId}"
-+        Format="urn:oasis:names:tc:SAML:2.0:nameid-format:entity">
-+        {$spEntityId}
-+    </saml:Issuer>
++        Format="urn:oasis:names:tc:SAML:2.0:nameid-format:entity">{$spEntityId}</saml:Issuer>
      {$nameIdObj}
      {$sessionIndexStr}
  </samlp:LogoutRequest>
