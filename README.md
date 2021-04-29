@@ -357,15 +357,7 @@ This will create the following files:
 Next add the `SPIDEventSubscriber` class in
 `app/Providers/EventServiceProvider.php` as described above.
 
-To run the example:
-
-```console
-php artisan serve
-```
-
-and browse to <http://localhost:8000/>.
-
-Open `storage/logs/laravel.log` to read some example informations logged by the
+You can open `storage/logs/laravel.log` to read some example informations logged by the
 `SPIDEventSubscriber`.
 
 ## Notes
