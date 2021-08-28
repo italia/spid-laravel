@@ -137,7 +137,7 @@ class SPIDAuth extends Controller
         $this->validateLoginResponse($lastResponseXML, $lastRequestIssueInstant);
 
         try {
-            $assertionExpiry = Carbon::createFromTimestampUTC($assertionNotOnOrAfter);
+            $assertionExpiry = Carbon::parse('@' . $assertionNotOnOrAfter);
         } catch (Exception $e) {
             throw new SPIDLoginException('SAML response validation error: invalid NotOnOrAfter attribute', SPIDLoginException::SAML_VALIDATION_ERROR, $e);
         }
@@ -317,7 +317,7 @@ class SPIDAuth extends Controller
         unset($idps['empty']);
 
         if (empty($idp) || !is_string($idp)) {
-            throw new SPIDLoginException('Malformed request: idp value not present or wrong', SPIDLoginException::MALFORMED_IDP_IN_USER_REQUEST);
+            throw new SPIDLoginException('Malformed request: idp value not present or wrong (this is likely due to a non-https request)', SPIDLoginException::MALFORMED_IDP_IN_USER_REQUEST);
         }
 
         if (!array_key_exists($idp, $idps)) {
