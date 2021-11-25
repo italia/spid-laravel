@@ -64,7 +64,7 @@ class SPIDAuth extends Controller
             $idp = request('provider');
             $this->checkIdp($idp);
 
-            $relayState = Str::random(32);
+            $relayState = $this->getRandomRelayState();
             $idpRedirectTo = $this->getSAML($idp)->login($relayState, [], true, false, true);
             $requestDocument = new DOMDocument();
             SAMLUtils::loadXML($requestDocument, $this->getSAML($idp)->getLastRequestXML());
@@ -629,5 +629,16 @@ class SPIDAuth extends Controller
         }
 
         return $idpEntityName;
+    }
+
+    /**
+     * Return a random string to be used as RelayState value.
+     *
+     * @return string random string
+     * @codeCoverageIgnore
+     */
+    protected function getRandomRelayState(): string
+    {
+        return Str::random(32);
     }
 }
