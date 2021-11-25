@@ -15,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Str;
 use Italia\SPIDAuth\Events\LoginEvent;
 use Italia\SPIDAuth\Events\LogoutEvent;
 use Italia\SPIDAuth\Exceptions\SPIDConfigurationException;
@@ -63,7 +64,8 @@ class SPIDAuth extends Controller
             $idp = request('provider');
             $this->checkIdp($idp);
 
-            $idpRedirectTo = $this->getSAML($idp)->login(null, [], true, false, true);
+            $relayState = Str::random(32);
+            $idpRedirectTo = $this->getSAML($idp)->login($relayState, [], true, false, true);
             $requestDocument = new DOMDocument();
             SAMLUtils::loadXML($requestDocument, $this->getSAML($idp)->getLastRequestXML());
             $requestIssueInstant = $requestDocument->documentElement->getAttribute('IssueInstant');
@@ -74,7 +76,7 @@ class SPIDAuth extends Controller
             Cookie::queue('spid_lastRequestIssueInstant', $requestIssueInstant, 10, null, null, true, true, false, 'none');
 
             if (session()->has('url.intended')) {
-                cache([$lastRequestId => [
+                cache([$relayState => [
                     'url.intended' => session('url.intended'),
                 ]], 300);
             }
@@ -169,8 +171,9 @@ class SPIDAuth extends Controller
 
         session()->reflash();
 
-        if (cache()->has($lastRequestId)) {
-            session(cache()->pull($lastRequestId));
+        $relayState = request()->input('RelayState');
+        if (cache()->has($relayState)) {
+            session(cache()->pull($relayState));
         }
 
         return redirect()->intended(config('spid-auth.after_login_url'));
