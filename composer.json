@@ -50,5 +50,10 @@
   },
   "archive": {
     "exclude": ["/tests", "/certs", ".editorconfig", "php_cs.dist"]
+  },
+  "config": {
+    "allow-plugins": {
+      "cweagans/composer-patches": true
+    }
   }
 }
