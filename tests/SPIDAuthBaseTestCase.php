@@ -151,6 +151,7 @@ class SPIDAuthBaseTestCase extends TestCase
         });
 
         $SPIDAuth->shouldReceive('getSAML')->andReturn($SAMLAuth);
+        $SPIDAuth->shouldReceive('getRandomRelayState')->andReturn('RANDOM_STRING');
         $this->app->instance('SPIDAuth', $SPIDAuth);
 
         return $SAMLAuth;
