@@ -106,7 +106,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
             'url.intended' => 'intendedURL',
         ])->post($this->doLoginURL, ['provider' => 'test']);
 
-        $this->assertTrue(cache()->has('UNIQUE_ID'));
+        $this->assertTrue(cache()->has('RANDOM_STRING'));
         $response->assertCookie('spid_idp', 'test');
         $response->assertCookie('spid_lastRequestId');
         $response->assertCookie('spid_lastRequestIssueInstant');
@@ -149,7 +149,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
     {
         $this->setSPIDAuthMock();
 
-        cache(['UNIQUE_ID' => [
+        cache(['RANDOM_STRING' => [
             'url.intended' => 'intendedURL',
         ]], 300);
 
@@ -157,9 +157,11 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
             'spid_lastRequestId' => 'UNIQUE_ID',
             'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
             'spid_idp' => 'test',
-        ])->post($this->acsURL);
+        ])->post($this->acsURL, [
+            'RelayState' => 'RANDOM_STRING',
+        ]);
 
-        $this->assertFalse(cache()->has('UNIQUE_ID'));
+        $this->assertFalse(cache()->has('RANDOM_STRING'));
         $response->assertSessionHas('spid_idpEntityName', 'Test IdP');
         $response->assertSessionHas('spid_sessionIndex', 'sessionIndex');
         $response->assertSessionHas('spid_nameId', 'nameId');
