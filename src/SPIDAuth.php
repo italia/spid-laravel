@@ -355,7 +355,7 @@ class SPIDAuth extends Controller
 
                 $emailAddress = $contact['emailAddress'] ?? null;
                 if (!$emailAddress) {
-                    throw new RuntimeException("Missing mandatory emailAddress");
+                    throw new RuntimeException('Missing mandatory emailAddress');
                 }
                 $cp->appendChild($document->createElement('md:EmailAddress', $emailAddress));
 
@@ -371,7 +371,6 @@ class SPIDAuth extends Controller
             }
 
             $metadata = $document->saveXML();
-
         } catch (Exception $e) {
             throw new SPIDMetadataException('Invalid SP metadata: ' . $e->getMessage(), 0, $e);
         }
