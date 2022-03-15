@@ -3,6 +3,7 @@
 namespace Italia\SPIDAuth\Tests;
 
 use DOMDocument;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Italia\SPIDAuth\Events\LoginEvent;
 use Italia\SPIDAuth\Events\LogoutEvent;
@@ -378,8 +379,31 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $response->assertStatus(500);
     }
 
-    public function testMetadata()
+    public function testMetadataSPPrivate()
     {
+        $metadata = new DOMDocument();
+
+        $response = $this->get($this->metadataURL);
+
+        $response->assertStatus(200);
+        $metadata->loadXML($response->getContent());
+
+        libxml_use_internal_errors(true);
+        $ret = $metadata->schemaValidate('tests/xml-schemas/saml-schema-metadata-SPID-SP.xsd');
+        $this->libxml_display_errors();
+
+        $this->assertTrue($ret);
+    }
+
+    public function testMetadataSPPublic()
+    {
+        Config::set('spid-auth.sp_contact_persons', [
+            'other' => [
+                'Public' => true,
+                'IPACode' => 'IPACODE',
+                'EmailAddress' => 'public_sp@public.org',
+            ],
+        ]);
         $metadata = new DOMDocument();
 
         $response = $this->get($this->metadataURL);

@@ -127,6 +127,74 @@ class SPIDAuthConfigTest extends TestCase
         $this->getSPIDAuthConfig();
     }
 
+    public function testMissingContactPerson()
+    {
+        $this->withoutExceptionHandling();
+        $this->expectException(SPIDConfigurationException::class);
+        $this->expectExceptionMessage('SPID contact persons not set');
+        config(['spid-auth.sp_contact_persons' => null]);
+        $this->getSPIDAuthConfig();
+    }
+
+    public function testPrivatePublicInconsistency()
+    {
+        $this->withoutExceptionHandling();
+        $this->expectException(SPIDConfigurationException::class);
+        $this->expectExceptionMessage('SPID Public and Private are mutually exclusive');
+        config(['spid-auth.sp_contact_persons' => [
+            'other' => [
+                'Public' => true,
+            ],
+            'billing' => [
+                'Private' => true,
+            ],
+        ]]);
+        $this->getSPIDAuthConfig();
+    }
+
+    public function testPrivateRequiresVATNumber()
+    {
+        $this->withoutExceptionHandling();
+        $this->expectException(SPIDConfigurationException::class);
+        $this->expectExceptionMessage('SPID Private requires VATNumber');
+        config(['spid-auth.sp_contact_persons' => [
+            'other' => [
+                'Private' => true,
+            ],
+            'billing' => [
+                'Private' => true,
+            ],
+        ]]);
+        $this->getSPIDAuthConfig();
+    }
+
+    public function testPublicRequiresIPACode()
+    {
+        $this->withoutExceptionHandling();
+        $this->expectException(SPIDConfigurationException::class);
+        $this->expectExceptionMessage('SPID Public requires IPACode');
+        config(['spid-auth.sp_contact_persons' => [
+            'other' => [
+                'Public' => true,
+            ],
+        ]]);
+        $this->getSPIDAuthConfig();
+    }
+
+    public function testContactRequiresEmailAddress()
+    {
+        $this->withoutExceptionHandling();
+        $this->expectException(SPIDConfigurationException::class);
+        $this->expectExceptionMessage('SPID missing email address for this contacts: other');
+        config(['spid-auth.sp_contact_persons' => [
+            'other' => [
+                'Public' => true,
+                'IPACode' => '12345',
+            ],
+        ]]);
+        $this->getSPIDAuthConfig();
+    }
+
     public function testInvalidSpidLevel()
     {
         $this->withoutExceptionHandling();

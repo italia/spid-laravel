@@ -41,13 +41,15 @@ return [
     'sp_spid_level' => 'https://www.spid.gov.it/SpidL1',
     'sp_contact_persons' => [
         'other' => [
-            'private' => true,
-            'emailAddress' => 'other@other.org',
+            'Private' => true,
+            'EmailAddress' => 'other@other.org',
             'VATNumber' => '12345678901',
+            'FiscalCode' => 'FNTCMS73M25L224C',
         ],
         'billing' => [
-            'private' => true,
-            'emailAddress' => 'billing@other.org',
+            'Private' => true,
+            'EmailAddress' => 'billing@other.org',
+            'TelephoneNumber' => '+39329000001',
             'CessionarioCommittente' => [
                 'DatiAnagrafici' => [
                     'IdFiscaleIVA' => [

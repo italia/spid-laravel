@@ -283,35 +283,20 @@ class SPIDAuth extends Controller
                 $cp->setAttribute('contactType', $type);
 
                 $extensions = $document->createElement('md:Extensions');
-                $isPrivate = $contact['private'] ?? null;
-                $isPublic = $contact['public'] ?? null;
+                $isPrivate = $contact['Private'] ?? null;
+                $isPublic = $contact['Public'] ?? null;
 
                 if ($isPrivate) {
-                    if ($isPublic) {
-                        throw new RuntimeException('Bad configuration: public is not compatible with private');
-                    }
-
                     $extensions->appendChild($document->createElement('spid:Private'));
-
-                    if (!($vatNumber = $contact['VATNumber'] ?? null)) {
-                        throw new RuntimeException('Missing VATNumber mandatory for private SP');
+                    $extensions->appendChild($document->createElement('spid:VATNumber', $contact['VATNumber']));
+                    if ($fiscalCode = $contact['FiscalCode'] ?? null) {
+                        $extensions->appendChild($document->createElement('spid:FiscalCode', $fiscalCode));
                     }
-
-                    $extensions->appendChild($document->createElement('spid:VATNumber', $vatNumber));
                 }
 
                 if ($isPublic) {
-                    if ($isPrivate) {
-                        throw new RuntimeException('Bad configuration: private is not compatible with public');
-                    }
-
                     $extensions->appendChild($document->createElement('spid:Public'));
-
-                    if (!($ipaCode = $contact['IPACode'] ?? null)) {
-                        throw new RuntimeException('Missing IPACode mandatory for public SP');
-                    }
-
-                    $extensions->appendChild($document->createElement('spid:IPACode', $ipaCode));
+                    $extensions->appendChild($document->createElement('spid:IPACode', $contact['IPACode']));
                 }
 
                 if ($cessionarioCommittente = $contact['CessionarioCommittente'] ?? null) {
@@ -324,11 +309,7 @@ class SPIDAuth extends Controller
                             $datiAnagraficiNode->appendChild($document->createElement('spid:IdCodice', $idFiscaleIVA['IdCodice']));
                         }
 
-                        if ($codiceFiscale = $datiAnagrafici['CodiceFiscale'] ?? null) {
-                            $datiAnagraficiNode->appendChild($document->createElement('spid:CodiceFiscale', $codiceFiscale));
-                        }
-
-                        if ($anagrafica = $datiAnagrafici['anagrafica'] ?? null) {
+                        if ($anagrafica = $datiAnagrafici['Anagrafica'] ?? null) {
                             $anagraficaNode = $datiAnagraficiNode->appendChild($document->createElement('spid:Anagrafica'));
                             $anagraficaNode->appendChild($document->createElement('spid:Denominazione', $anagrafica['Denominazione']));
                             $datiAnagraficiNode->appendChild($anagraficaNode);
@@ -353,18 +334,10 @@ class SPIDAuth extends Controller
                 }
                 $cp->appendChild($extensions);
 
-                $emailAddress = $contact['emailAddress'] ?? null;
-                if (!$emailAddress) {
-                    throw new RuntimeException('Missing mandatory emailAddress');
-                }
-                $cp->appendChild($document->createElement('md:EmailAddress', $emailAddress));
+                $cp->appendChild($document->createElement('md:EmailAddress', $contact['EmailAddress']));
 
                 if ($telephoneNumber = $contact['TelephoneNumber'] ?? null) {
                     $cp->appendChild($document->createElement('md:TelephoneNumber', $telephoneNumber));
-                }
-
-                if ($company = $contact['Company'] ?? null) {
-                    $cp->appendChild($document->createElement('md:Company', $company));
                 }
 
                 $root->appendChild($cp);
@@ -622,8 +595,52 @@ class SPIDAuth extends Controller
             return 'SPID authentication level name wrong or not set';
         }
 
-        if (!is_array(config('spid-auth.sp_contact_persons')) || empty(config('spid-auth.sp_contact_persons'))) {
+        $contactPersons = config('spid-auth.sp_contact_persons');
+        if (empty($contactPersons) || !is_array($contactPersons)) {
             return 'SPID contact persons not set';
+        }
+
+        $isPublic = false;
+        $isPrivate = false;
+        $VATNumberFound = false;
+        $IPACodeFound = false;
+        $missingEmailAddress = [];
+        foreach ($contactPersons as $type => $contactPerson) {
+            if (!$isPublic) {
+                $isPublic = $contactPerson['Public'] ?? false;
+            }
+
+            if (!$isPrivate) {
+                $isPrivate = $contactPerson['Private'] ?? false;
+            }
+
+            if (!$VATNumberFound) {
+                $VATNumberFound = !empty($contactPerson['VATNumber']);
+            }
+
+            if (!$IPACodeFound) {
+                $IPACodeFound = !empty($contactPerson['IPACode']);
+            }
+
+            if (empty($contactPerson['EmailAddress'])) {
+                $missingEmailAddress[] = $type;
+            }
+        }
+
+        if ($isPublic && $isPrivate) {
+            return 'SPID Public and Private are mutually exclusive';
+        }
+
+        if ($isPrivate && !$VATNumberFound) {
+            return 'SPID Private requires VATNumber';
+        }
+
+        if ($isPublic && !$IPACodeFound) {
+            return 'SPID Public requires IPACode';
+        }
+
+        if ($missingEmailAddress) {
+            return 'SPID missing email address for this contacts: ' . implode(',', $missingEmailAddress);
         }
 
         return true;
