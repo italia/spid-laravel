@@ -28,6 +28,7 @@ use OneLogin\Saml2\Constants as SAMLConstants;
 use OneLogin\Saml2\Error as SAMLError;
 use OneLogin\Saml2\Utils as SAMLUtils;
 use OneLogin\Saml2\ValidationError as SAMLValidationError;
+use RuntimeException;
 
 class SPIDAuth extends Controller
 {
@@ -266,17 +267,88 @@ class SPIDAuth extends Controller
 
         try {
             $metadata = $this->getSAML(null)->getSettings()->getSPMetadata();
+
+            if (!$metadata) {
+                throw new RuntimeException('error');
+            }
+
+            $metadata = str_replace('xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"', 'xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:spid="https://spid.gov.it/saml-extensions"', $metadata);
+            $document = new DOMDocument();
+            $document->loadXML($metadata);
+
+            $contacts = config('spid-auth.sp_contact_persons');
+            $root = $document->documentElement;
+            foreach ($contacts as $type => $contact) {
+                $cp = $document->createElement('md:ContactPerson');
+                $cp->setAttribute('contactType', $type);
+
+                $extensions = $document->createElement('md:Extensions');
+                $isPrivate = $contact['Private'] ?? null;
+                $isPublic = $contact['Public'] ?? null;
+
+                if ($isPrivate) {
+                    $extensions->appendChild($document->createElement('spid:Private'));
+                    $extensions->appendChild($document->createElement('spid:VATNumber', $contact['VATNumber']));
+                    if ($fiscalCode = $contact['FiscalCode'] ?? null) {
+                        $extensions->appendChild($document->createElement('spid:FiscalCode', $fiscalCode));
+                    }
+                }
+
+                if ($isPublic) {
+                    $extensions->appendChild($document->createElement('spid:Public'));
+                    $extensions->appendChild($document->createElement('spid:IPACode', $contact['IPACode']));
+                }
+
+                if ($cessionarioCommittente = $contact['CessionarioCommittente'] ?? null) {
+                    $cessionarioCommittenteNode = $document->createElement('spid:CessionarioCommittente');
+
+                    if ($datiAnagrafici = $cessionarioCommittente['DatiAnagrafici'] ?? null) {
+                        $datiAnagraficiNode = $document->createElement('spid:DatiAnagrafici');
+                        if ($idFiscaleIVA = $datiAnagrafici['IdFiscaleIVA'] ?? null) {
+                            $datiAnagraficiNode->appendChild($document->createElement('spid:IdPaese', $idFiscaleIVA['IdPaese']));
+                            $datiAnagraficiNode->appendChild($document->createElement('spid:IdCodice', $idFiscaleIVA['IdCodice']));
+                        }
+
+                        if ($anagrafica = $datiAnagrafici['Anagrafica'] ?? null) {
+                            $anagraficaNode = $datiAnagraficiNode->appendChild($document->createElement('spid:Anagrafica'));
+                            $anagraficaNode->appendChild($document->createElement('spid:Denominazione', $anagrafica['Denominazione']));
+                            $datiAnagraficiNode->appendChild($anagraficaNode);
+                        }
+
+                        $cessionarioCommittenteNode->appendChild($datiAnagraficiNode);
+
+                        $extensions->appendChild($cessionarioCommittenteNode);
+                    }
+
+                    if ($sede = $cessionarioCommittente['Sede'] ?? null) {
+                        $sedeNode = $document->createElement('spid:Sede');
+                        $sedeNode->appendChild($document->createElement('spid:Indirizzo', $sede['Indirizzo']));
+                        $sedeNode->appendChild($document->createElement('spid:NumeroCivico', $sede['NumeroCivico']));
+                        $sedeNode->appendChild($document->createElement('spid:CAP', $sede['CAP']));
+                        $sedeNode->appendChild($document->createElement('spid:Comune', $sede['Comune']));
+                        $sedeNode->appendChild($document->createElement('spid:Provincia', $sede['Provincia']));
+                        $sedeNode->appendChild($document->createElement('spid:Nazione', $sede['Nazione']));
+
+                        $extensions->appendChild($sedeNode);
+                    }
+                }
+                $cp->appendChild($extensions);
+
+                $cp->appendChild($document->createElement('md:EmailAddress', $contact['EmailAddress']));
+
+                if ($telephoneNumber = $contact['TelephoneNumber'] ?? null) {
+                    $cp->appendChild($document->createElement('md:TelephoneNumber', $telephoneNumber));
+                }
+
+                $root->appendChild($cp);
+            }
+
+            $metadata = $document->saveXML();
         } catch (Exception $e) {
             throw new SPIDMetadataException('Invalid SP metadata: ' . $e->getMessage(), 0, $e);
         }
 
-        $errors = $this->getSAML(null)->getSettings()->validateMetadata($metadata);
-
-        if (empty($errors)) {
-            return response($metadata, '200')->header('Content-Type', 'text/xml');
-        } else {
-            throw new SPIDMetadataException('Invalid SP metadata: ' . implode(', ', $errors));
-        }
+        return response($metadata, '200')->header('Content-Type', 'text/xml');
     }
 
     /**
@@ -521,6 +593,54 @@ class SPIDAuth extends Controller
 
         if (!is_string(config('spid-auth.sp_spid_level')) || 0 === preg_match('/https:\/\/www\.spid\.gov\.it\/SpidL[123]/', config('spid-auth.sp_spid_level'))) {
             return 'SPID authentication level name wrong or not set';
+        }
+
+        $contactPersons = config('spid-auth.sp_contact_persons');
+        if (empty($contactPersons) || !is_array($contactPersons)) {
+            return 'SPID contact persons not set';
+        }
+
+        $isPublic = false;
+        $isPrivate = false;
+        $VATNumberFound = false;
+        $IPACodeFound = false;
+        $missingEmailAddress = [];
+        foreach ($contactPersons as $type => $contactPerson) {
+            if (!$isPublic) {
+                $isPublic = $contactPerson['Public'] ?? false;
+            }
+
+            if (!$isPrivate) {
+                $isPrivate = $contactPerson['Private'] ?? false;
+            }
+
+            if (!$VATNumberFound) {
+                $VATNumberFound = !empty($contactPerson['VATNumber']);
+            }
+
+            if (!$IPACodeFound) {
+                $IPACodeFound = !empty($contactPerson['IPACode']);
+            }
+
+            if (empty($contactPerson['EmailAddress'])) {
+                $missingEmailAddress[] = $type;
+            }
+        }
+
+        if ($isPublic && $isPrivate) {
+            return 'SPID Public and Private are mutually exclusive';
+        }
+
+        if ($isPrivate && !$VATNumberFound) {
+            return 'SPID Private requires VATNumber';
+        }
+
+        if ($isPublic && !$IPACodeFound) {
+            return 'SPID Public requires IPACode';
+        }
+
+        if ($missingEmailAddress) {
+            return 'SPID missing email address for this contacts: ' . implode(',', $missingEmailAddress);
         }
 
         return true;

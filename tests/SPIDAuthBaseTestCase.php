@@ -87,7 +87,6 @@ class SPIDAuthBaseTestCase extends TestCase
         $SAMLAuth->shouldReceive('getErrors')->andReturn(false)->byDefault();
         $SAMLAuth->shouldReceive('getSPMetadata')->andReturn()->byDefault();
         $SAMLAuth->shouldReceive('getSettings')->andReturn($SAMLAuth);
-        $SAMLAuth->shouldReceive('validateMetadata')->andReturn(['error']);
 
         $SAMLAuth->shouldReceive('withErrors')->andReturnUsing(function () {
             return m::self()->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], 'nameId', 'sessionIndex', false, SAMLConstants::NAMEID_TRANSIENT, 'spid-testenv')->andThrow(
