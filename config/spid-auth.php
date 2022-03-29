@@ -45,6 +45,9 @@ return [
             'EmailAddress' => 'other@other.org',
             'VATNumber' => '12345678901',
             'FiscalCode' => 'FNTCMS73M25L224C',
+            // for public SP example:
+            // 'Public' => true,
+            // 'IPACode' => 'public administration code: mandatory for public SP'
         ],
         'billing' => [
             'Private' => true,
@@ -98,5 +101,4 @@ return [
     'login_view' => 'spid-auth::login-spid',
     'after_login_url' => '/',
     'after_logout_url' => '/',
-    'debug' => true,
 ];
