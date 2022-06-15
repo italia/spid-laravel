@@ -30,7 +30,7 @@
             NotOnOrAfter="{{NotOnOrAfter}}" />
         <saml:AuthnStatement
             AuthnInstant="{{AuthnIstant}}"
-            SessionIndex="{{SessionIndex}}">
+            SessionIndex="sessionIndex">
             <saml:AuthnContext>
                 <saml:AuthnContextClassRef>https://www.spid.gov.it/SpidL1</saml:AuthnContextClassRef>
             </saml:AuthnContext>
