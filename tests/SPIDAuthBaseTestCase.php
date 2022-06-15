@@ -79,7 +79,7 @@ class SPIDAuthBaseTestCase extends TestCase
             <samlp:AuthnRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" IssueInstant="' . SAMLUtils::parseTime2SAML(time()) . '" />'
         );
         $SAMLAuth->shouldReceive('getLastResponseXML')->andReturn($compiledResponseXML)->byDefault();
-        $SAMLAuth->shouldReceive('getSessionIndex')->andReturnUsing(function() use ($spidLevel) {
+        $SAMLAuth->shouldReceive('getSessionIndex')->andReturnUsing(function () use ($spidLevel) {
             return $spidLevel > 1 ? null : 'sessionIndex';
         });
         $SAMLAuth->shouldReceive('getNameId')->andReturn('nameId');

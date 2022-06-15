@@ -260,11 +260,13 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $response->assertStatus(500);
     }
 
-    public function testAcsWithSpidLevel2() {
+    public function testAcsWithSpidLevel2()
+    {
         $this->testAcs(2);
     }
 
-    public function testAcsWithSpidLevel3() {
+    public function testAcsWithSpidLevel3()
+    {
         $this->testAcs(3);
     }
 
