@@ -22,7 +22,7 @@
                 <saml:SubjectConfirmationData
                     InResponseTo="{{AuthnRequestID}}"
                     NotOnOrAfter="{{NotOnOrAfter}}"
-                    Recipient="" />
+                    Recipient="{{AssertionConsumerURL}}" />
             </saml:SubjectConfirmation>
         </saml:Subject>
         <saml:Conditions
