@@ -161,10 +161,11 @@ class SPIDAuth extends Controller
 
         $SPIDUser = new SPIDUser($attributes);
         $idpEntityName = $this->getIdpEntityName($lastResponseXML);
+        $spidSessionIndex = $this->getSAML($idp)->getSessionIndex() ?? $this->getRandomString();
 
         session(['spid_idp' => $idp]);
         session(['spid_idpEntityName' => $idpEntityName]);
-        session(['spid_sessionIndex' => $this->getSAML($idp)->getSessionIndex()]);
+        session(['spid_sessionIndex' => $spidSessionIndex]);
         session(['spid_nameId' => $this->getSAML($idp)->getNameId()]);
         session(['spid_user' => $SPIDUser]);
 
