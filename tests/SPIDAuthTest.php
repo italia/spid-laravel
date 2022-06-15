@@ -114,10 +114,11 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $response->assertRedirect();
     }
 
-    public function testAcs()
+    public function testAcs($spidLevel = 1)
     {
         Event::fake();
-        $this->setSPIDAuthMock();
+        $this->setSPIDAuthMock($spidLevel);
+        $expectedSessionIndex = $spidLevel > 1 ? 'RANDOM_STRING' : 'sessionIndex';
 
         $response = $this->withCookies([
             'spid_lastRequestId' => 'UNIQUE_ID',
@@ -126,7 +127,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         ])->post($this->acsURL);
 
         $response->assertSessionHas('spid_idpEntityName', 'Test IdP');
-        $response->assertSessionHas('spid_sessionIndex', 'sessionIndex');
+        $response->assertSessionHas('spid_sessionIndex', $expectedSessionIndex);
         $response->assertSessionHas('spid_nameId', 'nameId');
         $response->assertSessionHas('spid_user');
         $response->assertRedirect($this->afterLoginURL);
@@ -257,6 +258,14 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         ])->post($this->acsURL);
 
         $response->assertStatus(500);
+    }
+
+    public function testAcsWithSpidLevel2() {
+        $this->testAcs(2);
+    }
+
+    public function testAcsWithSpidLevel3() {
+        $this->testAcs(3);
     }
 
     public function testLogout()
