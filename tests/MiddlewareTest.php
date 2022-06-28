@@ -36,7 +36,7 @@ class MiddlewareTest extends TestCase
         Route::get('/', function () {
             return 'home';
         })->middleware('spid.auth');
-        $response = $this->withSession(['spid_sessionIndex' => 'sessionIndex'])->get('/');
+        $response = $this->withSession(['spid_sessionId' => 'sessionId'])->get('/');
         $response->assertSuccessful();
     }
 

@@ -161,11 +161,10 @@ class SPIDAuth extends Controller
 
         $SPIDUser = new SPIDUser($attributes);
         $idpEntityName = $this->getIdpEntityName($lastResponseXML);
-        $spidSessionIndex = $this->getSAML($idp)->getSessionIndex() ?? $this->getRandomString();
 
         session(['spid_idp' => $idp]);
         session(['spid_idpEntityName' => $idpEntityName]);
-        session(['spid_sessionIndex' => $spidSessionIndex]);
+        session(['spid_sessionId' => $this->getSAML($idp)->getLastMessageId()]);
         session(['spid_nameId' => $this->getSAML($idp)->getNameId()]);
         session(['spid_user' => $SPIDUser]);
 
@@ -191,7 +190,7 @@ class SPIDAuth extends Controller
     public function logout(): RedirectResponse
     {
         if ($this->isAuthenticated()) {
-            $sessionIndex = session()->pull('spid_sessionIndex');
+            $sessionId = session()->pull('spid_sessionId');
             $nameId = session()->pull('spid_nameId');
             $returnTo = url(config('spid-auth.after_logout_url'));
             $idp = session()->get('spid_idp');
@@ -211,7 +210,7 @@ class SPIDAuth extends Controller
             }
 
             try {
-                return $this->getSAML($idp)->logout($returnTo, [], $nameId, $sessionIndex, false, SAMLConstants::NAMEID_TRANSIENT, $idpEntityId);
+                return $this->getSAML($idp)->logout($returnTo, [], $nameId, $sessionId, false, SAMLConstants::NAMEID_TRANSIENT, $idpEntityId);
             } catch (SAMLError $e) {
                 throw new SPIDLogoutException($e->getMessage(), SPIDLogoutException::SAML_LOGOUT_ERROR, $e);
             }
@@ -250,7 +249,7 @@ class SPIDAuth extends Controller
      */
     public function isAuthenticated(): bool
     {
-        return session()->has('spid_sessionIndex');
+        return session()->has('spid_sessionId');
     }
 
     /**
@@ -482,8 +481,13 @@ class SPIDAuth extends Controller
             throw new SPIDLoginException('SAML response validation error: empty or missing AudienceRestriction element', SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
-        if (0 === preg_match('/https:\/\/www\.spid\.gov\.it\/SpidL[123]/', $authContextClassRef->textContent)) {
+        $matchedSPIDLevel = [];
+        $configuredSpidLevel = preg_match('/https:\/\/www\.spid\.gov\.it\/SpidL([123])/', config('spid-auth.sp_spid_level'), $matchedSPIDLevel) ? (int) $matchedSPIDLevel[1] : null;
+
+        if (0 === preg_match('/https:\/\/www\.spid\.gov\.it\/SpidL([123])/', $authContextClassRef->textContent, $matchedSPIDLevel)) {
             throw new SPIDLoginException('SAML response validation error: wrong AuthContextClassRef element', SPIDLoginException::SAML_VALIDATION_ERROR);
+        } elseif ((int) $matchedSPIDLevel[1] < $configuredSpidLevel) {
+            throw new SPIDLoginException('SAML response validation error: minimum SPID Level not enforced', SPIDLoginException::SAML_VALIDATION_ERROR);
         }
 
         try {
