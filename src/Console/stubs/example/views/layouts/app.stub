@@ -14,7 +14,7 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-    <link type="text/css" rel="stylesheet" href="{{ asset('/vendor/spid-auth/css/agid-spid-enter.min.1.0.0.css') }}">
+    <link type="text/css" rel="stylesheet" href="{{ asset('/vendor/spid-auth/css/spid-sp-access-button.min.css') }}">
 </head>
 <body>
     <div id="app" class="flex-center position-ref full-height">
