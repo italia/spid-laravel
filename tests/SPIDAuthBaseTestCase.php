@@ -47,10 +47,11 @@ class SPIDAuthBaseTestCase extends TestCase
         return ['Italia\SPIDAuth\ServiceProvider'];
     }
 
-    protected function setSPIDAuthMock($spidLevel = 1)
+    protected function setSPIDAuthMock(?array $testSettings = [])
     {
         $testRedirectURL = $this->app['config']->get('spid-idps.test.singleSignOnService.url');
-        $responseXML = file_get_contents(__DIR__ . "/responses/valid_level{$spidLevel}.xml");
+        $responseXMLFile = ($testSettings['responseXmlFile'] ?? false) ? $testSettings['responseXmlFile'] : 'valid_level1.xml';
+        $responseXML = file_get_contents(__DIR__ . '/responses/' . $responseXMLFile);
         $compiledResponseXML = str_replace('{{IssueInstant}}', SAMLUtils::parseTime2SAML(time()), $responseXML);
         $compiledResponseXML = str_replace('{{ResponseIssueInstant}}', SAMLUtils::parseTime2SAML(time()), $compiledResponseXML);
         $compiledResponseXML = str_replace('{{AssertionIssueInstant}}', SAMLUtils::parseTime2SAML(time()), $compiledResponseXML);
@@ -79,11 +80,9 @@ class SPIDAuthBaseTestCase extends TestCase
             <samlp:AuthnRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" IssueInstant="' . SAMLUtils::parseTime2SAML(time()) . '" />'
         );
         $SAMLAuth->shouldReceive('getLastResponseXML')->andReturn($compiledResponseXML)->byDefault();
-        $SAMLAuth->shouldReceive('getSessionIndex')->andReturnUsing(function () use ($spidLevel) {
-            return $spidLevel > 1 ? null : 'sessionIndex';
-        });
+        $SAMLAuth->shouldReceive('getLastMessageId')->andReturn('sessionId');
         $SAMLAuth->shouldReceive('getNameId')->andReturn('nameId');
-        $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], 'nameId', 'sessionIndex', false, SAMLConstants::NAMEID_TRANSIENT, 'spid-testenv')->andReturn(
+        $SAMLAuth->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], 'nameId', 'sessionId', false, SAMLConstants::NAMEID_TRANSIENT, 'spid-testenv')->andReturn(
             Response::redirectTo($this->logoutURL)
         )->byDefault();
         $SAMLAuth->shouldReceive('getErrors')->andReturn(false)->byDefault();
@@ -91,7 +90,7 @@ class SPIDAuthBaseTestCase extends TestCase
         $SAMLAuth->shouldReceive('getSettings')->andReturn($SAMLAuth);
 
         $SAMLAuth->shouldReceive('withErrors')->andReturnUsing(function () {
-            return m::self()->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], 'nameId', 'sessionIndex', false, SAMLConstants::NAMEID_TRANSIENT, 'spid-testenv')->andThrow(
+            return m::self()->shouldReceive('logout')->with(URL::to($this->afterLogoutURL), [], 'nameId', 'sessionId', false, SAMLConstants::NAMEID_TRANSIENT, 'spid-testenv')->andThrow(
                 new SAMLError(
                     'The IdP does not support Single Log Out',
                     SAMLError::SAML_SINGLE_LOGOUT_NOT_SUPPORTED

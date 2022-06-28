@@ -195,6 +195,17 @@ class ResponseValidationTest extends SPIDAuthBaseTestCase
         ]);
     }
 
+    public function testWrongSPIDLevel()
+    {
+        $this->runValidationTest([
+            'responseXmlFile' => 'valid_level1.xml',
+            'config' => [
+                'spid-auth.sp_spid_level' => 'https://www.spid.gov.it/SpidL2',
+            ],
+            'exceptionMessage' => 'SAML response validation error: minimum SPID Level not enforced',
+        ]);
+    }
+
     public function testInvalidResponseIssueInstant()
     {
         $this->runValidationTest([
@@ -272,6 +283,9 @@ class ResponseValidationTest extends SPIDAuthBaseTestCase
         $compiledResponseXML = str_replace('{{IssueInstant}}', SAMLUtils::parseTime2SAML(time()), $responseXML);
         $compiledResponseXML = str_replace('{{ResponseIssueInstant}}', $testSettings['responseIssueInstant'] ?? SAMLUtils::parseTime2SAML(time()), $compiledResponseXML);
         $compiledResponseXML = str_replace('{{AssertionIssueInstant}}', $testSettings['assertionIssueInstant'] ?? SAMLUtils::parseTime2SAML(time()), $compiledResponseXML);
+        foreach ($testSettings['config'] ?? [] as $key => $value) {
+            $this->app['config']->set($key, $value);
+        }
         $this->setSPIDAuthMock()->withLastResponseXML($compiledResponseXML);
         $this->withoutExceptionHandling();
         $this->expectException(SPIDLoginException::class);
