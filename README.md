@@ -206,7 +206,8 @@ SPID access button markup code).
 
 The button is the official
 [spid-sp-access-button](https://github.com/italia/spid-sp-access-button) and
-requires jQuery.
+requires jQuery (which you have to manually install and eventually require from
+your `bootstrap.js` file).
 
 **Scenario**
 
@@ -383,7 +384,7 @@ file are defined the official
 [SPID Identity Providers](https://registry.spid.gov.it/identity-providers).
 
 For testing purposes, this file includes also a test Identity Provider.
-Refer to the [SPID Test Environment](https://github.com/italia/spid-testenv2)
+Refer to the [SPID Test Environment](https://github.com/italia/spid-saml-check)
 to get more informations about SPID authentication testing.
 
 The test Identity Provider can be enabled/disabled using the `test_idp` entry
