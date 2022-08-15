@@ -345,7 +345,7 @@ class SPIDAuth extends Controller
             }
 
             $oldSign = $document->getElementsByTagName('Signature');
-            foreach($oldSign as $old) {
+            foreach ($oldSign as $old) {
                 $old->parentNode->removeChild($old);
             }
 
