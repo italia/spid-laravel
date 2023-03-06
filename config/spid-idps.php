@@ -13,6 +13,7 @@ return [
     'title' => 'Infocert',
     'entityName' => 'Infocert ID',
     'logo' => 'spid-idp-infocertid.svg',
+    'logoPng' => 'spid-idp-infocertid.png',
     'isActive' => true,
     'entityId' => 'https://identity.infocert.it',
     'singleSignOnService' => [
@@ -30,6 +31,7 @@ return [
     'title' => 'Poste',
     'entityName' => 'Poste ID',
     'logo' => 'spid-idp-posteid.svg',
+    'logoPng' => 'spid-idp-posteid.png',
     'isActive' => true,
     'entityId' => 'https://posteid.poste.it',
     'singleSignOnService' => [
@@ -47,6 +49,7 @@ return [
     'title' => 'Tim',
     'entityName' => 'Tim ID',
     'logo' => 'spid-idp-timid.svg',
+    'logoPng' => 'spid-idp-timid.png',
     'isActive' => true,
     'entityId' => 'https://login.id.tim.it/affwebservices/public/saml2sso',
     'singleSignOnService' => [
@@ -64,6 +67,7 @@ return [
     'title' => 'Sielte',
     'entityName' => 'Sielte ID',
     'logo' => 'spid-idp-sielteid.svg',
+    'logoPng' => 'spid-idp-sielteid.png',
     'isActive' => true,
     'entityId' => 'https://identity.sieltecloud.it',
     'singleSignOnService' => [
@@ -80,7 +84,8 @@ return [
     'provider' => 'aruba',
     'title' => 'Aruba',
     'entityName' => 'Aruba ID',
-    'logo' => 'spid-idp-aruba.svg',
+    'logo' => 'spid-idp-arubaid.svg',
+    'logoPng' => 'spid-idp-arubaid.png',
     'isActive' => true,
     'entityId' => 'https://loginspid.aruba.it',
     'singleSignOnService' => [
@@ -98,6 +103,7 @@ return [
     'title' => 'Namirial',
     'entityName' => 'Namirial ID',
     'logo' => 'spid-idp-namirialid.svg',
+    'logoPng' => 'spid-idp-namirialid.png',
     'isActive' => true,
     'entityId' => 'https://idp.namirialtsp.com/idp',
     'singleSignOnService' => [
@@ -115,6 +121,7 @@ return [
     'title' => 'SPIDItalia Register.it',
     'entityName' => 'SPIDItalia Register.it',
     'logo' => 'spid-idp-spiditalia.svg',
+    'logoPng' => 'spid-idp-spiditalia.png',
     'isActive' => true,
     'entityId' => 'https://spid.register.it',
     'singleSignOnService' => [
@@ -132,6 +139,7 @@ return [
     'title' => 'Intesa',
     'entityName' => 'Intesa ID',
     'logo' => 'spid-idp-intesaid.svg',
+    'logoPng' => 'spid-idp-intesaid.png',
     'isActive' => true,
     'entityId' => 'https://spid.intesa.it',
     'singleSignOnService' => [
@@ -148,7 +156,8 @@ return [
     'provider' => 'lepida',
     'title' => 'Lepida',
     'entityName' => 'Lepida',
-    'logo' => 'spid-idp-lepida.svg',
+    'logo' => 'spid-idp-lepidaid.svg',
+    'logoPng' => 'spid-idp-lepidaid.png',
     'isActive' => true,
     'entityId' => 'https://id.lepida.it/idp/shibboleth',
     'singleSignOnService' => [
@@ -166,6 +175,7 @@ return [
       'title' => 'EHT',
       'entityName' => 'EtnaID',
       'logo' => 'spid-idp-etnaid.svg',
+      'logoPng' => 'spid-idp-etnaid.png',
       'isActive' => true,
       'entityId' => 'https://id.eht.eu',
       'singleSignOnService' => [
@@ -183,6 +193,7 @@ return [
       'title' => 'TeamSystem',
       'entityName' => 'TeamSystem ID',
       'logo' => 'spid-idp-teamsystemid.svg',
+      'logoPng' => 'spid-idp-teamsystemid.png',
       'isActive' => true,
       'entityId' => 'https://spid.teamsystem.com/idp',
       'singleSignOnService' => [
@@ -200,6 +211,7 @@ return [
     'title' => 'Test IdP',
     'entityName' => 'Test IdP',
     'logo' => 'spid-idp-test.svg',
+    'logoPng' => 'spid-idp-test.png',
     'isActive' => true,
     'entityId' => 'spid-testenv',
     'singleSignOnService' => [
@@ -217,6 +229,7 @@ return [
     'title' => 'SPID Validator',
     'entityName' => 'SPID Validator',
     'logo' => 'spid-validator.svg',
+    'logoPng' => 'spid-validator.png',
     'isActive' => true,
     'entityId' => 'spid-validator',
     'singleSignOnService' => [
