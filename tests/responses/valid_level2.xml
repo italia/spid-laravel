@@ -22,7 +22,7 @@
                 <saml:SubjectConfirmationData
                     InResponseTo="{{AuthnRequestID}}"
                     NotOnOrAfter="{{NotOnOrAfter}}"
-                    Recipient="" />
+                    Recipient="{{AssertionConsumerURL}}" />
             </saml:SubjectConfirmation>
         </saml:Subject>
         <saml:Conditions
@@ -33,10 +33,9 @@
             </saml:AudienceRestriction>
         </saml:Conditions>
         <saml:AuthnStatement
-            AuthnInstant="{{AuthnIstant}}"
-            SessionIndex="sessionIndex">
+            AuthnInstant="{{AuthnIstant}}">
             <saml:AuthnContext>
-                <saml:AuthnContextClassRef>https://www.spid.gov.it/SpidL1</saml:AuthnContextClassRef>
+                <saml:AuthnContextClassRef>https://www.spid.gov.it/SpidL2</saml:AuthnContextClassRef>
             </saml:AuthnContext>
         </saml:AuthnStatement>
         <saml:AttributeStatement>

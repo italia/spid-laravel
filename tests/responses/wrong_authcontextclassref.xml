@@ -34,7 +34,7 @@
         </saml:Conditions>
         <saml:AuthnStatement
             AuthnInstant="{{AuthnIstant}}"
-            SessionIndex="{{SessionIndex}}">
+            SessionIndex="sessionIndex">
             <saml:AuthnContext>
                 <saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:SpidL1</saml:AuthnContextClassRef>
             </saml:AuthnContext>
