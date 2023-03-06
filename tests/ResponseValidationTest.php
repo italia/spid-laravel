@@ -195,10 +195,21 @@ class ResponseValidationTest extends SPIDAuthBaseTestCase
         ]);
     }
 
+    public function testWrongSPIDLevel()
+    {
+        $this->runValidationTest([
+            'responseXmlFile' => 'valid_level1.xml',
+            'config' => [
+                'spid-auth.sp_spid_level' => 'https://www.spid.gov.it/SpidL2',
+            ],
+            'exceptionMessage' => 'SAML response validation error: minimum SPID Level not enforced',
+        ]);
+    }
+
     public function testInvalidResponseIssueInstant()
     {
         $this->runValidationTest([
-            'responseXmlFile' => 'valid.xml',
+            'responseXmlFile' => 'valid_level1.xml',
             'responseIssueInstant' => 'invalid-response-issue-instant',
             'exceptionMessage' => 'SAML response validation error: invalid IssueInstant attribute',
         ]);
@@ -207,7 +218,7 @@ class ResponseValidationTest extends SPIDAuthBaseTestCase
     public function testInvalidAssertionIssueInstant()
     {
         $this->runValidationTest([
-            'responseXmlFile' => 'valid.xml',
+            'responseXmlFile' => 'valid_level1.xml',
             'assertionIssueInstant' => 'invalid-assertion-issue-instant',
             'exceptionMessage' => 'SAML response validation error: invalid IssueInstant attribute',
         ]);
@@ -216,13 +227,13 @@ class ResponseValidationTest extends SPIDAuthBaseTestCase
     public function testWrongResponseIssueInstant()
     {
         $this->runValidationTest([
-            'responseXmlFile' => 'valid.xml',
+            'responseXmlFile' => 'valid_level1.xml',
             'responseIssueInstant' => SAMLUtils::parseTime2SAML(time() + 400),
             'exceptionMessage' => 'SAML response validation error: wrong Response IssueInstant attribute',
         ]);
 
         $this->runValidationTest([
-            'responseXmlFile' => 'valid.xml',
+            'responseXmlFile' => 'valid_level1.xml',
             'responseIssueInstant' => SAMLUtils::parseTime2SAML(time() - 400),
             'exceptionMessage' => 'SAML response validation error: wrong Response IssueInstant attribute',
         ]);
@@ -231,13 +242,13 @@ class ResponseValidationTest extends SPIDAuthBaseTestCase
     public function testWrongAssertionIssueInstant()
     {
         $this->runValidationTest([
-            'responseXmlFile' => 'valid.xml',
+            'responseXmlFile' => 'valid_level1.xml',
             'assertionIssueInstant' => SAMLUtils::parseTime2SAML(time() + 400),
             'exceptionMessage' => 'SAML response validation error: wrong Assertion IssueInstant attribute',
         ]);
 
         $this->runValidationTest([
-            'responseXmlFile' => 'valid.xml',
+            'responseXmlFile' => 'valid_level1.xml',
             'assertionIssueInstant' => SAMLUtils::parseTime2SAML(time() - 400),
             'exceptionMessage' => 'SAML response validation error: wrong Assertion IssueInstant attribute',
         ]);
@@ -272,6 +283,9 @@ class ResponseValidationTest extends SPIDAuthBaseTestCase
         $compiledResponseXML = str_replace('{{IssueInstant}}', SAMLUtils::parseTime2SAML(time()), $responseXML);
         $compiledResponseXML = str_replace('{{ResponseIssueInstant}}', $testSettings['responseIssueInstant'] ?? SAMLUtils::parseTime2SAML(time()), $compiledResponseXML);
         $compiledResponseXML = str_replace('{{AssertionIssueInstant}}', $testSettings['assertionIssueInstant'] ?? SAMLUtils::parseTime2SAML(time()), $compiledResponseXML);
+        foreach ($testSettings['config'] ?? [] as $key => $value) {
+            $this->app['config']->set($key, $value);
+        }
         $this->setSPIDAuthMock()->withLastResponseXML($compiledResponseXML);
         $this->withoutExceptionHandling();
         $this->expectException(SPIDLoginException::class);

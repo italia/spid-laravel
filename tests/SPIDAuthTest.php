@@ -3,6 +3,7 @@
 namespace Italia\SPIDAuth\Tests;
 
 use DOMDocument;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Italia\SPIDAuth\Events\LoginEvent;
 use Italia\SPIDAuth\Events\LogoutEvent;
@@ -24,7 +25,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
     public function testLoginIfAuthenticated()
     {
         $response = $this->withSession([
-            'spid_sessionIndex' => 'sessionIndex',
+            'spid_sessionId' => 'sessionId',
         ])->get($this->loginURL);
 
         $response->assertRedirect($this->afterLoginURL);
@@ -33,7 +34,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
     public function testLoginIfAuthenticatedWithIntendedURL()
     {
         $response = $this->withSession([
-            'spid_sessionIndex' => 'sessionIndex',
+            'spid_sessionId' => 'sessionId',
             'url.intended' => 'intendedURL',
         ])->get($this->loginURL);
 
@@ -43,7 +44,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
     public function testDoLoginIfAuthenticated()
     {
         $response = $this->withSession([
-            'spid_sessionIndex' => 'sessionIndex',
+            'spid_sessionId' => 'sessionId',
         ])->post($this->doLoginURL);
 
         $response->assertRedirect($this->afterLoginURL);
@@ -52,7 +53,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
     public function testDoLoginIfAuthenticatedWithIntendedURL()
     {
         $response = $this->withSession([
-            'spid_sessionIndex' => 'sessionIndex',
+            'spid_sessionId' => 'sessionId',
             'url.intended' => 'intendedURL',
         ])->post($this->doLoginURL);
 
@@ -125,7 +126,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         ])->post($this->acsURL);
 
         $response->assertSessionHas('spid_idpEntityName', 'Test IdP');
-        $response->assertSessionHas('spid_sessionIndex', 'sessionIndex');
+        $response->assertSessionHas('spid_sessionId', 'sessionId');
         $response->assertSessionHas('spid_nameId', 'nameId');
         $response->assertSessionHas('spid_user');
         $response->assertRedirect($this->afterLoginURL);
@@ -163,7 +164,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
 
         $this->assertFalse(cache()->has('RANDOM_STRING'));
         $response->assertSessionHas('spid_idpEntityName', 'Test IdP');
-        $response->assertSessionHas('spid_sessionIndex', 'sessionIndex');
+        $response->assertSessionHas('spid_sessionId', 'sessionId');
         $response->assertSessionHas('spid_nameId', 'nameId');
         $response->assertSessionHas('spid_user');
         $response->assertRedirect('intendedURL');
@@ -258,13 +259,43 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $response->assertStatus(500);
     }
 
+    public function testAcsWithSPIDLevel2()
+    {
+        $this->setSPIDAuthMock([
+            'responseXmlFile' => 'valid_level2.xml',
+        ]);
+
+        $response = $this->withCookies([
+            'spid_lastRequestId' => 'UNIQUE_ID',
+            'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+            'spid_idp' => 'test',
+        ])->post($this->acsURL);
+
+        $response->assertRedirect();
+    }
+
+    public function testAcsWithSPIDLevel3()
+    {
+        $this->setSPIDAuthMock([
+            'responseXmlFile' => 'valid_level3.xml',
+        ]);
+
+        $response = $this->withCookies([
+            'spid_lastRequestId' => 'UNIQUE_ID',
+            'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+            'spid_idp' => 'test',
+        ])->post($this->acsURL);
+
+        $response->assertRedirect();
+    }
+
     public function testLogout()
     {
         $this->testAcs();
 
         $response = $this->get($this->logoutURL);
 
-        $response->assertSessionMissing('spid_sessionIndex');
+        $response->assertSessionMissing('spid_sessionId');
         $response->assertSessionMissing('spid_nameId');
         $response->assertRedirect($this->logoutURL);
     }
@@ -345,7 +376,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
 
         $response = $this->get($this->logoutURL);
 
-        $response->assertSessionMissing('spid_sessionIndex');
+        $response->assertSessionMissing('spid_sessionId');
         $response->assertSessionMissing('spid_nameId');
         $response->assertRedirect($this->afterLogoutURL);
         Event::assertDispatched(LogoutEvent::class, function ($e) {
@@ -378,7 +409,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $response->assertStatus(500);
     }
 
-    public function testMetadata()
+    public function testMetadataSPPrivate()
     {
         $metadata = new DOMDocument();
 
@@ -386,7 +417,35 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
 
         $response->assertStatus(200);
         $metadata->loadXML($response->getContent());
-        $this->assertTrue($metadata->schemaValidate('tests/xml-schemas/saml-schema-metadata-SPID-SP.xsd'));
+
+        libxml_use_internal_errors(true);
+        $ret = $metadata->schemaValidate('tests/xml-schemas/saml-schema-metadata-SPID-SP.xsd');
+        $this->libxml_display_errors();
+
+        $this->assertTrue($ret);
+    }
+
+    public function testMetadataSPPublic()
+    {
+        Config::set('spid-auth.sp_contact_persons', [
+            'other' => [
+                'Public' => true,
+                'IPACode' => 'IPACODE',
+                'EmailAddress' => 'public_sp@public.org',
+            ],
+        ]);
+        $metadata = new DOMDocument();
+
+        $response = $this->get($this->metadataURL);
+
+        $response->assertStatus(200);
+        $metadata->loadXML($response->getContent());
+
+        libxml_use_internal_errors(true);
+        $ret = $metadata->schemaValidate('tests/xml-schemas/saml-schema-metadata-SPID-SP.xsd');
+        $this->libxml_display_errors();
+
+        $this->assertTrue($ret);
     }
 
     public function testNotValidMetadata()
@@ -467,5 +526,37 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $response = $this->get($this->providersURL);
 
         $response->assertStatus(404);
+    }
+
+    private function libxml_display_errors()
+    {
+        $errors = libxml_get_errors();
+        foreach ($errors as $error) {
+            echo $this->libxml_display_error($error);
+        }
+        libxml_clear_errors();
+    }
+
+    private function libxml_display_error($error)
+    {
+        $return = "<br/>\n";
+        switch ($error->level) {
+            case LIBXML_ERR_WARNING:
+                $return .= "<b>Warning $error->code</b>: ";
+                break;
+            case LIBXML_ERR_ERROR:
+                $return .= "<b>Error $error->code</b>: ";
+                break;
+            case LIBXML_ERR_FATAL:
+                $return .= "<b>Fatal Error $error->code</b>: ";
+                break;
+        }
+        $return .= trim($error->message);
+        if ($error->file) {
+            $return .= " in <b>$error->file</b>";
+        }
+        $return .= " on line <b>$error->line</b>\n";
+
+        return $return;
     }
 }
