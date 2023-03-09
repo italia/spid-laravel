@@ -19,7 +19,7 @@
   },
   "require-dev": {
     "pds/skeleton": "~1.0",
-    "phpunit/phpunit": "^10.",
+    "phpunit/phpunit": "^9.5.10",
     "orchestra/testbench": "^7.22.1",
     "mockery/mockery": "^1.5.1",
     "mikey179/vfsstream": "^1.6",
