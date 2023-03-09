@@ -1,5 +1,6 @@
 {
-  "name": "italia/spid-laravel",
+  "name": "gcastro/spid-laravel",
+  "version": "1.1.0-beta",
   "description": "Laravel Package for SPID authentication",
   "keywords": ["SPID", "Laravel", "PHP"],
   "homepage": "https://github.com/italia/spid-laravel",
