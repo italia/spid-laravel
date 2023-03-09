@@ -11,20 +11,19 @@
     }
   ],
   "require": {
-    "php": "^7.2.0",
-    "illuminate/config": ">=6.0",
-    "illuminate/support": ">=6.0",
-    "onelogin/php-saml": "3.4.1",
-    "cweagans/composer-patches": "^1.7",
-    "nesbot/carbon": "^2.46"
+    "php": "^8.2",
+    "illuminate/config": ">=10.3.3",
+    "illuminate/support": ">=10.3.3",
+    "onelogin/php-saml": "4.1.0",
+    "nesbot/carbon": "^2.66"
   },
   "require-dev": {
     "pds/skeleton": "~1.0",
-    "phpunit/phpunit": "^8.1",
-    "orchestra/testbench": "~4.0",
-    "mockery/mockery": "^1.0",
+    "phpunit/phpunit": "^10.",
+    "orchestra/testbench": "^7.22.1",
+    "mockery/mockery": "^1.5.1",
     "mikey179/vfsstream": "^1.6",
-    "friendsofphp/php-cs-fixer": "^2.14"
+    "friendsofphp/php-cs-fixer": "^3.14.4"
   },
   "autoload": {
     "psr-4": {
@@ -41,11 +40,6 @@
         "providers": [
             "Italia\\SPIDAuth\\ServiceProvider"
         ]
-    },
-    "patches": {
-      "onelogin/php-saml": {
-        "Compatibility with SPID": "https://rawgit.com/italia/spid-laravel/master/patches/php-saml-3.4.1-spid.patch"
-      }
     }
   },
   "archive": {
