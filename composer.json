@@ -12,8 +12,8 @@
   ],
   "require": {
     "php": "^8.2",
-    "illuminate/config": ">=10.3.3",
-    "illuminate/support": ">=10.3.3",
+    "illuminate/config": "^0.9",
+    "illuminate/support": "^0.9",
     "onelogin/php-saml": "4.1.0",
     "nesbot/carbon": "^2.66"
   },
