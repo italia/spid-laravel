@@ -40,6 +40,11 @@
         "providers": [
             "Italia\\SPIDAuth\\ServiceProvider"
         ]
+    },
+    "patches": {
+      "onelogin/php-saml": {
+        "Compatibility with SPID": "https://raw.githubusercontent.com/gcastroacn/spid-laravel/master/patches/php-saml-4.1.0-spid.patch"
+      }
     }
   },
   "archive": {
