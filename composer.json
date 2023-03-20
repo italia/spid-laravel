@@ -15,6 +15,7 @@
     "illuminate/config": ">=9.52.4",
     "illuminate/support": ">=9.52.4",
     "onelogin/php-saml": ">=4.1.0",
+    "cweagans/composer-patches": "^1.7",
     "nesbot/carbon": "^2.66"
   },
   "require-dev": {
