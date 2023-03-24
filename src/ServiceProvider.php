@@ -45,7 +45,7 @@ class ServiceProvider extends LaravelServiceProvider
     public function register()
     {
         $this->app->singleton('SPIDAuth', function ($app) {
-            return new (get_class(new \Italia\SPIDAuth\SPIDAuth));
+            return new SPIDAuth();
         });
 
         $this->commands(\Italia\SPIDAuth\Console\CommandExample::class);
