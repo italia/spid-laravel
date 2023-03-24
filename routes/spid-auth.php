@@ -10,27 +10,27 @@ Route::group([
     ], function () {
         Route::get('login', [
             'as' => 'spid-auth_login',
-            'uses' => '\Italia\SPIDAuth\SPIDAuth@login',
+            'uses' => 'SPIDAuth@login',
         ]);
         Route::post('login', [
             'as' => 'spid-auth_do-login',
-            'uses' => '\Italia\SPIDAuth\SPIDAuth@doLogin',
+            'uses' => 'SPIDAuth@doLogin',
         ]);
         Route::match(['get', 'post'], 'logout', [
             'as' => 'spid-auth_logout',
-            'uses' => '\Italia\SPIDAuth\SPIDAuth@logout',
+            'uses' => 'SPIDAuth@logout',
         ]);
         Route::post('acs', [
             'as' => 'spid-auth_acs',
-            'uses' => '\Italia\SPIDAuth\SPIDAuth@acs',
+            'uses' => 'SPIDAuth@acs',
         ]);
         Route::get('metadata', [
             'as' => 'spid-auth_metadata',
-            'uses' => '\Italia\SPIDAuth\SPIDAuth@metadata',
+            'uses' => 'SPIDAuth@metadata',
         ]);
         Route::get('providers', [
             'as' => 'spid-auth_providers',
-            'uses' => '\Italia\SPIDAuth\SPIDAuth@providers',
+            'uses' => 'SPIDAuth@providers',
         ]);
     }
 );
