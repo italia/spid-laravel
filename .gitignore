@@ -1,7 +1,7 @@
 /vendor
 clover.xml
 coverage
-.php_cs.cache
+.php-cs-fixer.cache
 .idea
 .DS_Store
 .phpunit.result.cache
