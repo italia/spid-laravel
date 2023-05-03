@@ -14,6 +14,7 @@ return [
     'entityName' => 'Infocert ID',
     'logo' => 'spid-idp-infocertid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://identity.infocert.it',
     'singleSignOnService' => [
       'url' => 'https://identity.infocert.it/spid/samlsso',
@@ -31,6 +32,7 @@ return [
     'entityName' => 'Poste ID',
     'logo' => 'spid-idp-posteid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://posteid.poste.it',
     'singleSignOnService' => [
       'url' => 'https://posteid.poste.it/jod-fs/ssoserviceredirect',
@@ -48,6 +50,7 @@ return [
     'entityName' => 'Tim ID',
     'logo' => 'spid-idp-timid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://login.id.tim.it/affwebservices/public/saml2sso',
     'singleSignOnService' => [
       'url' => 'https://login.id.tim.it/affwebservices/public/saml2sso',
@@ -65,6 +68,7 @@ return [
     'entityName' => 'Sielte ID',
     'logo' => 'spid-idp-sielteid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://identity.sieltecloud.it',
     'singleSignOnService' => [
       'url' => 'https://identity.sieltecloud.it/simplesaml/saml2/idp/SSO.php',
@@ -80,8 +84,9 @@ return [
     'provider' => 'aruba',
     'title' => 'Aruba',
     'entityName' => 'Aruba ID',
-    'logo' => 'spid-idp-aruba.svg',
+    'logo' => 'spid-idp-arubaid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://loginspid.aruba.it',
     'singleSignOnService' => [
       'url' => 'https://loginspid.aruba.it/ServiceLoginWelcome',
@@ -99,6 +104,7 @@ return [
     'entityName' => 'Namirial ID',
     'logo' => 'spid-idp-namirialid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://idp.namirialtsp.com/idp',
     'singleSignOnService' => [
       'url' => 'https://idp.namirialtsp.com/idp/profile/SAML2/Redirect/SSO',
@@ -116,6 +122,7 @@ return [
     'entityName' => 'SPIDItalia Register.it',
     'logo' => 'spid-idp-spiditalia.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://spid.register.it',
     'singleSignOnService' => [
       'url' => 'https://spid.register.it/login/sso',
@@ -133,6 +140,7 @@ return [
     'entityName' => 'Intesa ID',
     'logo' => 'spid-idp-intesaid.svg',
     'isActive' => false,
+    'real' => true,
     'entityId' => 'https://spid.intesa.it',
     'singleSignOnService' => [
       'url' => 'https://spid.intesa.it/Time4UserServices/services/idp/AuthnRequest/',
@@ -148,8 +156,9 @@ return [
     'provider' => 'lepida',
     'title' => 'Lepida ID',
     'entityName' => 'Lepida ID',
-    'logo' => 'spid-idp-lepida.svg',
+    'logo' => 'spid-idp-lepidaid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://id.lepida.it/idp/shibboleth',
     'singleSignOnService' => [
       'url' => 'https://id.lepida.it/idp/profile/SAML2/Redirect/SSO',
@@ -164,9 +173,10 @@ return [
   'eht' => [
     'provider' => 'eht',
     'title' => 'EtnaID',
-    'entityName' => 'EtnaHitech S.C.p.A.',
+    'entityName' => 'Etna ID',
     'logo' => 'spid-idp-etnaid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://id.eht.eu',
     'singleSignOnService' => [
       'url' => 'https://id.eht.eu/SSO',
@@ -181,9 +191,10 @@ return [
   'infocamere' => [
     'provider' => 'infocamere',
     'title' => 'ID InfoCamere',
-    'entityName' => 'InfoCamere S.C.p.A.',
+    'entityName' => 'ID InfoCamere',
     'logo' => 'spid-idp-infocamereid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://loginspid.infocamere.it',
     'singleSignOnService' => [
       'url' => 'https://loginspid.infocamere.it/ServiceLoginWelcome',
@@ -201,6 +212,7 @@ return [
     'entityName' => 'TeamSystem ID',
     'logo' => 'spid-idp-teamsystemid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://spid.teamsystem.com/idp',
     'singleSignOnService' => [
       'url' => 'https://spid.teamsystem.com/idp/sso/redirect',
@@ -218,6 +230,7 @@ return [
     'entityName' => 'Test IdP',
     'logo' => 'spid-idp-test.svg',
     'isActive' => true,
+    'real' => false,
     'entityId' => 'spid-testenv',
     'singleSignOnService' => [
       'url' => 'https://spid-testenv/sso',
@@ -235,6 +248,7 @@ return [
     'entityName' => 'SPID Validator',
     'logo' => 'spid-validator.svg',
     'isActive' => true,
+    'real' => false,
     'entityId' => 'spid-validator',
     'singleSignOnService' => [
       'url' => 'https://spid-validator/sso',
@@ -249,6 +263,7 @@ return [
   'empty' => [
     'provider' => 'empty',
     'entityId' => 'empty',
+    'real' => false,
     'singleSignOnService' => [
       'url' => 'https://empty',
     ],
