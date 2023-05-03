@@ -52,7 +52,7 @@ commands:
           name: Run security-checker
           command: |
             wget https://get.symfony.com/cli/installer -O - | bash
-            sudo mv /home/circleci/.symfony/bin/symfony /usr/local/bin/symfony
+            sudo mv /home/circleci/.symfony5/bin/symfony /usr/local/bin/symfony
             symfony check:security
 
   save_all_caches:
