@@ -116,7 +116,7 @@ class SPIDAuth extends Controller
 
         try {
             $this->getSAML($idp)->processResponse($lastRequestId);
-        } catch (SAMLError | SAMLValidationError $e) {
+        } catch (SAMLError|SAMLValidationError $e) {
             throw new SPIDLoginException('SAML response validation error: ' . $e->getMessage(), SPIDLoginException::SAML_VALIDATION_ERROR, $e);
         }
 
@@ -225,7 +225,7 @@ class SPIDAuth extends Controller
 
             try {
                 $this->getSAML($idp)->processSLO();
-            } catch (SAMLError | SAMLValidationError $e) {
+            } catch (SAMLError|SAMLValidationError $e) {
                 throw new SPIDLogoutException('SAML response validation error: ' . $e->getMessage(), SPIDLogoutException::SAML_VALIDATION_ERROR, $e);
             }
 
