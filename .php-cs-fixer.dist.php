@@ -36,7 +36,7 @@ $finder = Finder::create()
     ->ignoreVCS(true)
     ->in(__DIR__);
 
-return Config::create()
+return (new Config())
     ->setRules($rules)
     ->setFinder($finder)
     ->setUsingCache(true);

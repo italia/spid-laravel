@@ -9,6 +9,6 @@ namespace Italia\SPIDAuth\Exceptions;
 
 class SPIDLogoutException extends SPIDException
 {
-    const SAML_LOGOUT_ERROR = 0;
-    const SAML_VALIDATION_ERROR = 1;
+    public const SAML_LOGOUT_ERROR = 0;
+    public const SAML_VALIDATION_ERROR = 1;
 }
