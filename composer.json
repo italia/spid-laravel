@@ -44,7 +44,7 @@
     },
     "patches": {
       "onelogin/php-saml": {
-        "Compatibility with SPID": "https://raw.githubusercontent.com/gcastroacn/spid-laravel/master/patches/php-saml-4.1.0-spid.patch"
+        "Compatibility with SPID": "https://raw.githubusercontent.com/gcastroacn/spid-laravel/fixing-pr/patches/php-saml-4.1.0-spid.patch"
       }
     }
   },
