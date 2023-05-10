@@ -64,7 +64,7 @@ index 9c3f020..7a33d4c 100644
  
      /**
 diff --git a/src/Saml2/Metadata.php b/src/Saml2/Metadata.php
-index 922ad60..9326767 100644
+index 922ad60..efd97dc 100644
 --- a/src/Saml2/Metadata.php
 +++ b/src/Saml2/Metadata.php
 @@ -163,7 +163,7 @@ ATTRIBUTEVALUE;
@@ -76,7 +76,7 @@ index 922ad60..9326767 100644
              <md:ServiceName xml:lang="en">{$sp['attributeConsumingService']['serviceName']}</md:ServiceName>
  {$attrCsDesc}{$requestedAttributeStr}
          </md:AttributeConsumingService>
-@@ -172,17 +172,18 @@ METADATA_TEMPLATE;
+@@ -172,17 +172,17 @@ METADATA_TEMPLATE;
  
          $spEntityId = htmlspecialchars($sp['entityId'], ENT_QUOTES);
          $acsUrl = htmlspecialchars($sp['assertionConsumerService']['url'], ENT_QUOTES);
@@ -91,7 +91,7 @@ index 922ad60..9326767 100644
  {$sls}        <md:NameIDFormat>{$sp['NameIDFormat']}</md:NameIDFormat>
          <md:AssertionConsumerService Binding="{$sp['assertionConsumerService']['binding']}"
                                       Location="{$acsUrl}"
-                                      index="1" />
+-                                     index="1" />
 +                                     {$isDefaultAcs}
 +                                     index="{$sp['assertionConsumerService']['index']}" />
          {$strAttributeConsumingService}
