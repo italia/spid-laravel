@@ -8,7 +8,7 @@ index fd9afb5..e1ad2e4 100644
      <samlp:NameIDPolicy
 -        Format="{$nameIDPolicyFormat}"
 -        AllowCreate="true" />
-+       Format="{$nameIDPolicyFormat}" />
++        Format="{$nameIDPolicyFormat}" />
  NAMEIDPOLICY;
          }
  
