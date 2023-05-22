@@ -14,6 +14,7 @@ return [
     'entityName' => 'Infocert ID',
     'logo' => 'spid-idp-infocertid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://identity.infocert.it',
     'singleSignOnService' => [
       'url' => 'https://identity.infocert.it/spid/samlsso',
@@ -31,6 +32,7 @@ return [
     'entityName' => 'Poste ID',
     'logo' => 'spid-idp-posteid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://posteid.poste.it',
     'singleSignOnService' => [
       'url' => 'https://posteid.poste.it/jod-fs/ssoserviceredirect',
@@ -48,6 +50,7 @@ return [
     'entityName' => 'Tim ID',
     'logo' => 'spid-idp-timid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://login.id.tim.it/affwebservices/public/saml2sso',
     'singleSignOnService' => [
       'url' => 'https://login.id.tim.it/affwebservices/public/saml2sso',
@@ -65,6 +68,7 @@ return [
     'entityName' => 'Sielte ID',
     'logo' => 'spid-idp-sielteid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://identity.sieltecloud.it',
     'singleSignOnService' => [
       'url' => 'https://identity.sieltecloud.it/simplesaml/saml2/idp/SSO.php',
@@ -80,8 +84,9 @@ return [
     'provider' => 'aruba',
     'title' => 'Aruba',
     'entityName' => 'Aruba ID',
-    'logo' => 'spid-idp-aruba.svg',
+    'logo' => 'spid-idp-arubaid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://loginspid.aruba.it',
     'singleSignOnService' => [
       'url' => 'https://loginspid.aruba.it/ServiceLoginWelcome',
@@ -91,7 +96,7 @@ return [
       'url' => 'https://loginspid.aruba.it/ServiceLogoutRequest',
       'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
     ],
-    'x509cert' => 'MIIExTCCA62gAwIBAgIQIHtEvEhGM77HwqsuvSbi9zANBgkqhkiG9w0BAQsFADBsMQswCQYDVQQGEwJJVDEYMBYGA1UECgwPQXJ1YmFQRUMgUy5wLkEuMSEwHwYDVQQLDBhDZXJ0aWZpY2F0aW9uIEF1dGhvcml0eUIxIDAeBgNVBAMMF0FydWJhUEVDIFMucC5BLiBORyBDQSAyMB4XDTE3MDEyMzAwMDAwMFoXDTIwMDEyMzIzNTk1OVowgaAxCzAJBgNVBAYTAklUMRYwFAYDVQQKDA1BcnViYSBQRUMgc3BhMREwDwYDVQQLDAhQcm9kb3R0bzEWMBQGA1UEAwwNcGVjLml0IHBlYy5pdDEZMBcGA1UEBRMQWFhYWFhYMDBYMDBYMDAwWDEPMA0GA1UEKgwGcGVjLml0MQ8wDQYDVQQEDAZwZWMuaXQxETAPBgNVBC4TCDE2MzQ1MzgzMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqt2oHJhcp03l73p+QYpEJ+f3jYYj0W0gos0RItZx/w4vpsiKBygaqDNVWSwfo1aPdVDIX13f62O+lBki29KTt+QWv5K6SGHDUXYPntRdEQlicIBh2Z0HfrM7fDl+xeJrMp1s4dsSQAuB5TJOlFZq7xCQuukytGWBTvjfcN/os5aEsEg+RbtZHJR26SbbUcIqWb27Swgj/9jwK+tvzLnP4w8FNvEOrNfR0XwTMNDFrwbOCuWgthv5jNBsVZaoqNwiA/MxYt+gTOMj/o5PWKk8Wpm6o/7/+lWAoxh0v8x9OkbIi+YaFpIxuCcUqsrJJk63x2gHCc2nr+yclYUhsKD/AwIDAQABo4IBLDCCASgwDgYDVR0PAQH/BAQDAgeAMB0GA1UdDgQWBBTKQ3+NPGcXFk8nX994vMTVpba1EzBHBgNVHSAEQDA+MDwGCysGAQQBgegtAQEBMC0wKwYIKwYBBQUHAgEWH2h0dHBzOi8vY2EuYXJ1YmFwZWMuaXQvY3BzLmh0bWwwWAYDVR0fBFEwTzBNoEugSYZHaHR0cDovL2NybC5hcnViYXBlYy5pdC9BcnViYVBFQ1NwQUNlcnRpZmljYXRpb25BdXRob3JpdHlCL0xhdGVzdENSTC5jcmwwHwYDVR0jBBgwFoAU8v9jQBwRQv3M3/FZ9m7omYcxR3kwMwYIKwYBBQUHAQEEJzAlMCMGCCsGAQUFBzABhhdodHRwOi8vb2NzcC5hcnViYXBlYy5pdDANBgkqhkiG9w0BAQsFAAOCAQEAnEw0NuaspbpDjA5wggwFtfQydU6b3Bw2/KXPRKS2JoqGmx0SYKj+L17A2KUBa2c7gDtKXYz0FLT60Bv0pmBN/oYCgVMEBJKqwRwdki9YjEBwyCZwNEx1kDAyyqFEVU9vw/OQfrAdp7MTbuZGFKknVt7b9wOYy/Op9FiUaTg6SuOy0ep+rqhihltYNAAl4L6fY45mHvqa5vvVG30OvLW/S4uvRYUXYwY6KhWvNdDf5CnFugnuEZtHJrVe4wx9aO5GvFLFZ/mQ35C5mXPQ7nIb0CDdLBJdz82nUoLSA5BUbeXAUkfahW/hLxLdhks68/TK694xVIuiB40pvMmJwxIyDA==',
+    'x509cert' => 'MIIExTCCA62gAwIBAgIQH32A70kY92tuXB8AGi2DdDANBgkqhkiG9w0BAQsFADBsMQswCQYDVQQGEwJJVDEYMBYGA1UECgwPQXJ1YmFQRUMgUy5wLkEuMSEwHwYDVQQLDBhDZXJ0aWZpY2F0aW9uIEF1dGhvcml0eUIxIDAeBgNVBAMMF0FydWJhUEVDIFMucC5BLiBORyBDQSAyMB4XDTIwMDEyMjAwMDAwMFoXDTI1MDEyMTIzNTk1OVowgaAxCzAJBgNVBAYTAklUMRYwFAYDVQQKDA1BcnViYSBQRUMgc3BhMREwDwYDVQQLDAhQcm9kb3R0bzEWMBQGA1UEAwwNcGVjLml0IHBlYy5pdDEZMBcGA1UEBRMQWFhYWFhYMDBYMDBYMDAwWDEPMA0GA1UEKgwGcGVjLml0MQ8wDQYDVQQEDAZwZWMuaXQxETAPBgNVBC4TCDIwODc2Mzc5MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqt2oHJhcp03l73p+QYpEJ+f3jYYj0W0gos0RItZx/w4vpsiKBygaqDNVWSwfo1aPdVDIX13f62O+lBki29KTt+QWv5K6SGHDUXYPntRdEQlicIBh2Z0HfrM7fDl+xeJrMp1s4dsSQAuB5TJOlFZq7xCQuukytGWBTvjfcN/os5aEsEg+RbtZHJR26SbbUcIqWb27Swgj/9jwK+tvzLnP4w8FNvEOrNfR0XwTMNDFrwbOCuWgthv5jNBsVZaoqNwiA/MxYt+gTOMj/o5PWKk8Wpm6o/7/+lWAoxh0v8x9OkbIi+YaFpIxuCcUqsrJJk63x2gHCc2nr+yclYUhsKD/AwIDAQABo4IBLDCCASgwDgYDVR0PAQH/BAQDAgeAMB0GA1UdDgQWBBTKQ3+NPGcXFk8nX994vMTVpba1EzBHBgNVHSAEQDA+MDwGCysGAQQBgegtAQEBMC0wKwYIKwYBBQUHAgEWH2h0dHBzOi8vY2EuYXJ1YmFwZWMuaXQvY3BzLmh0bWwwWAYDVR0fBFEwTzBNoEugSYZHaHR0cDovL2NybC5hcnViYXBlYy5pdC9BcnViYVBFQ1NwQUNlcnRpZmljYXRpb25BdXRob3JpdHlCL0xhdGVzdENSTC5jcmwwHwYDVR0jBBgwFoAU8v9jQBwRQv3M3/FZ9m7omYcxR3kwMwYIKwYBBQUHAQEEJzAlMCMGCCsGAQUFBzABhhdodHRwOi8vb2NzcC5hcnViYXBlYy5pdDANBgkqhkiG9w0BAQsFAAOCAQEAZKpor1MrrYwPw+IuPZElQAuNzXsaSWSnn/QQwJtW49c4rFM4mEud9c61p9XxIIbgQKmDmNbzC+DmwJSZ8ILdCAyBHmY3BehVRAy3KRA2KQhS9kd4vywf5KVYd1L5hQa9DBrusxF7i1X/SEeLQgoKkov0R8v43UncqXS/ql50ovJFxi938Rv4rVwa8o0hqqc6WUcjkidB6M9aNJLIbOZN3xNUgC28qIr8y7N8lbxWbwVrGxqKDtpaA9J0hOOXxwuTfSd1zOtT0KSSSUQ53QGOPnxyjxYDQbJu60/lBPuUV5wb/Z2rgpeUH1/n7limHV5sVmOZgSnf18T+0STANCfkXg==',
   ],
   'namirial' => [
     'provider' => 'namirial',
@@ -99,6 +104,7 @@ return [
     'entityName' => 'Namirial ID',
     'logo' => 'spid-idp-namirialid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://idp.namirialtsp.com/idp',
     'singleSignOnService' => [
       'url' => 'https://idp.namirialtsp.com/idp/profile/SAML2/Redirect/SSO',
@@ -116,6 +122,7 @@ return [
     'entityName' => 'SPIDItalia Register.it',
     'logo' => 'spid-idp-spiditalia.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://spid.register.it',
     'singleSignOnService' => [
       'url' => 'https://spid.register.it/login/sso',
@@ -129,10 +136,11 @@ return [
   ],
   'intesa' => [
     'provider' => 'intesa',
-    'title' => 'Intesa',
+    'title' => 'Intesa ID',
     'entityName' => 'Intesa ID',
     'logo' => 'spid-idp-intesaid.svg',
-    'isActive' => true,
+    'isActive' => false,
+    'real' => true,
     'entityId' => 'https://spid.intesa.it',
     'singleSignOnService' => [
       'url' => 'https://spid.intesa.it/Time4UserServices/services/idp/AuthnRequest/',
@@ -146,10 +154,11 @@ return [
   ],
   'lepida' => [
     'provider' => 'lepida',
-    'title' => 'Lepida',
-    'entityName' => 'Lepida',
-    'logo' => 'spid-idp-lepida.svg',
+    'title' => 'Lepida ID',
+    'entityName' => 'Lepida ID',
+    'logo' => 'spid-idp-lepidaid.svg',
     'isActive' => true,
+    'real' => true,
     'entityId' => 'https://id.lepida.it/idp/shibboleth',
     'singleSignOnService' => [
       'url' => 'https://id.lepida.it/idp/profile/SAML2/Redirect/SSO',
@@ -161,12 +170,67 @@ return [
     ],
     'x509cert' => 'MIIDHDCCAgSgAwIBAgIVALisbudTRxLy3vlMcEDfaqr3iW89MA0GCSqGSIb3DQEBCwUAMBcxFTATBgNVBAMMDGlkLmxlcGlkYS5pdDAeFw0xODA4MDgxMDIzMTJaFw0zODA4MDgxMDIzMTJaMBcxFTATBgNVBAMMDGlkLmxlcGlkYS5pdDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMOFERgxPEYPqAjN7oW6y8oSSY6tGm2OCIU+VyKhb2OqfNLpF8tPrytX17pgwVYHzjxRCNMTC83frbmtBapABtm9KuX7qaSPvaJx0+UqYk9FdKCKQOEkmWcNOJfwzNMP65B+cDxP3sa1JoAMeAO0x95bnYoX0ZHcssKkwpgMb8/JHZHzqu3odxADtO5PaT3xaCyMIcqIp1O2nVn7SizUE1gNucLAdaP4kh0o7nU61pz4pG3gQXK+uROteDD8cTU2Nxi7W1T73tQSuwst54BS2p9IBXzWrA9V0Ck10oiQTcIC8X9McepCrNzgCOBdap00Tifusb30t74BREARgwjp1N8CAwEAAaNfMF0wHQYDVR0OBBYEFL32/n7uf1Re14pW+gwGxZQHUZBCMDwGA1UdEQQ1MDOCDGlkLmxlcGlkYS5pdIYjaHR0cHM6Ly9pZC5sZXBpZGEuaXQvaWRwL3NoaWJib2xldGgwDQYJKoZIhvcNAQELBQADggEBAK80B1mEWKOTJkVJOJot2xU79Lhs1+domUSYQiA+tlS46IAfWwDZqI1llIjgL85n7qMsKFvYTIskInoG51Iezv2dTxlB6IMI8NPRfiFXo2s8NYjbzWyETbdXzCbDR0tKNke0TFE0oxunNfE5YRsmH4bPnjhPUjCSHX7wIhlNrLae3FjMQp1OLDs7HmJo3AhuAVmHCoG7QV/ly4ZHcVYx4F7HUsFg5uxNYjZbo+XMutJz4nZFOFE+uRzTwwfdR2sxny+ppkruTwIhEXyzknoiw1mGIEWZc6scnOAiwZeqTccUYVNHp+PSFs9SD8l+2PO4Oh8Y3dYT+5ojv+S6T7vy5xE=',
   ],
+  'eht' => [
+    'provider' => 'eht',
+    'title' => 'EtnaID',
+    'entityName' => 'Etna ID',
+    'logo' => 'spid-idp-etnaid.svg',
+    'isActive' => true,
+    'real' => true,
+    'entityId' => 'https://id.eht.eu',
+    'singleSignOnService' => [
+      'url' => 'https://id.eht.eu/SSO',
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+    ],
+    'singleLogoutService' => [
+      'url' => 'https://id.eht.eu/SLS',
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+    ],
+    'x509cert' => 'MIIJKTCCBxGgAwIBAgIIJza0JRXSeRwwDQYJKoZIhvcNAQENBQAwgfsxCzAJBgNVBAYTAklUMQ0wCwYDVQQHDARSb21lMSYwJAYDVQQKDB1BZ2VuemlhIHBlciBsJ0l0YWxpYSBEaWdpdGFsZTEwMC4GA1UECwwnU2Vydml6aW8gQWNjcmVkaXRhbWVudG8gZSBwcm9nZXR0byBTUElEMTwwOgYDVQQDDDNQcm9nZXR0byBTUElEIC0gR2VzdG9yaSBkaSBJZGVudGl0w6AgRGlnaXRhbGUgKElkUCkxKTAnBgkqhkiG9w0BCQEWGnByb3RvY29sbG9AcGVjLmFnaWQuZ292Lml0MRowGAYDVQQFExFWQVRJVC05NzczNTAyMDU4NDAeFw0yMzAyMTcwMDAwMDBaFw0zMzAyMTYyMzU5NTlaMIGcMQswCQYDVQQGEwJJVDEQMA4GA1UECAwHQ2F0YW5pYTEQMA4GA1UEBwwHQ2F0YW5pYTEcMBoGA1UECgwTRXRuYUhpdGVjaCBTLkMucC5BLjESMBAGA1UEAwwJaWQuZWh0LmV1MRowGAYDVQRhDBFWQVRJVC0wNDMyMzIxMDg3NDEbMBkGA1UEUwwSaHR0cHM6Ly9pZC5laHQuZXUvMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA1JqeZUoCMKUh/Wm1X5NhvWQy2Kbp1uAAoJOmaBdR8ud2axp9Y+QABDcTVgDYgHG8o7AjOQWnPWz9LDvfzswu1CB3idEcg1cSiYVvphTMfmN62q+1HsuxvcWVuGIKq9CwGCnO2mVAOtt86rkaAsP95uou4vN9MlB8/nFY7gQjw/3h6fOZ3JS3Qdw1aY8N8SKJTPgSHvTThs8eTZy4ke5yvL09WSmosJLP3h63HZwB2BpuUue0EzWS4YnSnZ6V1p7O1LQZr3e4QKg1TOplItDWDItFgZSCQqOraBf2tfIgPtFdpgUsuJGa1sywbyjfczQ62pE9chIc7F0DKUTdUV88ygyrpAHA2z5cWALXT9+uYtau2KtTf91M0CruIkmGTu1IYSNtU+lCBdF+Pd1IlxP9HM5o5k++LUGQaDm9rsfhfYuRXFP6zp/TZsOoiygN8ryRcFOQswdyoDGEK47cXm1jYTBwOhSGVReqf990gC7paeOZwptKGSFHE/DC0Kn5b3QCuad5Yx48G/H8znshy1ZaEYR69Oh11Q/ytkKpZVNfvzVz2p43TPnNH3cQi0l4NzWV+x395sdJuObAT8ajcxl4aJ7niZna9arO54CV+RWABoJl1DKCaqVX8eG6Ha/9W3hW3vDJgMf7JG7wm7rz72vcHMKigz5UTWtX4Ilfd79rhTUCAwEAAaOCAwwwggMIMAwGA1UdEwEB/wQCMAAwHQYDVR0OBBYEFKFmFUK23mm9Xsrqsguak005wmCtMB8GA1UdIwQYMBaAFMhfI5fCW5/U6IcEkxe+3+UDSXdfMA4GA1UdDwEB/wQEAwIGwDARBgNVHREECjAIggZpZHAuaXQwFgYDVR0SBA8wDYILc3BpZC5nb3YuaXQwPwYDVR0fBDgwNjA0oDKgMIYuaHR0cHM6Ly9laWRhcy5hZ2lkLmdvdi5pdC9jcmwvY3JsX1NQSURfSWRQLmNybDBqBggrBgEFBQcBAQReMFwwRAYIKwYBBQUHMAKGOGh0dHA6Ly9laWRhcy5hZ2lkLmdvdi5pdC9jZXJ0aWZpY2F0aS9TdWJfQ0FfU1BJRF9JZFAuY2VyMBQGCCsGAQUFBzABhghodHRwczovLzCCAc4GA1UdIASCAcUwggHBMAkGBwQAjkYBBgIwgZUGBCtMEAYwgYwwRAYIKwYBBQUHAgIwOBo2RWxlY3Ryb25pYyBjZXJ0aWZpY2F0ZSBjb25mb3JtaW5nIHdpdGggQUdJRCBHdWlkZWxpbmVzMEQGCCsGAQUFBwICMDgaNkNlcnRpZmljYXRvIGVsZXR0cm9uaWNvIGNvbmZvcm1lIGFsbGUgTGluZWUgZ3VpZGEgQWdJRDByBgYrTBAEAQIwaDA5BggrBgEFBQcCAjAtGitTUElEOiBnZXN0b3JlIGRlbGxlIGlkZW50aXTgIGRpZ2l0YWxpIChJZFApMCsGCCsGAQUFBwICMB8aHVNQSUQ6IElkZW50aXR5IFByb3ZpZGVyIChJZFApMAgGBgQAj3oBAzBNBgQrTBAEMEUwQwYIKwYBBQUHAgEWN2h0dHBzOi8vZWlkYXMuYWdpZC5nb3YuaXQvY3BzL0FnSURfZUlEQVNfcm9vdENBX2Nwcy5wZGYwTwYGBACORgEFMEUwQwYIKwYBBQUHAgEWN2h0dHBzOi8vZWlkYXMuYWdpZC5nb3YuaXQvY3BzL0FnSURfZUlEQVNfcm9vdENBX2Nwcy5wZGYwDQYJKoZIhvcNAQENBQADggIBABlvKT22WGSr8xeLC0HcCtcZh1G2M+/4vDrptipMGNtpJQ3Oz3srPIo2WK9FqQGJ/Msd7L9n0uJz2c0/WRlFI/wom1KakyG4IxrerX7li5GhVGczse6eY+YbUBWFKsDseYE+1KTlhXJeyWfeT42VgYU24Zx4vFjvvGmTh3u2z6EYotFsUzZv2rA55uukxI7pat9u/plaBi9RIV5FUudCD6+5wpmUB6ks1sKGDnt9p7OtqDgTUnTiZKpSuW3E/TOp+EmedtYgujUhcpQ6vElbBs+nc9XH51Zw3wmuxaq/knCmdTXzZquTRn8bwVJVy2EhDgxCvCuZsFZyr7taXqKz265WqCsQJozybNJQABzzavL2c6rtqNATJJS3YyLmc3FdFk/HFIcGYMOOypdp9qZugIalg6LZmtCsio9mGA0iBk5DRmLceBmV+soJfwDjXfW8IFy5md55MkbmdWRs/qjzWP2c3sI0CpVF7PGr7fHzYSCfLaueDXC1xZh4gigHMDrjwU9Qay5SDhANe99Drumku5XnMDPky0WllHgJNfg32bYWOP0gcwCSbLNg/cB5n51oHXWi5nzP5zXE+4d3Ffhzcw8aW89IJyJYF2HwRO/PpEAEmPSKmhkgL1cI60iHoLAFs8RrAPMBVj7SlJhuRskFnBxRvHzQMUMGbLPHk0mm93gJ',
+  ],
+  'infocamere' => [
+    'provider' => 'infocamere',
+    'title' => 'ID InfoCamere',
+    'entityName' => 'ID InfoCamere',
+    'logo' => 'spid-idp-infocamereid.svg',
+    'isActive' => true,
+    'real' => true,
+    'entityId' => 'https://loginspid.infocamere.it',
+    'singleSignOnService' => [
+      'url' => 'https://loginspid.infocamere.it/ServiceLoginWelcome',
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+    ],
+    'singleLogoutService' => [
+      'url' => 'https://loginspid.infocamere.it/ServiceLogoutRequest',
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+    ],
+    'x509cert' => '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',
+  ],
+  'teamsystem' => [
+    'provider' => 'teamsystem',
+    'title' => 'TeamSystem ID',
+    'entityName' => 'TeamSystem ID',
+    'logo' => 'spid-idp-teamsystemid.svg',
+    'isActive' => true,
+    'real' => true,
+    'entityId' => 'https://spid.teamsystem.com/idp',
+    'singleSignOnService' => [
+      'url' => 'https://spid.teamsystem.com/idp/sso/redirect',
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+    ],
+    'singleLogoutService' => [
+      'url' => 'https://spid.teamsystem.com/idp/logout/redirect',
+      'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+    ],
+    'x509cert' => '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',
+  ],
   'test' => [
     'provider' => 'test',
     'title' => 'Test IdP',
     'entityName' => 'Test IdP',
     'logo' => 'spid-idp-test.svg',
     'isActive' => true,
+    'real' => false,
     'entityId' => 'spid-testenv',
     'singleSignOnService' => [
       'url' => 'https://spid-testenv/sso',
@@ -184,6 +248,7 @@ return [
     'entityName' => 'SPID Validator',
     'logo' => 'spid-validator.svg',
     'isActive' => true,
+    'real' => false,
     'entityId' => 'spid-validator',
     'singleSignOnService' => [
       'url' => 'https://spid-validator/sso',
@@ -198,6 +263,7 @@ return [
   'empty' => [
     'provider' => 'empty',
     'entityId' => 'empty',
+    'real' => false,
     'singleSignOnService' => [
       'url' => 'https://empty',
     ],

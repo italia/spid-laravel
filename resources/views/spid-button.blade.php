@@ -7,33 +7,13 @@
     <div id="spid-idp-button-{{ $size ?? 'm' }}-post" class="spid-idp-button spid-idp-button-tip spid-idp-button-relative{{ $rightAlign ?? false ? ' spid-idp-button-anchor-right' : ''}}">
         <ul id="spid-idp-list-{{ $size ?? 'm' }}-root-post" class="spid-idp-button-menu">
             @unless(config('spid-auth.hide_real_idps'))
-            <li class="spid-idp-button-link" data-idp="aruba">
-                <button class="idp-button-idp-logo" name="aruba_id" type="submit"><span class="spid-sr-only">Aruba ID</span><img class="spid-idp-button-logo" src="{{ asset('/vendor/spid-auth/img/spid-idp-arubaid.svg') }}" onerror="this.src='{{ asset('/vendor/spid-auth/img/spid-idp-arubaid.png') }}'; this.onerror=null;" alt="Aruba ID" /></button>
+            @foreach (config('spid-idps') as $idp => $idpData)
+            @if ($idpData['real'] && $idpData['isActive'])
+            <li class="spid-idp-button-link" data-idp="{{ $idp }}">
+                <button class="idp-button-idp-logo" name="{{ $idpData['entityName'] }}" type="submit"><span class="spid-sr-only">{{ $idpData['entityName'] }}</span><img class="spid-idp-button-logo" src="{{ asset('/vendor/spid-auth/img/' . $idpData['logo']) }}" alt="{{ $idpData['entityName'] }}" /></button>
             </li>
-            <li class="spid-idp-button-link" data-idp="infocert">
-                <button class="idp-button-idp-logo" name="infocert_id" type="submit"><span class="spid-sr-only">Infocert ID</span><img class="spid-idp-button-logo" src="{{ asset('/vendor/spid-auth/img/spid-idp-infocertid.svg') }}" onerror="this.src='{{ asset('/vendor/spid-auth/img/spid-idp-infocertid.png') }}'; this.onerror=null;" alt="Infocert ID" /></button>
-            </li>
-            <li class="spid-idp-button-link" data-idp="intesa">
-                <button class="idp-button-idp-logo" name="intesa_id" type="submit"><span class="spid-sr-only">Intesa ID</span><img class="spid-idp-button-logo" src="{{ asset('/vendor/spid-auth/img/spid-idp-intesaid.svg') }}" onerror="this.src='{{ asset('/vendor/spid-auth/img/spid-idp-intesaid.png') }}'; this.onerror=null;" alt="Intesa ID" /></button>
-            </li>
-            <li class="spid-idp-button-link" data-idp="lepida">
-                <button class="idp-button-idp-logo" name="lepida_id" type="submit"><span class="spid-sr-only">Lepida ID</span><img class="spid-idp-button-logo" src="{{ asset('/vendor/spid-auth/img/spid-idp-lepidaid.svg') }}" onerror="this.src='{{ asset('/vendor/spid-auth/img/spid-idp-lepidaid.png') }}'; this.onerror=null;" alt="Lepida ID" /></button>
-            </li>
-            <li class="spid-idp-button-link" data-idp="namirial">
-                <button class="idp-button-idp-logo" name="namirial_id" type="submit"><span class="spid-sr-only">Namirial ID</span><img class="spid-idp-button-logo" src="{{ asset('/vendor/spid-auth/img/spid-idp-namirialid.svg') }}" onerror="this.src='{{ asset('/vendor/spid-auth/img/spid-idp-namirialid.png') }}'; this.onerror=null;" alt="Namirial ID" /></button>
-            </li>
-            <li class="spid-idp-button-link" data-idp="poste">
-                <button class="idp-button-idp-logo" name="poste_id" type="submit"><span class="spid-sr-only">Poste ID</span><img class="spid-idp-button-logo" src="{{ asset('/vendor/spid-auth/img/spid-idp-posteid.svg') }}" onerror="this.src='{{ asset('/vendor/spid-auth/img/spid-idp-posteid.png') }}'; this.onerror=null;" alt="Poste ID" /></button>
-            </li>
-            <li class="spid-idp-button-link" data-idp="sielte">
-                <button class="idp-button-idp-logo" name="sielte_id" type="submit"><span class="spid-sr-only">Sielte ID</span><img class="spid-idp-button-logo" src="{{ asset('/vendor/spid-auth/img/spid-idp-sielteid.svg') }}" onerror="this.src='{{ asset('/vendor/spid-auth/img/spid-idp-sielteid.png') }}'; this.onerror=null;" alt="Sielte ID" /></button>
-            </li>
-            <li class="spid-idp-button-link" data-idp="spiditalia">
-                <button class="idp-button-idp-logo" name="spiditalia" type="submit"><span class="spid-sr-only">SPIDItalia Register.it</span><img class="spid-idp-button-logo" src="{{ asset('/vendor/spid-auth/img/spid-idp-spiditalia.svg') }}" onerror="this.src='{{ asset('/vendor/spid-auth/img/spid-idp-spiditalia.png') }}'; this.onerror=null;" alt="SpidItalia" /></button>
-            </li>
-            <li class="spid-idp-button-link" data-idp="tim">
-                <button class="idp-button-idp-logo" name="tim_id" type="submit"><span class="spid-sr-only">Tim ID</span><img class="spid-idp-button-logo" src="{{ asset('/vendor/spid-auth/img/spid-idp-timid.svg') }}" onerror="this.src='{{ asset('/vendor/spid-auth/img/spid-idp-timid.png') }}'; this.onerror=null;" alt="Tim ID" /></button>
-            </li>
+            @endif
+            @endforeach
             @endunless
             @if (config('spid-auth.test_idp'))
             <li class="spid-idp-button-link" data-idp="test">
