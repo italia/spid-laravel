@@ -69,7 +69,7 @@ jobs:
       php-version:
         type: string
     docker:
-      - image: circleci/php:<< parameters.php-version >>-cli
+      - image: cimg/php:<< parameters.php-version >>
     environment:
       APP_ENV: "testing"
     steps:
@@ -93,4 +93,4 @@ workflows:
       - build:
           matrix:
             parameters:
-              php-version: ["8.1", "8.2"]
+              php-version: ["8.2"]
