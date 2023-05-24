@@ -760,6 +760,7 @@ class SPIDAuth extends Controller
      * Return a random string.
      *
      * @return string random string
+     *
      * @codeCoverageIgnore
      */
     protected function getRandomString(): string
