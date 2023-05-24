@@ -25,6 +25,11 @@ $rules = [
     'ordered_imports' => true,
     'phpdoc_align' => ['align' => 'left'],
     'phpdoc_order' => true,
+    'global_namespace_import' => [
+        'import_classes' => true, 
+        'import_constants' => false, 
+        'import_functions' => false,
+    ],
 ];
 
 $finder = Finder::create()
