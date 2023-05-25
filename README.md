@@ -16,7 +16,7 @@ applications based on [Laravel](https://www.laravel.com).
 
 1. Before installing this package patching must be enabled in `composer.json`.
 This is necessary because
-[this patch](https://rawgit.com/italia/spid-laravel/master/patches/php-saml-3.3.0-spid.patch)
+[this patch](https://rawgit.com/italia/spid-laravel/master/patches/php-saml-3.4.1-spid.patch)
 has to be applied to [onelogin/php-saml](https://github.com/onelogin/php-saml)
 for SPID compatibility.
 
@@ -54,7 +54,7 @@ for SPID compatibility.
 
    `composer require italia/spid-laravel`
 
-3. [Exclude the URIs](https://laravel.com/docs/5.7/csrf#csrf-excluding-uris)
+3. [Exclude the URIs](https://laravel.com/docs/10.x/csrf#csrf-excluding-uris)
 used by this package from CSRF protection because the the Identity Providers
 can't know what CSRF token include in their POST requests sent to your routes.
 
@@ -115,13 +115,13 @@ endpoint and the `HTTP-Redirect` for the the SingleLogoutService endpoint.
 **Application options**
 
 - `middleware_group`:
-  the [middleware group](https://laravel.com/docs/5.5/middleware#middleware-groups)
+  the [middleware group](https://laravel.com/docs/10.x/middleware#middleware-groups)
   assigned to the packages routes. The default value is `web` which comes with
   Laravel out of the box and provides some common features like session
   management and cookies. You can add more middlewares using an array but `web`
   must be always included.
 - `routes_prefix`:
-  the [route prefix](https://laravel.com/docs/5.5/routing#route-group-prefixes)
+  the [route prefix](https://laravel.com/docs/10.x/routing#route-group-prefixes)
   applied to the package routes. If you change the default `spid` value make
   sure to reflect this change in the `app/Http/Middleware/VerifyCsrfToken.php`
   file as described above. *Please note that in this document the value is
@@ -261,7 +261,7 @@ about the authenticated user. Both events share these methods:
 - `getIdp()` returns the entityName of the Identity Provider.
 
 To listen to both events using the same object, you can use an
-[Event Subscriber](https://laravel.com/docs/5.5/events#event-subscribers) class
+[Event Subscriber](https://laravel.com/docs/10.x/events#event-subscribers) class
 that can be defined as follow:
 
 ```php
@@ -298,13 +298,11 @@ class SPIDEventSubscriber
     public function subscribe($events)
     {
         $events->listen(
-            'Italia\SPIDAuth\Events\LoginEvent',
-            'App\Listeners\SPIDEventSubscriber@onSPIDLogin'
+          LoginEvent::class, [ SPIDEventSubscriber::class, 'onSPIDLogin' ]
         );
 
         $events->listen(
-            'Italia\SPIDAuth\Events\LogoutEvent',
-            'App\Listeners\SPIDEventSubscriber@onSPIDLogout'
+          LogoutEvent::class, [ SPIDEventSubscriber::class, 'onSPIDLogout' ]
         );
     }
 
@@ -315,9 +313,34 @@ The `SPIDEventSubscriber` class must be added to the `$subscribe` array in
 `app/Providers/EventServiceProvider.php`:
 
 ```php
-protected $subscribe = [
-    'App\Listeners\SPIDEventSubscriber'
-];
+<?php
+
+namespace App\Providers;
+
+use App\Listeners\UserEventSubscriber;
+use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+ 
+class EventServiceProvider extends ServiceProvider
+{
+    /**
+     * The event listener mappings for the application.
+     *
+     * @var array
+     */
+    protected $listen = [
+        // ...
+    ];
+ 
+    /**
+     * The subscriber classes to register.
+     *
+     * @var array
+     */
+    protected $subscribe = [
+        SPIDEventSubscriber::class,
+    ];
+}
+
 ```
 
 The `SPIDUser` class provides `<attribute>` properties for the attributes
