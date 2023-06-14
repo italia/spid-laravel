@@ -1,0 +1,99 @@
+diff --git a/src/Saml2/AuthnRequest.php b/src/Saml2/AuthnRequest.php
+index fd9afb5..e1ad2e4 100644
+--- a/src/Saml2/AuthnRequest.php
++++ b/src/Saml2/AuthnRequest.php
+@@ -81,8 +81,7 @@ SUBJECT;
+             $nameIdPolicyStr = <<<NAMEIDPOLICY
+
+     <samlp:NameIDPolicy
+-        Format="{$nameIDPolicyFormat}"
+-        AllowCreate="true" />
++        Format="{$nameIDPolicyFormat}" />
+ NAMEIDPOLICY;
+         }
+
+@@ -156,12 +155,17 @@ REQUESTEDAUTHN;
+     xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+     ID="$id"
+     Version="2.0"
+-{$providerNameStr}{$forceAuthnStr}{$isPassiveStr}
++{$forceAuthnStr}{$isPassiveStr}
+     IssueInstant="{$issueInstant}"
+     Destination="{$destination}"
+     ProtocolBinding="{$spData['assertionConsumerService']['binding']}"
+-    AssertionConsumerServiceURL="{$acsUrl}">
+-    <saml:Issuer>{$spEntityId}</saml:Issuer>{$subjectStr}{$nameIdPolicyStr}{$requestedAuthnStr}
++    AssertionConsumerServiceURL="{$acsUrl}"
++    AttributeConsumingServiceIndex="{$spData['attributeConsumingService']['index']}">
++    <saml:Issuer
++        NameQualifier="{$spEntityId}"
++        Format="urn:oasis:names:tc:SAML:2.0:nameid-format:entity">{$spEntityId}</saml:Issuer>
++{$nameIdPolicyStr}
++{$requestedAuthnStr}
+ </samlp:AuthnRequest>
+ AUTHNREQUEST;
+
+diff --git a/src/Saml2/LogoutRequest.php b/src/Saml2/LogoutRequest.php
+index 108c49b..ddca081 100644
+--- a/src/Saml2/LogoutRequest.php
++++ b/src/Saml2/LogoutRequest.php
+@@ -137,8 +137,10 @@ class LogoutRequest
+     ID="{$id}"
+     Version="2.0"
+     IssueInstant="{$issueInstant}"
+-    Destination="{$destination}">
+-    <saml:Issuer>{$spEntityId}</saml:Issuer>
++    Destination="{$idpData['entityId']}">
++    <saml:Issuer
++        NameQualifier="{$spEntityId}"
++        Format="urn:oasis:names:tc:SAML:2.0:nameid-format:entity">{$spEntityId}</saml:Issuer>
+     {$nameIdObj}
+     {$sessionIndexStr}
+ </samlp:LogoutRequest>
+diff --git a/src/Saml2/LogoutResponse.php b/src/Saml2/LogoutResponse.php
+index 9c3f020..7a33d4c 100644
+--- a/src/Saml2/LogoutResponse.php
++++ b/src/Saml2/LogoutResponse.php
+@@ -114,7 +114,7 @@ class LogoutResponse
+         if ($issuerNodes->length == 1) {
+             $issuer = $issuerNodes->item(0)->textContent;
+         }
+-        return $issuer;
++        return trim($issuer);
+     }
+
+     /**
+diff --git a/src/Saml2/Metadata.php b/src/Saml2/Metadata.php
+index 922ad60..efd97dc 100644
+--- a/src/Saml2/Metadata.php
++++ b/src/Saml2/Metadata.php
+@@ -163,7 +163,7 @@ ATTRIBUTEVALUE;
+
+             $requestedAttributeStr = implode(PHP_EOL, $requestedAttributeData);
+             $strAttributeConsumingService = <<<METADATA_TEMPLATE
+-<md:AttributeConsumingService index="1">
++<md:AttributeConsumingService index="{$sp['attributeConsumingService']['index']}">
+             <md:ServiceName xml:lang="en">{$sp['attributeConsumingService']['serviceName']}</md:ServiceName>
+ {$attrCsDesc}{$requestedAttributeStr}
+         </md:AttributeConsumingService>
+@@ -172,17 +172,17 @@ METADATA_TEMPLATE;
+
+         $spEntityId = htmlspecialchars($sp['entityId'], ENT_QUOTES);
+         $acsUrl = htmlspecialchars($sp['assertionConsumerService']['url'], ENT_QUOTES);
++        $isDefaultAcs = (0 === $sp['assertionConsumerService']['index']) ? 'isDefault="true"' : '';
+         $metadata = <<<METADATA_TEMPLATE
+ <?xml version="1.0"?>
+ <md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+-                     validUntil="{$validUntilTime}"
+-                     cacheDuration="PT{$cacheDuration}S"
+                      entityID="{$spEntityId}">
+     <md:SPSSODescriptor AuthnRequestsSigned="{$strAuthnsign}" WantAssertionsSigned="{$strWsign}" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+ {$sls}        <md:NameIDFormat>{$sp['NameIDFormat']}</md:NameIDFormat>
+         <md:AssertionConsumerService Binding="{$sp['assertionConsumerService']['binding']}"
+                                      Location="{$acsUrl}"
+-                                     index="1" />
++                                     {$isDefaultAcs}
++                                     index="{$sp['assertionConsumerService']['index']}" />
+         {$strAttributeConsumingService}
+     </md:SPSSODescriptor>{$strOrganization}{$strContacts}
+ </md:EntityDescriptor>
