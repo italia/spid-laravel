@@ -15,7 +15,7 @@ class Middleware
      * Check if the current session is authenticated with SPID, redirect if not.
      *
      * @param \Illuminate\Http\Request $request
-     * @param \Closure $next
+     * @param Closure $next
      *
      * @return mixed
      */
