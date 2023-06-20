@@ -266,7 +266,8 @@ class SPIDAuth extends Controller
         }
 
         try {
-            $metadata = $this->getSAML(null)->getSettings()->getSPMetadata();
+            $settings = $this->getSAML(null)->getSettings();
+            $metadata = $settings->getSPMetadata();
 
             if (!$metadata) {
                 throw new RuntimeException('error');
@@ -343,7 +344,15 @@ class SPIDAuth extends Controller
                 $root->appendChild($cp);
             }
 
+            $oldSign = $document->getElementsByTagName('Signature');
+            foreach ($oldSign as $old) {
+                $old->parentNode->removeChild($old);
+            }
+
+            $key = $settings->getSPkey();
+            $cert = $settings->getSPcert();
             $metadata = $document->saveXML();
+            $metadata = SAMLUtils::addSign($metadata, $key, $cert);
         } catch (Exception $e) {
             throw new SPIDMetadataException('Invalid SP metadata: ' . $e->getMessage(), 0, $e);
         }
