@@ -12,6 +12,9 @@
 This is a package to provide a simple SPID authentication system to web
 applications based on [Laravel](https://www.laravel.com).
 
+See [Changelog](CHANGELOG.md) for more informations about versions and breaking
+changes.
+
 ## Installation
 
 1. Before installing this package patching must be enabled in `composer.json`.
