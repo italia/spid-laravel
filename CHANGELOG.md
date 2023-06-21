@@ -6,7 +6,7 @@
 
 - Support Laravel 9/10
 - Require PHP 8.2 (breaking change)
-- Fix metadata signature (thanks to @madbob)
+- Fix metadata signature (thanks to [@madbob](https://github.com/madbob))
 - Update expired test certificates
 
 ## [v0.9.1-beta - v1.4.0-beta]
