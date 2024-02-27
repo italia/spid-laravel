@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [v2.0.1-beta] - 2024-02-27
+
+- Update IdP
+
+## [v1.4.1-beta] - 2024-02-27
+
+- Update IdP
+
 ## [v2.0.0-beta] - 2023-06-21
 
 - Support Laravel 9/10
