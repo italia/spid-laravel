@@ -43,7 +43,6 @@ class ServiceProvider extends LaravelServiceProvider
         if ($proxyVars) {
             SAMLUtils::setProxyVars($proxyVars);
         }
-
     }
 
     /**
