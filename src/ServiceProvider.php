@@ -10,6 +10,7 @@ namespace Italia\SPIDAuth;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
+use OneLogin\Saml2\Utils as SAMLUtils;
 
 class ServiceProvider extends LaravelServiceProvider
 {
@@ -37,6 +38,12 @@ class ServiceProvider extends LaravelServiceProvider
         $router->aliasMiddleware('spid.auth', \Italia\SPIDAuth\Middleware::class);
 
         View::share('SPIDActionUrl', route('spid-auth_do-login'));
+
+        $proxyVars = config('spid-auth.saml_proxy_vars');
+        if ($proxyVars) {
+            SAMLUtils::setProxyVars($proxyVars);
+        }
+
     }
 
     /**

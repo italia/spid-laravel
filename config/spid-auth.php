@@ -101,4 +101,6 @@ return [
     'login_view' => 'spid-auth::login-spid',
     'after_login_url' => '/',
     'after_logout_url' => '/',
+
+    'saml_proxy_vars' => false,
 ];
