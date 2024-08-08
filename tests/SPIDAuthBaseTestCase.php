@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\URL;
 use Italia\SPIDAuth\SPIDAuth;
 use Mockery as m;
+use OneLogin\Saml2\Auth as SAMLAuth;
 use OneLogin\Saml2\Constants as SAMLConstants;
 use OneLogin\Saml2\Error as SAMLError;
 use OneLogin\Saml2\Utils as SAMLUtils;
@@ -56,7 +57,7 @@ class SPIDAuthBaseTestCase extends TestCase
         $compiledResponseXML = str_replace('{{ResponseIssueInstant}}', SAMLUtils::parseTime2SAML(time()), $compiledResponseXML);
         $compiledResponseXML = str_replace('{{AssertionIssueInstant}}', SAMLUtils::parseTime2SAML(time()), $compiledResponseXML);
         $SPIDAuth = m::mock(SPIDAuth::class)->makePartial()->shouldAllowMockingProtectedMethods();
-        $SAMLAuth = m::mock('\OneLogin\Saml2\Auth');
+        $SAMLAuth = m::mock(SAMLAuth::class);
 
         $SAMLAuth->shouldReceive('login')->andReturn(
             Response::redirectTo($testRedirectURL)
@@ -152,7 +153,7 @@ class SPIDAuthBaseTestCase extends TestCase
 
         $SPIDAuth->shouldReceive('getSAML')->andReturn($SAMLAuth);
         $SPIDAuth->shouldReceive('getRandomString')->andReturn('RANDOM_STRING');
-        $this->app->instance('SPIDAuth', $SPIDAuth);
+        $this->app->instance('Italia\SPIDAuth\SPIDAuth', $SPIDAuth);
 
         return $SAMLAuth;
     }
