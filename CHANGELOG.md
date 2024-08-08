@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [v2.0.2-beta] - 2024-07-30
+
 - Use full namespace in routes definition
 
 ## [v2.0.1-beta] - 2024-02-27
