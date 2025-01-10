@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [v2.0.3-beta] - 2025-01-10
+
+- Update IdP
+- Update dependencies
+
 ## [v2.0.2-beta] - 2024-07-30
 
 - Use full namespace in routes definition
