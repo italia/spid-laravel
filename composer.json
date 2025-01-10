@@ -1,7 +1,11 @@
 {
   "name": "italia/spid-laravel",
   "description": "Laravel Package for SPID authentication",
-  "keywords": ["SPID", "Laravel", "PHP"],
+  "keywords": [
+    "SPID",
+    "Laravel",
+    "PHP"
+  ],
   "homepage": "https://github.com/italia/spid-laravel",
   "license": "BSD-3-Clause",
   "authors": [
@@ -24,7 +28,7 @@
     "orchestra/testbench": "^7.22.1",
     "mockery/mockery": "^1.5.1",
     "mikey179/vfsstream": "^1.6",
-    "friendsofphp/php-cs-fixer": "^3.14.4"
+    "friendsofphp/php-cs-fixer": "~3.41.0"
   },
   "autoload": {
     "psr-4": {
@@ -38,9 +42,9 @@
   },
   "extra": {
     "laravel": {
-        "providers": [
-            "Italia\\SPIDAuth\\ServiceProvider"
-        ]
+      "providers": [
+        "Italia\\SPIDAuth\\ServiceProvider"
+      ]
     },
     "patches": {
       "onelogin/php-saml": {
@@ -49,7 +53,12 @@
     }
   },
   "archive": {
-    "exclude": ["/tests", "/certs", ".editorconfig", "php_cs.dist"]
+    "exclude": [
+      "/tests",
+      "/certs",
+      ".editorconfig",
+      "php_cs.dist"
+    ]
   },
   "config": {
     "allow-plugins": {
