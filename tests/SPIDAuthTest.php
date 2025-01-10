@@ -134,11 +134,11 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
             $SPIDUser = $e->getSPIDUser();
             $isSPIDUserReturned = SPIDUser::class === get_class($SPIDUser);
             $areSPIDUserFieldsSet =
-                'Nome' === $SPIDUser->name &&
-                'Cognome' === $SPIDUser->familyName &&
-                'FSCLNB17A01H501X' === $SPIDUser->fiscalNumber &&
-                'TEST0123456789' === $SPIDUser->spidCode &&
-                null === $SPIDUser->nonExistent;
+                'Nome' === $SPIDUser->name
+                && 'Cognome' === $SPIDUser->familyName
+                && 'FSCLNB17A01H501X' === $SPIDUser->fiscalNumber
+                && 'TEST0123456789' === $SPIDUser->spidCode
+                && null === $SPIDUser->nonExistent;
             $isIdpReturned = 'Test IdP' === $e->getIdp();
 
             return $isSPIDUserReturned && $areSPIDUserFieldsSet && $isIdpReturned;
@@ -314,11 +314,11 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
             $SPIDUser = $e->getSPIDUser();
             $isSPIDUserReturned = SPIDUser::class == get_class($SPIDUser);
             $areSPIDUserFieldsSet =
-                'Nome' == $SPIDUser->name &&
-                'Cognome' == $SPIDUser->familyName &&
-                'FSCLNB17A01H501X' == $SPIDUser->fiscalNumber &&
-                'TEST0123456789' == $SPIDUser->spidCode &&
-                null == $SPIDUser->nonExistent;
+                'Nome' == $SPIDUser->name
+                && 'Cognome' == $SPIDUser->familyName
+                && 'FSCLNB17A01H501X' == $SPIDUser->fiscalNumber
+                && 'TEST0123456789' == $SPIDUser->spidCode
+                && null == $SPIDUser->nonExistent;
             $isIdpReturned = 'Test IdP' == $e->getIdp();
 
             return $isSPIDUserReturned && $areSPIDUserFieldsSet && $isIdpReturned;
@@ -383,11 +383,11 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
             $SPIDUser = $e->getSPIDUser();
             $isSPIDUserReturned = SPIDUser::class == get_class($SPIDUser);
             $areSPIDUserFieldsSet =
-                'Nome' == $SPIDUser->name &&
-                'Cognome' == $SPIDUser->familyName &&
-                'FSCLNB17A01H501X' == $SPIDUser->fiscalNumber &&
-                'TEST0123456789' == $SPIDUser->spidCode &&
-                null == $SPIDUser->nonExistent;
+                'Nome' == $SPIDUser->name
+                && 'Cognome' == $SPIDUser->familyName
+                && 'FSCLNB17A01H501X' == $SPIDUser->fiscalNumber
+                && 'TEST0123456789' == $SPIDUser->spidCode
+                && null == $SPIDUser->nonExistent;
             $isIdpReturned = 'Test IdP' == $e->getIdp();
 
             return $isSPIDUserReturned && $areSPIDUserFieldsSet && $isIdpReturned;
