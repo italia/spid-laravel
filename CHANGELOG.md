@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [v2.0.4-beta] - 2025-01-25
+
 - Update IdP
 
 ## [v2.0.3-beta] - 2025-01-10
