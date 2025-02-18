@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Str;
 use Italia\SPIDAuth\Events\LoginEvent;
 use Italia\SPIDAuth\Events\LogoutEvent;
+use Italia\SPIDAuth\Events\TransactionEvent;
 use Italia\SPIDAuth\Exceptions\SPIDConfigurationException;
 use Italia\SPIDAuth\Exceptions\SPIDLoginAnomalyException;
 use Italia\SPIDAuth\Exceptions\SPIDLoginException;
@@ -68,7 +69,8 @@ class SPIDAuth extends Controller
             $relayState = $this->getRandomString();
             $idpRedirectTo = $this->getSAML($idp)->login($relayState, [], true, false, true);
             $requestDocument = new DOMDocument();
-            SAMLUtils::loadXML($requestDocument, $this->getSAML($idp)->getLastRequestXML());
+            $lastRequestXML = $this->getSAML($idp)->getLastRequestXML();
+            SAMLUtils::loadXML($requestDocument, $lastRequestXML);
             $requestIssueInstant = $requestDocument->documentElement->getAttribute('IssueInstant');
             $lastRequestId = $this->getSAML($idp)->getLastRequestID();
 
@@ -81,6 +83,8 @@ class SPIDAuth extends Controller
                     'url.intended' => session('url.intended'),
                 ]], 300);
             }
+
+            event(new TransactionEvent(TransactionEvent::AUTHNREQUEST, $lastRequestXML));
 
             return redirect($idpRedirectTo);
         }
@@ -110,6 +114,10 @@ class SPIDAuth extends Controller
 
         $this->checkIdp($idp);
 
+        $lastResponseXML = $this->getSAML($idp)->getLastResponseXML();
+
+        event(new TransactionEvent(TransactionEvent::RESPONSE, $lastResponseXML));
+
         if (empty($lastRequestId)) {
             throw new SPIDLoginException('Last request id not found', SPIDLoginException::SAML_REQUEST_ID_MISSING);
         }
@@ -136,7 +144,6 @@ class SPIDAuth extends Controller
             throw new SPIDLoginException('SAML authentication error: ' . $lastErrorReason, SPIDLoginException::SAML_AUTHENTICATION_ERROR);
         }
 
-        $lastResponseXML = $this->getSAML($idp)->getLastResponseXML();
         $this->validateLoginResponse($lastResponseXML, $lastRequestIssueInstant);
 
         try {
