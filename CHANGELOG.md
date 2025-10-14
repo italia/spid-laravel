@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Add Laravel 12 compatibility
+- Update Illuminate dependencies to support Laravel 9, 10, 11, and 12
+- Update development dependencies for Laravel 12 testing
+
 ## [v2.0.4-beta] - 2025-01-25
 
 - Update IdP
