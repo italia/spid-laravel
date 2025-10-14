@@ -20,7 +20,7 @@
     "illuminate/support": "^9.52.4|^10.0|^11.0|^12.0",
     "onelogin/php-saml": "^4.1.0",
     "cweagans/composer-patches": "^1.7",
-    "nesbot/carbon": "^2.66"
+    "nesbot/carbon": "^2.66|^3.0"
   },
   "require-dev": {
     "pds/skeleton": "~1.0",

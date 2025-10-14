@@ -5,6 +5,7 @@
 - Add Laravel 12 compatibility
 - Update Illuminate dependencies to support Laravel 9, 10, 11, and 12
 - Update development dependencies for Laravel 12 testing
+- Fix Carbon dependency conflict for Laravel 12 (support Carbon ^2.66|^3.0)
 
 ## [v2.0.4-beta] - 2025-01-25
 
