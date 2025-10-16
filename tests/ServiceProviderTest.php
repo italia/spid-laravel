@@ -4,7 +4,6 @@ namespace Italia\SPIDAuth\Tests;
 
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\View;
 use Italia\SPIDAuth\SPIDAuth;
 use Orchestra\Testbench\TestCase;
 
@@ -40,7 +39,10 @@ class ServiceProviderTest extends TestCase
 
     public function testIfSharedViewDataExists()
     {
-        $this->assertArrayHasKey('SPIDActionUrl', View::getShared());
+        $view = view('spid-auth::spid-button');
+        $view->render();
+        $data = $view->getData();
+        $this->assertArrayHasKey('SPIDActionUrl', $data);
     }
 
     public function testIfCommandExampleExists()

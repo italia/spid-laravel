@@ -36,7 +36,9 @@ class ServiceProvider extends LaravelServiceProvider
 
         $router->aliasMiddleware('spid.auth', \Italia\SPIDAuth\Middleware::class);
 
-        View::share('SPIDActionUrl', route('spid-auth_do-login'));
+        View::composer('*', function ($view) {
+            $view->with('SPIDActionUrl', route('spid-auth_do-login'));
+        });
     }
 
     /**
