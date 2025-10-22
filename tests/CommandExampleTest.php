@@ -21,6 +21,7 @@ class CommandExampleTest extends TestCase
     protected function tearDown(): void
     {
         $this->rrmdir(__DIR__ . '/test_app');
+        parent::tearDown();
     }
 
     public function testHandle()
