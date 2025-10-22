@@ -15,7 +15,7 @@
     }
   ],
   "require": {
-    "php": "^8.2",
+    "php": "^8.2|^8.3",
     "illuminate/config": "^9.52.4|^10.0|^11.0|^12.0",
     "illuminate/support": "^9.52.4|^10.0|^11.0|^12.0",
     "onelogin/php-saml": "4.1.0",
