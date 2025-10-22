@@ -109,6 +109,28 @@ The values entered in the config file will be used to generate the SAML Service
 Provider metadata at runtime. The generated metadata will be available in XML
 format at `/spid/metadata`.
 
+## Testing (multi-version)
+
+This repository includes tools and CI configuration to run the full test suite against multiple Laravel versions.
+
+The script `test-laravel-versions.sh` installs the appropriate dependencies for
+each Laravel major and runs the test suite sequentially for all supported
+Laravel versions.
+
+Quick examples
+
+Run tests for Laravel 12 only:
+
+```bash
+./test-laravel-versions.sh 12
+```
+
+Run tests for all supported Laravel versions sequentially:
+
+```bash
+./test-laravel-versions.sh
+```
+
 ### Bindings
 
 Due to limitations of [onelogin/php-saml](https://github.com/onelogin/php-saml),
