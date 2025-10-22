@@ -140,7 +140,7 @@ class SPIDAuth extends Controller
         $this->validateLoginResponse($lastResponseXML, $lastRequestIssueInstant);
 
         try {
-            $assertionExpiry = Carbon::parse('@' . $assertionNotOnOrAfter);
+            $assertionExpiry = Carbon::parse($assertionNotOnOrAfter);
         } catch (Exception $e) {
             throw new SPIDLoginException('SAML response validation error: invalid NotOnOrAfter attribute', SPIDLoginException::SAML_VALIDATION_ERROR, $e);
         }
