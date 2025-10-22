@@ -2,6 +2,7 @@
 
 namespace Italia\SPIDAuth\Tests;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\URL;
 use Italia\SPIDAuth\SPIDAuth;
@@ -41,6 +42,7 @@ class SPIDAuthBaseTestCase extends TestCase
     protected function tearDown(): void
     {
         m::close();
+        parent::tearDown();
     }
 
     protected function getPackageProviders($app)
@@ -66,7 +68,7 @@ class SPIDAuthBaseTestCase extends TestCase
         $SAMLAuth->shouldReceive('processResponse')->andReturn(true)->byDefault();
         $SAMLAuth->shouldReceive('processSLO')->andReturn(true)->byDefault();
         $SAMLAuth->shouldReceive('getLastAssertionId')->andReturn('assertionId');
-        $SAMLAuth->shouldReceive('getLastAssertionNotOnOrAfter')->andReturn(time() + 300)->byDefault();
+        $SAMLAuth->shouldReceive('getLastAssertionNotOnOrAfter')->andReturn(Carbon::now()->addMinutes(5)->format('Y-m-d\TH:i:s\Z'))->byDefault();
         $SAMLAuth->shouldReceive('getLastErrorReason')->andReturn('errorReason')->byDefault();
         $SAMLAuth->shouldReceive('getLastRequestID')->andReturn('UNIQUE_ID');
         $SAMLAuth->shouldReceive('isAuthenticated')->andReturn(true)->byDefault();

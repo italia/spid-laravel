@@ -24,14 +24,43 @@ commands:
 
   composer:
     description: Ensure all php dependencies are installed
+    parameters:
+      laravel-version:
+        type: string
+        default: ""
     steps:
       - run:
           name: Self-update composer
           command: sudo composer self-update
 
+      - when:
+          condition: << parameters.laravel-version >>
+          steps:
+            - run:
+                name: Install Laravel << parameters.laravel-version >> dependencies
+                command: |
+                  case << parameters.laravel-version >> in
+                    9)
+                      composer require --no-update "illuminate/config:^9.52.4" "illuminate/support:^9.52.4" "nesbot/carbon:^2.66"
+                      composer require --dev --no-update "orchestra/testbench:^7.22.1" "phpunit/phpunit:^9.5.10"
+                      ;;
+                    10)
+                      composer require --no-update "illuminate/config:^10.0" "illuminate/support:^10.0" "nesbot/carbon:^2.66"
+                      composer require --dev --no-update "orchestra/testbench:^8.0" "phpunit/phpunit:^10.0"
+                      ;;
+                    11)
+                      composer require --no-update "illuminate/config:^11.0" "illuminate/support:^11.0" "nesbot/carbon:^3.0"
+                      composer require --dev --no-update "orchestra/testbench:^9.0" "phpunit/phpunit:^10.0"
+                      ;;
+                    12)
+                      composer require --no-update "illuminate/config:^12.0" "illuminate/support:^12.0" "nesbot/carbon:^3.0"
+                      composer require --dev --no-update "orchestra/testbench:^10.0" "phpunit/phpunit:^11.0"
+                      ;;
+                  esac
+
       - run:
-          name: Run composer install
-          command: composer install --prefer-dist --no-interaction --no-suggest --no-progress --ignore-platform-reqs
+          name: Run composer update
+          command: composer update --prefer-dist --no-interaction --no-plugins
 
   structure-validation:
     description: Ensure package directory strucure is valid
@@ -72,6 +101,8 @@ jobs:
     parameters:
       php-version:
         type: string
+      laravel-version:
+        type: string
     docker:
       - image: cimg/php:<< parameters.php-version >>
     environment:
@@ -80,21 +111,42 @@ jobs:
       - checkout
       - restore_all_caches
       - xdebug
-      - composer
+      - composer:
+          laravel-version: << parameters.laravel-version >>
       - structure-validation
       - php-cs-fixer
       - security
       - save_all_caches
       # test
       - run:
-          name: Run phpunit
-          command: vendor/bin/phpunit
+          name: Run phpunit for Laravel << parameters.laravel-version >>
+          command: |
+            case << parameters.laravel-version >> in
+              9)
+                XDEBUG_MODE=coverage vendor/bin/phpunit -c phpunit-9.xml
+                ;;
+              10)
+                XDEBUG_MODE=coverage vendor/bin/phpunit -c phpunit-10.xml
+                ;;
+              11)
+                XDEBUG_MODE=coverage vendor/bin/phpunit -c phpunit-10.xml
+                ;;
+              12)
+                XDEBUG_MODE=coverage vendor/bin/phpunit -c phpunit-11.xml
+                ;;
+            esac
       - codecov/upload
 
 workflows:
   build:
     jobs:
       - build:
+          name: "PHP << matrix.php-version >> - Laravel << matrix.laravel-version >>"
           matrix:
             parameters:
-              php-version: ["8.2"]
+              php-version: ["8.2", "8.3"]
+              laravel-version: ["9", "10", "11", "12"]
+            exclude:
+              # Laravel 9 only supports PHP 8.2
+              - php-version: "8.3"
+                laravel-version: "9"
