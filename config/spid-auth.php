@@ -119,6 +119,12 @@ return [
         // Retention period in months (SPID requires 24 months minimum)
         'retention_months' => env('SPID_TRANSACTION_LOG_RETENTION_MONTHS', 24),
 
+        // Use queue for asynchronous processing (default: false for immediate logging)
+        'queue' => env('SPID_TRANSACTION_LOG_QUEUE', false),
+
+        // Queue connection name (null uses default)
+        'queue_connection' => env('SPID_TRANSACTION_LOG_QUEUE_CONNECTION', null),
+
         // Database driver configuration
         'database' => [
             'table' => 'spid_transactions',
