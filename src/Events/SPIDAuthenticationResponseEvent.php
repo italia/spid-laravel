@@ -42,43 +42,6 @@ class SPIDAuthenticationResponseEvent
     }
 
     /**
-     * Get the parsed DOMDocument, parsing it if necessary (lazy loading).
-     *
-     * @return DOMDocument|null
-     */
-    protected function getDocument(): ?DOMDocument
-    {
-        if ($this->documentParsed) {
-            return $this->document;
-        }
-
-        $this->documentParsed = true;
-
-        // Check for empty XML before attempting to parse
-        if (empty($this->responseXml)) {
-            $this->document = null;
-            return null;
-        }
-
-        try {
-            $this->document = new DOMDocument();
-            // Suppress warnings from OneLogin library when parsing malformed XML
-            $oldErrorReporting = error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR);
-            SAMLUtils::loadXML($this->document, $this->responseXml);
-            error_reporting($oldErrorReporting);
-        } catch (Exception $e) {
-            // Restore error reporting if exception occurs
-            if (isset($oldErrorReporting)) {
-                error_reporting($oldErrorReporting);
-            }
-            // If XML parsing fails, document stays null and all extraction methods return null
-            $this->document = null;
-        }
-
-        return $this->document;
-    }
-
-    /**
      * Return the Identity Provider identifier.
      *
      * @return string Identity Provider used for this response
@@ -166,5 +129,43 @@ class SPIDAuthenticationResponseEvent
     public function getAssertionSubjectNameQualifier(): ?string
     {
         return $this->safeXPathQuery($this->getDocument(), '//samlp:Response/saml:Assertion/saml:Subject/saml:NameID', 'NameQualifier');
+    }
+
+    /**
+     * Get the parsed DOMDocument, parsing it if necessary (lazy loading).
+     *
+     * @return DOMDocument|null
+     */
+    protected function getDocument(): ?DOMDocument
+    {
+        if ($this->documentParsed) {
+            return $this->document;
+        }
+
+        $this->documentParsed = true;
+
+        // Check for empty XML before attempting to parse
+        if (empty($this->responseXml)) {
+            $this->document = null;
+
+            return null;
+        }
+
+        try {
+            $this->document = new DOMDocument();
+            // Suppress warnings from OneLogin library when parsing malformed XML
+            $oldErrorReporting = error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR);
+            SAMLUtils::loadXML($this->document, $this->responseXml);
+            error_reporting($oldErrorReporting);
+        } catch (Exception $e) {
+            // Restore error reporting if exception occurs
+            if (isset($oldErrorReporting)) {
+                error_reporting($oldErrorReporting);
+            }
+            // If XML parsing fails, document stays null and all extraction methods return null
+            $this->document = null;
+        }
+
+        return $this->document;
     }
 }

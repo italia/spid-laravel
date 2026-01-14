@@ -17,6 +17,7 @@ interface TransactionStoreContract
      * Store an AuthnRequest transaction.
      *
      * @param SPIDAuthenticationRequestEvent $event Event containing request data
+     *
      * @return void
      */
     public function storeRequest(SPIDAuthenticationRequestEvent $event): void;
@@ -26,6 +27,7 @@ interface TransactionStoreContract
      * Should correlate with existing request using InResponseTo field if possible.
      *
      * @param SPIDAuthenticationResponseEvent $event Event containing response data
+     *
      * @return void
      */
     public function storeResponse(SPIDAuthenticationResponseEvent $event): void;

@@ -40,6 +40,7 @@ class SPIDPruneTransactionsCommand extends Command
 
         if (!is_numeric($months) || $months < 1) {
             $this->error('Invalid retention period. Must be a positive number of months.');
+
             return 1;
         }
 

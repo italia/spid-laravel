@@ -56,6 +56,7 @@ class SPIDTransaction extends Model
      *
      * @param Builder $query
      * @param Carbon $date
+     *
      * @return Builder
      */
     public function scopeOlderThan(Builder $query, Carbon $date): Builder

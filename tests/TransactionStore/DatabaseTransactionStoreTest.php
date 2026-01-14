@@ -39,19 +39,6 @@ class DatabaseTransactionStoreTest extends SPIDAuthBaseTestCase
         }
     }
 
-    protected function getEnvironmentSetUp($app)
-    {
-        parent::getEnvironmentSetUp($app);
-
-        // Use in-memory SQLite for testing
-        $app['config']->set('database.default', 'testing');
-        $app['config']->set('database.connections.testing', [
-            'driver' => 'sqlite',
-            'database' => ':memory:',
-            'prefix' => '',
-        ]);
-    }
-
     public function testStoreRequestCreatesRecord()
     {
         $store = new DatabaseTransactionStore();
@@ -163,6 +150,19 @@ XML;
         $transaction = SPIDTransaction::first();
         $this->assertNull($transaction->authn_request_id);
         $this->assertSame('_test-response-id-999', $transaction->response_id);
+    }
+
+    protected function getEnvironmentSetUp($app)
+    {
+        parent::getEnvironmentSetUp($app);
+
+        // Use in-memory SQLite for testing
+        $app['config']->set('database.default', 'testing');
+        $app['config']->set('database.connections.testing', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
     }
 
     private function getValidAuthnRequestXml(): string

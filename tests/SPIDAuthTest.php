@@ -184,7 +184,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $this->post($this->doLoginURL, ['provider' => 'test']);
 
         Event::assertDispatched(SPIDAuthenticationRequestEvent::class, function ($event) {
-            return $event->getIdp() === 'test'
+            return 'test' === $event->getIdp()
                 && !empty($event->getAuthnRequestXml());
         });
 
@@ -196,7 +196,7 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         ])->post($this->acsURL);
 
         Event::assertDispatched(SPIDAuthenticationResponseEvent::class, function ($event) {
-            return $event->getIdp() === 'test'
+            return 'test' === $event->getIdp()
                 && !empty($event->getResponseXml());
         });
     }

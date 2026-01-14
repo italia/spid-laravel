@@ -20,35 +20,38 @@ trait SafeXmlExtraction
      * @param DOMDocument|null $document The DOMDocument to query
      * @param string $xpath XPath query
      * @param string|null $attribute Attribute name to extract (null for text content)
+     *
      * @return string|null Extracted value or null if not found/failed
      */
     protected function safeXPathQuery(?DOMDocument $document, string $xpath, ?string $attribute = null): ?string
     {
-        if ($document === null) {
+        if (null === $document) {
             return null;
         }
 
         try {
             $nodes = SAMLUtils::query($document, $xpath);
-            if ($nodes->length === 0) {
+            if (0 === $nodes->length) {
                 return null;
             }
 
             $node = $nodes->item(0);
-            if ($node === null) {
+            if (null === $node) {
                 return null;
             }
 
-            if ($attribute !== null) {
+            if (null !== $attribute) {
                 if (!$node->hasAttribute($attribute)) {
                     return null;
                 }
                 $value = $node->getAttribute($attribute);
-                return $value !== '' ? $value : null;
+
+                return '' !== $value ? $value : null;
             }
 
             $textContent = trim($node->textContent);
-            return $textContent !== '' ? $textContent : null;
+
+            return '' !== $textContent ? $textContent : null;
         } catch (Exception $e) {
             return null;
         }

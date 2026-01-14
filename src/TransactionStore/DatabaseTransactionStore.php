@@ -8,6 +8,7 @@
 
 namespace Italia\SPIDAuth\TransactionStore;
 
+use Exception;
 use Illuminate\Support\Facades\Log;
 use Italia\SPIDAuth\Contracts\TransactionStoreContract;
 use Italia\SPIDAuth\Events\SPIDAuthenticationRequestEvent;
@@ -20,6 +21,7 @@ class DatabaseTransactionStore implements TransactionStoreContract
      * Store an AuthnRequest transaction.
      *
      * @param SPIDAuthenticationRequestEvent $event Event containing request data
+     *
      * @return void
      */
     public function storeRequest(SPIDAuthenticationRequestEvent $event): void
@@ -31,7 +33,7 @@ class DatabaseTransactionStore implements TransactionStoreContract
                 'authn_request_issue_instant' => $event->getAuthnRequestIssueInstant(),
                 'authn_request_xml' => $event->getAuthnRequestXml(),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to store SPID authentication request transaction', [
                 'idp' => $event->getIdp(),
                 'authn_request_id' => $event->getAuthnRequestId(),
@@ -47,6 +49,7 @@ class DatabaseTransactionStore implements TransactionStoreContract
      * If no matching request is found, creates a new record with partial data.
      *
      * @param SPIDAuthenticationResponseEvent $event Event containing response data
+     *
      * @return void
      */
     public function storeResponse(SPIDAuthenticationResponseEvent $event): void
@@ -55,10 +58,10 @@ class DatabaseTransactionStore implements TransactionStoreContract
             $inResponseTo = $event->getResponseInResponseTo();
 
             // Try to find and update existing request record
-            if ($inResponseTo !== null) {
+            if (null !== $inResponseTo) {
                 $transaction = SPIDTransaction::where('authn_request_id', $inResponseTo)->first();
 
-                if ($transaction !== null) {
+                if (null !== $transaction) {
                     $transaction->update([
                         'response_id' => $event->getResponseId(),
                         'response_issue_instant' => $event->getResponseIssueInstant(),
@@ -68,6 +71,7 @@ class DatabaseTransactionStore implements TransactionStoreContract
                         'assertion_subject' => $event->getAssertionSubject(),
                         'assertion_subject_name_qualifier' => $event->getAssertionSubjectNameQualifier(),
                     ]);
+
                     return;
                 }
             }
@@ -84,7 +88,7 @@ class DatabaseTransactionStore implements TransactionStoreContract
                 'assertion_subject' => $event->getAssertionSubject(),
                 'assertion_subject_name_qualifier' => $event->getAssertionSubjectNameQualifier(),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to store SPID authentication response transaction', [
                 'idp' => $event->getIdp(),
                 'response_id' => $event->getResponseId(),

@@ -6,7 +6,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Italia\SPIDAuth\Events\SPIDAuthenticationRequestEvent;
-use Italia\SPIDAuth\Events\SPIDAuthenticationResponseEvent;
 use Italia\SPIDAuth\Helpers\TransactionLogHelper;
 use Italia\SPIDAuth\Models\SPIDTransaction;
 use OneLogin\Saml2\Utils as SAMLUtils;
@@ -14,16 +13,6 @@ use OneLogin\Saml2\Utils as SAMLUtils;
 class TransactionLogIntegrationTest extends SPIDAuthBaseTestCase
 {
     use RefreshDatabase;
-
-    protected function defineEnvironment($app)
-    {
-        // Enable transaction logging before the ServiceProvider boots
-        $app['config']->set('spid-auth.transaction_log.enabled', true);
-        $app['config']->set('spid-auth.transaction_log.driver', 'database');
-        
-        // Reset cache to ensure fresh reading
-        TransactionLogHelper::resetCache();
-    }
 
     protected function setUp(): void
     {
@@ -53,18 +42,6 @@ class TransactionLogIntegrationTest extends SPIDAuthBaseTestCase
         }
     }
 
-    protected function getEnvironmentSetUp($app)
-    {
-        parent::getEnvironmentSetUp($app);
-
-        $app['config']->set('database.default', 'testing');
-        $app['config']->set('database.connections.testing', [
-            'driver' => 'sqlite',
-            'database' => ':memory:',
-            'prefix' => '',
-        ]);
-    }
-
     public function testFullLoginFlowStoresTransactionWithRequestAndResponse()
     {
         $this->setSPIDAuthMock();
@@ -76,10 +53,10 @@ class TransactionLogIntegrationTest extends SPIDAuthBaseTestCase
         // Should have stored the request
         $count = SPIDTransaction::count();
         $this->assertGreaterThan(0, $count, 'No transactions were created after login');
-        
+
         $transaction = SPIDTransaction::first();
         $this->assertNotNull($transaction, 'Transaction should exist after login');
-        
+
         if ($transaction) {
             $this->assertSame('test', $transaction->idp);
             $this->assertNotNull($transaction->authn_request_xml);
@@ -103,10 +80,10 @@ class TransactionLogIntegrationTest extends SPIDAuthBaseTestCase
         // Since we're using Event::fake() in other tests which might affect this,
         // let's verify the listener would be called by actually dispatching
         Event::fake();
-        
+
         // Fire a test event
         event(new SPIDAuthenticationRequestEvent('test', '<xml>test</xml>'));
-        
+
         // Verify event was dispatched (proves the setup is working)
         Event::assertDispatched(SPIDAuthenticationRequestEvent::class);
     }
@@ -126,10 +103,10 @@ class TransactionLogIntegrationTest extends SPIDAuthBaseTestCase
 
         $transactions = SPIDTransaction::all();
         $this->assertGreaterThan(0, $transactions->count(), 'At least one transaction should exist');
-        
+
         // Find a transaction with response data
         $transactionWithResponse = $transactions->first(function ($t) {
-            return $t->response_xml !== null;
+            return null !== $t->response_xml;
         });
 
         if ($transactionWithResponse) {
@@ -138,5 +115,27 @@ class TransactionLogIntegrationTest extends SPIDAuthBaseTestCase
         } else {
             $this->markTestIncomplete('No transaction with response data found');
         }
+    }
+
+    protected function defineEnvironment($app)
+    {
+        // Enable transaction logging before the ServiceProvider boots
+        $app['config']->set('spid-auth.transaction_log.enabled', true);
+        $app['config']->set('spid-auth.transaction_log.driver', 'database');
+
+        // Reset cache to ensure fresh reading
+        TransactionLogHelper::resetCache();
+    }
+
+    protected function getEnvironmentSetUp($app)
+    {
+        parent::getEnvironmentSetUp($app);
+
+        $app['config']->set('database.default', 'testing');
+        $app['config']->set('database.connections.testing', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
     }
 }

@@ -7,7 +7,6 @@
 
 namespace Italia\SPIDAuth\Console;
 
-use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Italia\SPIDAuth\Models\SPIDTransaction;
 
@@ -76,7 +75,7 @@ class SPIDTransactionStatsCommand extends Command
             $days = $oldest->created_at->diffInDays($newest->created_at);
             if ($days > 0) {
                 $avgPerDay = $total / max($days, 1);
-                $this->line("  Average per day: " . number_format($avgPerDay, 2));
+                $this->line('  Average per day: ' . number_format($avgPerDay, 2));
             }
         }
 
@@ -92,7 +91,7 @@ class SPIDTransactionStatsCommand extends Command
                 $this->info('Transactions by IdP:');
                 $this->table(
                     ['IdP', 'Count'],
-                    $byIdp->map(fn($row) => [$row->idp, number_format($row->count)])->toArray()
+                    $byIdp->map(fn ($row) => [$row->idp, number_format($row->count)])->toArray()
                 );
             }
         }

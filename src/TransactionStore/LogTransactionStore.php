@@ -8,6 +8,7 @@
 
 namespace Italia\SPIDAuth\TransactionStore;
 
+use Exception;
 use Illuminate\Support\Facades\Log;
 use Italia\SPIDAuth\Contracts\TransactionStoreContract;
 use Italia\SPIDAuth\Events\SPIDAuthenticationRequestEvent;
@@ -19,6 +20,7 @@ class LogTransactionStore implements TransactionStoreContract
      * Store an AuthnRequest transaction.
      *
      * @param SPIDAuthenticationRequestEvent $event Event containing request data
+     *
      * @return void
      */
     public function storeRequest(SPIDAuthenticationRequestEvent $event): void
@@ -33,7 +35,7 @@ class LogTransactionStore implements TransactionStoreContract
                 'authn_request_issue_instant' => $event->getAuthnRequestIssueInstant(),
                 'authn_request_xml' => $event->getAuthnRequestXml(),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Fallback to default channel if configured channel fails
             Log::error('Failed to log SPID authentication request transaction', [
                 'idp' => $event->getIdp(),
@@ -48,6 +50,7 @@ class LogTransactionStore implements TransactionStoreContract
      * Store a Response transaction.
      *
      * @param SPIDAuthenticationResponseEvent $event Event containing response data
+     *
      * @return void
      */
     public function storeResponse(SPIDAuthenticationResponseEvent $event): void
@@ -67,7 +70,7 @@ class LogTransactionStore implements TransactionStoreContract
                 'assertion_subject' => $event->getAssertionSubject(),
                 'assertion_subject_name_qualifier' => $event->getAssertionSubjectNameQualifier(),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Fallback to default channel if configured channel fails
             Log::error('Failed to log SPID authentication response transaction', [
                 'idp' => $event->getIdp(),

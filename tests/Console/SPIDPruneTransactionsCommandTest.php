@@ -37,18 +37,6 @@ class SPIDPruneTransactionsCommandTest extends SPIDAuthBaseTestCase
         }
     }
 
-    protected function getEnvironmentSetUp($app)
-    {
-        parent::getEnvironmentSetUp($app);
-
-        $app['config']->set('database.default', 'testing');
-        $app['config']->set('database.connections.testing', [
-            'driver' => 'sqlite',
-            'database' => ':memory:',
-            'prefix' => '',
-        ]);
-    }
-
     public function testPruneDeletesOldTransactions()
     {
         // Create old transactions (older than 24 months) with explicit timestamps
@@ -170,5 +158,17 @@ class SPIDPruneTransactionsCommandTest extends SPIDAuthBaseTestCase
 
         $this->assertSame(1, SPIDTransaction::count());
         $this->assertDatabaseHas('spid_transactions', ['authn_request_id' => 'recent']);
+    }
+
+    protected function getEnvironmentSetUp($app)
+    {
+        parent::getEnvironmentSetUp($app);
+
+        $app['config']->set('database.default', 'testing');
+        $app['config']->set('database.connections.testing', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
     }
 }

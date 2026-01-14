@@ -23,7 +23,7 @@ class TransactionLogHelper
      */
     public static function isEnabled(): bool
     {
-        if (self::$enabledCache === null) {
+        if (null === self::$enabledCache) {
             self::$enabledCache = config('spid-auth.transaction_log.enabled', false);
         }
 
