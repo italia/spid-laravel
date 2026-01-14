@@ -101,4 +101,33 @@ return [
     'login_view' => 'spid-auth::login-spid',
     'after_login_url' => '/',
     'after_logout_url' => '/',
+
+    /**
+     * Transaction Log Configuration
+     *
+     * SPID technical rules require Service Providers to retain AuthnRequest/Response
+     * message pairs for 24 months for audit purposes.
+     * Enable this feature to comply with the registry requirement.
+     */
+    'transaction_log' => [
+        // Enable transaction logging (default: false for backward compatibility)
+        'enabled' => env('SPID_TRANSACTION_LOG_ENABLED', false),
+
+        // Storage driver: 'database' (default) or 'log'
+        'driver' => env('SPID_TRANSACTION_LOG_DRIVER', 'database'),
+
+        // Retention period in months (SPID requires 24 months minimum)
+        'retention_months' => env('SPID_TRANSACTION_LOG_RETENTION_MONTHS', 24),
+
+        // Database driver configuration
+        'database' => [
+            'table' => 'spid_transactions',
+            'model' => \Italia\SPIDAuth\Models\SPIDTransaction::class,
+        ],
+
+        // Log driver configuration
+        'log' => [
+            'channel' => env('SPID_TRANSACTION_LOG_CHANNEL', 'stack'),
+        ],
+    ],
 ];
