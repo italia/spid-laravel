@@ -396,6 +396,110 @@ Simply provide your users a link pointing to `/spid/logout`.
 2. After a successful logout the user is redirected to the URL specified in the
    `after_logout_url` option and a `LogoutEvent` is triggered.
 
+## Transaction Logging (SPID Compliance)
+
+The SPID technical rules require Service Providers to retain **AuthnRequest/Response message pairs for 24 months** for audit purposes. This package provides a built-in transaction logging system to help you comply with this requirement.
+
+Reference: [SPID Technical Rules - Transaction Registry](https://docs.italia.it/italia/spid/spid-regole-tecniche/it/stabile/single-sign-on.html#registro-delle-transazioni)
+
+### Enabling Transaction Logging
+
+**1. Publish and run the migration:**
+
+```console
+php artisan vendor:publish --tag=spid-migrations
+php artisan migrate
+```
+
+This creates a `spid_transactions` table to store SAML message pairs and extracted audit fields.
+
+**2. Enable transaction logging in your `.env` file:**
+
+```env
+SPID_TRANSACTION_LOG_ENABLED=true
+SPID_TRANSACTION_LOG_DRIVER=database
+SPID_TRANSACTION_LOG_RETENTION_MONTHS=24
+```
+
+**3. Schedule automatic pruning** in `app/Console/Kernel.php`:
+
+```php
+protected function schedule(Schedule $schedule)
+{
+    // Prune transactions older than retention period (monthly recommended)
+    $schedule->command('spid:prune-transactions')->monthly();
+}
+```
+
+You can also run the pruning command manually:
+
+```console
+php artisan spid:prune-transactions
+```
+
+Or override the retention period:
+
+```console
+php artisan spid:prune-transactions --months=12
+```
+
+### Storage Drivers
+
+Two storage drivers are available:
+
+- **`database`** (default): Stores transactions in the `spid_transactions` table via Eloquent. Recommended for most applications.
+- **`log`**: Writes structured JSON logs to a configured channel. Set `SPID_TRANSACTION_LOG_CHANNEL` to specify the channel.
+
+### Logged Fields
+
+Per SPID requirements, the following fields are automatically extracted and stored:
+
+**AuthnRequest:**
+- Request ID
+- Issue Instant
+- Full XML
+
+**Response:**
+- Response ID
+- Issue Instant  
+- Issuer
+- InResponseTo (correlation key)
+- Full XML
+
+**Assertion:**
+- Assertion ID
+- Subject (NameID)
+- Subject NameQualifier
+
+### Custom Transaction Storage
+
+For advanced use cases (e.g., external audit systems, message queues), you can implement the `Italia\SPIDAuth\Contracts\TransactionStoreContract` interface and bind your implementation in a service provider:
+
+```php
+use Italia\SPIDAuth\Contracts\TransactionStoreContract;
+use App\Services\CustomTransactionStore;
+
+public function register()
+{
+    $this->app->bind(TransactionStoreContract::class, function ($app) {
+        return new CustomTransactionStore();
+    });
+}
+```
+
+### Privacy & Security Considerations
+
+**Important:** Transaction logs contain user attributes from SAML assertions.
+
+Ensure you:
+- Apply appropriate database/log access controls
+- Comply with GDPR and local privacy regulations for data retention
+- Use encrypted storage if required by your organization
+- Document your retention policy in your privacy policy
+- Consider implementing additional data protection measures (encryption at rest, access logging, etc.)
+
+The transaction logging feature is **disabled by default** to ensure backward compatibility. It only activates when explicitly enabled via configuration.
+
 ## Example
 
 This package comes with a simple set of controllers, views and routes that can
