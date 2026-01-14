@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Italia\SPIDAuth\Events\SPIDAuthenticationRequestEvent;
 use Italia\SPIDAuth\Events\SPIDAuthenticationResponseEvent;
+use Italia\SPIDAuth\Helpers\TransactionLogHelper;
 use Italia\SPIDAuth\Models\SPIDTransaction;
 use OneLogin\Saml2\Utils as SAMLUtils;
 
@@ -19,11 +20,17 @@ class TransactionLogIntegrationTest extends SPIDAuthBaseTestCase
         // Enable transaction logging before the ServiceProvider boots
         $app['config']->set('spid-auth.transaction_log.enabled', true);
         $app['config']->set('spid-auth.transaction_log.driver', 'database');
+        
+        // Reset cache to ensure fresh reading
+        TransactionLogHelper::resetCache();
     }
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Reset transaction log helper cache to ensure fresh config reading
+        TransactionLogHelper::resetCache();
 
         // Create the table using Schema directly
         if (!Schema::hasTable('spid_transactions')) {

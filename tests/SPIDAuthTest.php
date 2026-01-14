@@ -176,6 +176,8 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
     {
         Event::fake();
         $this->app['config']->set('spid-auth.transaction_log.enabled', true);
+        // Reset cache to pick up new config value
+        \Italia\SPIDAuth\Helpers\TransactionLogHelper::resetCache();
         $this->setSPIDAuthMock();
 
         // Test doLogin fires request event
@@ -203,6 +205,8 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
     {
         Event::fake();
         $this->app['config']->set('spid-auth.transaction_log.enabled', false);
+        // Reset cache to pick up new config value
+        \Italia\SPIDAuth\Helpers\TransactionLogHelper::resetCache();
         $this->setSPIDAuthMock();
 
         // Test doLogin does not fire request event
