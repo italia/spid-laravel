@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('spid_transactions', function (Blueprint $table) {
             $table->id();
             $table->string('idp')->index();
+            // Index on authn_request_id for fast correlation lookups
             $table->string('authn_request_id')->nullable()->index();
             $table->timestamp('authn_request_issue_instant')->nullable()->index();
             $table->longText('authn_request_xml')->nullable();
