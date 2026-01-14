@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Italia\SPIDAuth\Events\LoginEvent;
 use Italia\SPIDAuth\Events\LogoutEvent;
+use Italia\SPIDAuth\Events\SPIDAuthenticationRequestEvent;
+use Italia\SPIDAuth\Events\SPIDAuthenticationResponseEvent;
 use Italia\SPIDAuth\Exceptions\SPIDLoginException;
 use Italia\SPIDAuth\Exceptions\SPIDLogoutException;
 use Italia\SPIDAuth\Exceptions\SPIDMetadataException;
@@ -168,6 +170,54 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $response->assertSessionHas('spid_nameId', 'nameId');
         $response->assertSessionHas('spid_user');
         $response->assertRedirect('intendedURL');
+    }
+
+    public function testTransactionEventsAreFiredWhenEnabled()
+    {
+        Event::fake();
+        $this->app['config']->set('spid-auth.transaction_log.enabled', true);
+        $this->setSPIDAuthMock();
+
+        // Test doLogin fires request event
+        $this->post($this->doLoginURL, ['provider' => 'test']);
+
+        Event::assertDispatched(SPIDAuthenticationRequestEvent::class, function ($event) {
+            return $event->getIdp() === 'test'
+                && !empty($event->getAuthnRequestXml());
+        });
+
+        // Test acs fires response event
+        $this->withCookies([
+            'spid_lastRequestId' => 'UNIQUE_ID',
+            'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+            'spid_idp' => 'test',
+        ])->post($this->acsURL);
+
+        Event::assertDispatched(SPIDAuthenticationResponseEvent::class, function ($event) {
+            return $event->getIdp() === 'test'
+                && !empty($event->getResponseXml());
+        });
+    }
+
+    public function testTransactionEventsAreNotFiredWhenDisabled()
+    {
+        Event::fake();
+        $this->app['config']->set('spid-auth.transaction_log.enabled', false);
+        $this->setSPIDAuthMock();
+
+        // Test doLogin does not fire request event
+        $this->post($this->doLoginURL, ['provider' => 'test']);
+
+        Event::assertNotDispatched(SPIDAuthenticationRequestEvent::class);
+
+        // Test acs does not fire response event
+        $this->withCookies([
+            'spid_lastRequestId' => 'UNIQUE_ID',
+            'spid_lastRequestIssueInstant' => SAMLUtils::parseTime2SAML(time()),
+            'spid_idp' => 'test',
+        ])->post($this->acsURL);
+
+        Event::assertNotDispatched(SPIDAuthenticationResponseEvent::class);
     }
 
     public function testAcsWithMissingRequestId()
