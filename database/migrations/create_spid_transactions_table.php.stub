@@ -1,0 +1,44 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('spid_transactions', function (Blueprint $table) {
+            $table->id();
+            $table->string('idp')->index();
+            $table->string('authn_request_id')->nullable()->index();
+            $table->timestamp('authn_request_issue_instant')->nullable()->index();
+            $table->longText('authn_request_xml')->nullable();
+            $table->string('response_id')->nullable();
+            $table->timestamp('response_issue_instant')->nullable()->index();
+            $table->string('response_issuer')->nullable();
+            $table->longText('response_xml')->nullable();
+            $table->string('assertion_id')->nullable();
+            $table->string('assertion_subject')->nullable();
+            $table->string('assertion_subject_name_qualifier')->nullable();
+            $table->timestamps();
+
+            $table->index('created_at');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('spid_transactions');
+    }
+};
