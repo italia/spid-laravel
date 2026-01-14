@@ -15,6 +15,8 @@ use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
 use Italia\SPIDAuth\Contracts\TransactionStoreContract;
 use Italia\SPIDAuth\Events\SPIDAuthenticationRequestEvent;
 use Italia\SPIDAuth\Events\SPIDAuthenticationResponseEvent;
+use Italia\SPIDAuth\Helpers\TransactionLogHelper;
+use Italia\SPIDAuth\Listeners\QueuedTransactionLogListener;
 use Italia\SPIDAuth\Listeners\TransactionLogListener;
 use Italia\SPIDAuth\TransactionStore\DatabaseTransactionStore;
 use Italia\SPIDAuth\TransactionStore\LogTransactionStore;
@@ -54,10 +56,14 @@ class ServiceProvider extends LaravelServiceProvider
         });
 
         // Register transaction log listener if enabled
-        if (config('spid-auth.transaction_log.enabled', false)) {
+        if (TransactionLogHelper::isEnabled()) {
+            $listenerClass = config('spid-auth.transaction_log.queue', false)
+                ? QueuedTransactionLogListener::class
+                : TransactionLogListener::class;
+
             Event::listen(
                 [SPIDAuthenticationRequestEvent::class, SPIDAuthenticationResponseEvent::class],
-                TransactionLogListener::class
+                $listenerClass
             );
         }
     }
@@ -85,6 +91,7 @@ class ServiceProvider extends LaravelServiceProvider
         $this->commands([
             Console\CommandExample::class,
             Console\SPIDPruneTransactionsCommand::class,
+            Console\SPIDTransactionStatsCommand::class,
         ]);
     }
 }

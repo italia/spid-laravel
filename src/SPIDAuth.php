@@ -21,6 +21,7 @@ use Italia\SPIDAuth\Events\LoginEvent;
 use Italia\SPIDAuth\Events\LogoutEvent;
 use Italia\SPIDAuth\Events\SPIDAuthenticationRequestEvent;
 use Italia\SPIDAuth\Events\SPIDAuthenticationResponseEvent;
+use Italia\SPIDAuth\Helpers\TransactionLogHelper;
 use Italia\SPIDAuth\Exceptions\SPIDConfigurationException;
 use Italia\SPIDAuth\Exceptions\SPIDLoginAnomalyException;
 use Italia\SPIDAuth\Exceptions\SPIDLoginException;
@@ -77,7 +78,7 @@ class SPIDAuth extends Controller
             $lastRequestId = $this->getSAML($idp)->getLastRequestID();
 
             // Fire transaction log event if enabled
-            if (config('spid-auth.transaction_log.enabled', false)) {
+            if (TransactionLogHelper::isEnabled()) {
                 event(new SPIDAuthenticationRequestEvent($idp, $authnRequestXml));
             }
 
@@ -149,7 +150,7 @@ class SPIDAuth extends Controller
         $this->validateLoginResponse($lastResponseXML, $lastRequestIssueInstant);
 
         // Fire transaction log event if enabled
-        if (config('spid-auth.transaction_log.enabled', false)) {
+        if (TransactionLogHelper::isEnabled()) {
             event(new SPIDAuthenticationResponseEvent($idp, $lastResponseXML));
         }
 
