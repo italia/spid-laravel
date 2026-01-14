@@ -47,7 +47,20 @@ class SPIDPruneTransactionsCommand extends Command
 
         $this->info("Pruning SPID transactions older than {$months} months (before {$cutoffDate->toDateString()})...");
 
-        $deletedCount = SPIDTransaction::olderThan($cutoffDate)->delete();
+        // Batch deletion to avoid long database locks
+        $deletedCount = 0;
+        $chunkSize = 1000;
+
+        SPIDTransaction::olderThan($cutoffDate)
+            ->chunk($chunkSize, function ($transactions) use (&$deletedCount) {
+                $chunkDeleted = $transactions->count();
+                $transactions->each->delete();
+                $deletedCount += $chunkDeleted;
+
+                if ($this->output->isVerbose()) {
+                    $this->line("Deleted {$chunkDeleted} transaction(s) in this batch...");
+                }
+            });
 
         $this->info("Deleted {$deletedCount} transaction(s).");
 
