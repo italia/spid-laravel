@@ -10,18 +10,23 @@ namespace Italia\SPIDAuth\Events;
 
 use DOMDocument;
 use Exception;
+use Italia\SPIDAuth\Events\Concerns\SafeXmlExtraction;
 use OneLogin\Saml2\Utils as SAMLUtils;
 
 class SPIDAuthenticationResponseEvent
 {
+    use SafeXmlExtraction;
     /** The Identity Provider identifier. */
     protected string $idp;
 
     /** The raw Response XML. */
     protected string $responseXml;
 
-    /** Parsed DOMDocument (null if parsing failed). */
+    /** Parsed DOMDocument (null if parsing failed or not yet parsed). */
     protected ?DOMDocument $document = null;
+
+    /** Whether the document has been parsed. */
+    protected bool $documentParsed = false;
 
     /**
      * Create a new event instance.
@@ -33,20 +38,44 @@ class SPIDAuthenticationResponseEvent
     {
         $this->idp = $idp;
         $this->responseXml = $responseXml;
+        // Lazy loading: parse only when needed
+    }
+
+    /**
+     * Get the parsed DOMDocument, parsing it if necessary (lazy loading).
+     *
+     * @return DOMDocument|null
+     */
+    protected function getDocument(): ?DOMDocument
+    {
+        if ($this->documentParsed) {
+            return $this->document;
+        }
+
+        $this->documentParsed = true;
 
         // Check for empty XML before attempting to parse
-        if (empty($responseXml)) {
+        if (empty($this->responseXml)) {
             $this->document = null;
-            return;
+            return null;
         }
 
         try {
             $this->document = new DOMDocument();
-            SAMLUtils::loadXML($this->document, $responseXml);
+            // Suppress warnings from OneLogin library when parsing malformed XML
+            $oldErrorReporting = error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR);
+            SAMLUtils::loadXML($this->document, $this->responseXml);
+            error_reporting($oldErrorReporting);
         } catch (Exception $e) {
+            // Restore error reporting if exception occurs
+            if (isset($oldErrorReporting)) {
+                error_reporting($oldErrorReporting);
+            }
             // If XML parsing fails, document stays null and all extraction methods return null
             $this->document = null;
         }
+
+        return $this->document;
     }
 
     /**
@@ -76,7 +105,7 @@ class SPIDAuthenticationResponseEvent
      */
     public function getResponseId(): ?string
     {
-        return $this->safeXPathQuery('//samlp:Response', 'ID');
+        return $this->safeXPathQuery($this->getDocument(), '//samlp:Response', 'ID');
     }
 
     /**
@@ -86,7 +115,7 @@ class SPIDAuthenticationResponseEvent
      */
     public function getResponseIssueInstant(): ?string
     {
-        return $this->safeXPathQuery('//samlp:Response', 'IssueInstant');
+        return $this->safeXPathQuery($this->getDocument(), '//samlp:Response', 'IssueInstant');
     }
 
     /**
@@ -96,7 +125,7 @@ class SPIDAuthenticationResponseEvent
      */
     public function getResponseIssuer(): ?string
     {
-        return $this->safeXPathQuery('//samlp:Response/saml:Issuer');
+        return $this->safeXPathQuery($this->getDocument(), '//samlp:Response/saml:Issuer');
     }
 
     /**
@@ -106,7 +135,7 @@ class SPIDAuthenticationResponseEvent
      */
     public function getResponseInResponseTo(): ?string
     {
-        return $this->safeXPathQuery('//samlp:Response', 'InResponseTo');
+        return $this->safeXPathQuery($this->getDocument(), '//samlp:Response', 'InResponseTo');
     }
 
     /**
@@ -116,7 +145,7 @@ class SPIDAuthenticationResponseEvent
      */
     public function getAssertionId(): ?string
     {
-        return $this->safeXPathQuery('//samlp:Response/saml:Assertion', 'ID');
+        return $this->safeXPathQuery($this->getDocument(), '//samlp:Response/saml:Assertion', 'ID');
     }
 
     /**
@@ -126,7 +155,7 @@ class SPIDAuthenticationResponseEvent
      */
     public function getAssertionSubject(): ?string
     {
-        return $this->safeXPathQuery('//samlp:Response/saml:Assertion/saml:Subject/saml:NameID');
+        return $this->safeXPathQuery($this->getDocument(), '//samlp:Response/saml:Assertion/saml:Subject/saml:NameID');
     }
 
     /**
@@ -136,46 +165,6 @@ class SPIDAuthenticationResponseEvent
      */
     public function getAssertionSubjectNameQualifier(): ?string
     {
-        return $this->safeXPathQuery('//samlp:Response/saml:Assertion/saml:Subject/saml:NameID', 'NameQualifier');
-    }
-
-    /**
-     * Safely query XPath and return attribute or text content.
-     * Never throws exceptions - returns null if anything fails.
-     *
-     * @param string $xpath XPath query
-     * @param string|null $attribute Attribute name to extract (null for text content)
-     * @return string|null Extracted value or null if not found/failed
-     */
-    private function safeXPathQuery(string $xpath, ?string $attribute = null): ?string
-    {
-        if ($this->document === null) {
-            return null;
-        }
-
-        try {
-            $nodes = SAMLUtils::query($this->document, $xpath);
-            if ($nodes->length === 0) {
-                return null;
-            }
-
-            $node = $nodes->item(0);
-            if ($node === null) {
-                return null;
-            }
-
-            if ($attribute !== null) {
-                if (!$node->hasAttribute($attribute)) {
-                    return null;
-                }
-                $value = $node->getAttribute($attribute);
-                return $value !== '' ? $value : null;
-            }
-
-            $textContent = trim($node->textContent);
-            return $textContent !== '' ? $textContent : null;
-        } catch (Exception $e) {
-            return null;
-        }
+        return $this->safeXPathQuery($this->getDocument(), '//samlp:Response/saml:Assertion/saml:Subject/saml:NameID', 'NameQualifier');
     }
 }

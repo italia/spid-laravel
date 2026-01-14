@@ -10,18 +10,23 @@ namespace Italia\SPIDAuth\Events;
 
 use DOMDocument;
 use Exception;
+use Italia\SPIDAuth\Events\Concerns\SafeXmlExtraction;
 use OneLogin\Saml2\Utils as SAMLUtils;
 
 class SPIDAuthenticationRequestEvent
 {
+    use SafeXmlExtraction;
     /** The Identity Provider identifier. */
     protected string $idp;
 
     /** The raw AuthnRequest XML. */
     protected string $authnRequestXml;
 
-    /** Parsed DOMDocument (null if parsing failed). */
+    /** Parsed DOMDocument (null if parsing failed or not yet parsed). */
     protected ?DOMDocument $document = null;
+
+    /** Whether the document has been parsed. */
+    protected bool $documentParsed = false;
 
     /**
      * Create a new event instance.
@@ -33,20 +38,44 @@ class SPIDAuthenticationRequestEvent
     {
         $this->idp = $idp;
         $this->authnRequestXml = $authnRequestXml;
+        // Lazy loading: parse only when needed
+    }
+
+    /**
+     * Get the parsed DOMDocument, parsing it if necessary (lazy loading).
+     *
+     * @return DOMDocument|null
+     */
+    protected function getDocument(): ?DOMDocument
+    {
+        if ($this->documentParsed) {
+            return $this->document;
+        }
+
+        $this->documentParsed = true;
 
         // Check for empty XML before attempting to parse
-        if (empty($authnRequestXml)) {
+        if (empty($this->authnRequestXml)) {
             $this->document = null;
-            return;
+            return null;
         }
 
         try {
             $this->document = new DOMDocument();
-            SAMLUtils::loadXML($this->document, $authnRequestXml);
+            // Suppress warnings from OneLogin library when parsing malformed XML
+            $oldErrorReporting = error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR);
+            SAMLUtils::loadXML($this->document, $this->authnRequestXml);
+            error_reporting($oldErrorReporting);
         } catch (Exception $e) {
+            // Restore error reporting if exception occurs
+            if (isset($oldErrorReporting)) {
+                error_reporting($oldErrorReporting);
+            }
             // If XML parsing fails, document stays null and all extraction methods return null
             $this->document = null;
         }
+
+        return $this->document;
     }
 
     /**
@@ -76,7 +105,7 @@ class SPIDAuthenticationRequestEvent
      */
     public function getAuthnRequestId(): ?string
     {
-        return $this->safeXPathQuery('//samlp:AuthnRequest', 'ID');
+        return $this->safeXPathQuery($this->getDocument(), '//samlp:AuthnRequest', 'ID');
     }
 
     /**
@@ -86,46 +115,6 @@ class SPIDAuthenticationRequestEvent
      */
     public function getAuthnRequestIssueInstant(): ?string
     {
-        return $this->safeXPathQuery('//samlp:AuthnRequest', 'IssueInstant');
-    }
-
-    /**
-     * Safely query XPath and return attribute or text content.
-     * Never throws exceptions - returns null if anything fails.
-     *
-     * @param string $xpath XPath query
-     * @param string|null $attribute Attribute name to extract (null for text content)
-     * @return string|null Extracted value or null if not found/failed
-     */
-    private function safeXPathQuery(string $xpath, ?string $attribute = null): ?string
-    {
-        if ($this->document === null) {
-            return null;
-        }
-
-        try {
-            $nodes = SAMLUtils::query($this->document, $xpath);
-            if ($nodes->length === 0) {
-                return null;
-            }
-
-            $node = $nodes->item(0);
-            if ($node === null) {
-                return null;
-            }
-
-            if ($attribute !== null) {
-                if (!$node->hasAttribute($attribute)) {
-                    return null;
-                }
-                $value = $node->getAttribute($attribute);
-                return $value !== '' ? $value : null;
-            }
-
-            $textContent = trim($node->textContent);
-            return $textContent !== '' ? $textContent : null;
-        } catch (Exception $e) {
-            return null;
-        }
+        return $this->safeXPathQuery($this->getDocument(), '//samlp:AuthnRequest', 'IssueInstant');
     }
 }
