@@ -8,7 +8,7 @@
 
 namespace Italia\SPIDAuth\Listeners;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Log;
 use Italia\SPIDAuth\Contracts\TransactionStoreContract;
 use Italia\SPIDAuth\Events\SPIDAuthenticationRequestEvent;
 use Italia\SPIDAuth\Events\SPIDAuthenticationResponseEvent;
@@ -36,10 +36,20 @@ class TransactionLogListener
      */
     public function handle($event): void
     {
-        if ($event instanceof SPIDAuthenticationRequestEvent) {
-            $this->store->storeRequest($event);
-        } elseif ($event instanceof SPIDAuthenticationResponseEvent) {
-            $this->store->storeResponse($event);
+        try {
+            if ($event instanceof SPIDAuthenticationRequestEvent) {
+                $this->store->storeRequest($event);
+            } elseif ($event instanceof SPIDAuthenticationResponseEvent) {
+                $this->store->storeResponse($event);
+            }
+        } catch (\Exception $e) {
+            // Log error but don't interrupt authentication flow
+            Log::error('Failed to store SPID transaction log', [
+                'event_type' => get_class($event),
+                'idp' => $event->getIdp(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
         }
     }
 }
