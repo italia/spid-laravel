@@ -9,9 +9,9 @@
 namespace Italia\SPIDAuth\Events;
 
 use DOMDocument;
-use Exception;
 use Italia\SPIDAuth\Events\Concerns\SafeXmlExtraction;
 use OneLogin\Saml2\Utils as SAMLUtils;
+use Throwable;
 
 class SPIDAuthenticationResponseEvent
 {
@@ -64,6 +64,8 @@ class SPIDAuthenticationResponseEvent
     /**
      * Extract and return the Response ID.
      *
+     * Maps to SPID SP-log field: ResponseID (Resp_ID).
+     *
      * @return string|null Response ID or null if not found
      */
     public function getResponseId(): ?string
@@ -74,6 +76,8 @@ class SPIDAuthenticationResponseEvent
     /**
      * Extract and return the Response IssueInstant.
      *
+     * Maps to SPID SP-log field: Timestamp della response (Resp_IssueInstant).
+     *
      * @return string|null Response IssueInstant or null if not found
      */
     public function getResponseIssueInstant(): ?string
@@ -82,7 +86,9 @@ class SPIDAuthenticationResponseEvent
     }
 
     /**
-     * Extract and return the Response Issuer.
+     * Extract and return the Response Issuer (IdP EntityID).
+     *
+     * Maps to SPID SP-log field: Issuer della response (Resp_Issuer).
      *
      * @return string|null Response Issuer or null if not found
      */
@@ -102,7 +108,58 @@ class SPIDAuthenticationResponseEvent
     }
 
     /**
+     * Extract and return the Response StatusCode value.
+     *
+     * Maps to SPID SP-log field: ResponseStatusCode.
+     * Typical values: urn:oasis:names:tc:SAML:2.0:status:Success, ...Responder, ...Requester.
+     *
+     * @return string|null StatusCode Value attribute or null if not found
+     */
+    public function getResponseStatusCode(): ?string
+    {
+        return $this->safeXPathQuery(
+            $this->getDocument(),
+            '//samlp:Response/samlp:Status/samlp:StatusCode',
+            'Value'
+        );
+    }
+
+    /**
+     * Extract and return the Response StatusMessage (free-text error message).
+     *
+     * Maps to SPID SP-log field: ResponseStatusMessage.
+     * Present only when the response carries an error status.
+     *
+     * @return string|null StatusMessage text content or null if not found
+     */
+    public function getResponseStatusMessage(): ?string
+    {
+        return $this->safeXPathQuery(
+            $this->getDocument(),
+            '//samlp:Response/samlp:Status/samlp:StatusMessage'
+        );
+    }
+
+    /**
+     * Extract and return the Response StatusDetail (structured error detail).
+     *
+     * Maps to SPID SP-log field: ResponseStatusDetail.
+     * Present only when the response carries an error status with additional detail.
+     *
+     * @return string|null StatusDetail text content or null if not found
+     */
+    public function getResponseStatusDetail(): ?string
+    {
+        return $this->safeXPathQuery(
+            $this->getDocument(),
+            '//samlp:Response/samlp:Status/samlp:StatusDetail'
+        );
+    }
+
+    /**
      * Extract and return the Assertion ID.
+     *
+     * Maps to SPID SP-log field: AssertionID (Assertion_ID).
      *
      * @return string|null Assertion ID or null if not found
      */
@@ -114,6 +171,8 @@ class SPIDAuthenticationResponseEvent
     /**
      * Extract and return the Assertion Subject (NameID).
      *
+     * Maps to SPID SP-log field: Subject NameID (Assertion_subject).
+     *
      * @return string|null Assertion Subject or null if not found
      */
     public function getAssertionSubject(): ?string
@@ -124,11 +183,29 @@ class SPIDAuthenticationResponseEvent
     /**
      * Extract and return the Assertion Subject NameQualifier.
      *
+     * Maps to SPID SP-log field: Subject NameID NameQualifier (Assertion_subject_NameQualifier).
+     *
      * @return string|null Assertion Subject NameQualifier or null if not found
      */
     public function getAssertionSubjectNameQualifier(): ?string
     {
         return $this->safeXPathQuery($this->getDocument(), '//samlp:Response/saml:Assertion/saml:Subject/saml:NameID', 'NameQualifier');
+    }
+
+    /**
+     * Extract and return the AuthnContextClassRef (SPID authentication level).
+     *
+     * Maps to SPID SP-log field: AuthnContextClassRef (livello SPID).
+     * Typical values: https://www.spid.gov.it/SpidL1, SpidL2, SpidL3.
+     *
+     * @return string|null AuthnContextClassRef or null if not found
+     */
+    public function getAuthnContextClassRef(): ?string
+    {
+        return $this->safeXPathQuery(
+            $this->getDocument(),
+            '//samlp:Response/saml:Assertion/saml:AuthnStatement/saml:AuthnContext/saml:AuthnContextClassRef'
+        );
     }
 
     /**
@@ -151,19 +228,17 @@ class SPIDAuthenticationResponseEvent
             return null;
         }
 
+        $this->document = new DOMDocument();
+        // Suppress warnings from OneLogin library when parsing malformed XML
+        $oldErrorReporting = error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR);
         try {
-            $this->document = new DOMDocument();
-            // Suppress warnings from OneLogin library when parsing malformed XML
-            $oldErrorReporting = error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR);
             SAMLUtils::loadXML($this->document, $this->responseXml);
-            error_reporting($oldErrorReporting);
-        } catch (Exception $e) {
-            // Restore error reporting if exception occurs
-            if (isset($oldErrorReporting)) {
-                error_reporting($oldErrorReporting);
-            }
+        } catch (Throwable $e) {
             // If XML parsing fails, document stays null and all extraction methods return null
             $this->document = null;
+        } finally {
+            // Always restore error reporting, even on non-Exception Throwable
+            error_reporting($oldErrorReporting);
         }
 
         return $this->document;

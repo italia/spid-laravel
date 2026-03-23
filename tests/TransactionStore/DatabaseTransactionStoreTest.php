@@ -2,6 +2,7 @@
 
 namespace Italia\SPIDAuth\Tests\TransactionStore;
 
+use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Italia\SPIDAuth\Events\SPIDAuthenticationRequestEvent;
@@ -150,6 +151,76 @@ XML;
         $transaction = SPIDTransaction::first();
         $this->assertNull($transaction->authn_request_id);
         $this->assertSame('_test-response-id-999', $transaction->response_id);
+    }
+
+    public function testStoreRequestLogsErrorOnException()
+    {
+        $store = new DatabaseTransactionStore();
+        $event = new SPIDAuthenticationRequestEvent('test-idp', $this->getValidAuthnRequestXml());
+
+        // Force database error by dropping the table
+        Schema::dropIfExists('spid_transactions');
+
+        $this->expectException(Exception::class);
+
+        try {
+            $store->storeRequest($event);
+        } finally {
+            // Restore table for other tests
+            if (!Schema::hasTable('spid_transactions')) {
+                Schema::create('spid_transactions', function ($table) {
+                    $table->id();
+                    $table->string('idp')->index();
+                    $table->string('authn_request_id')->nullable()->index();
+                    $table->timestamp('authn_request_issue_instant')->nullable()->index();
+                    $table->longText('authn_request_xml')->nullable();
+                    $table->string('response_id')->nullable();
+                    $table->timestamp('response_issue_instant')->nullable()->index();
+                    $table->string('response_issuer')->nullable();
+                    $table->longText('response_xml')->nullable();
+                    $table->string('assertion_id')->nullable();
+                    $table->string('assertion_subject')->nullable();
+                    $table->string('assertion_subject_name_qualifier')->nullable();
+                    $table->timestamps();
+                    $table->index('created_at');
+                });
+            }
+        }
+    }
+
+    public function testStoreResponseLogsErrorOnException()
+    {
+        $store = new DatabaseTransactionStore();
+        $event = new SPIDAuthenticationResponseEvent('test-idp', $this->getValidResponseXml());
+
+        // Force database error by dropping the table
+        Schema::dropIfExists('spid_transactions');
+
+        $this->expectException(Exception::class);
+
+        try {
+            $store->storeResponse($event);
+        } finally {
+            // Restore table for other tests
+            if (!Schema::hasTable('spid_transactions')) {
+                Schema::create('spid_transactions', function ($table) {
+                    $table->id();
+                    $table->string('idp')->index();
+                    $table->string('authn_request_id')->nullable()->index();
+                    $table->timestamp('authn_request_issue_instant')->nullable()->index();
+                    $table->longText('authn_request_xml')->nullable();
+                    $table->string('response_id')->nullable();
+                    $table->timestamp('response_issue_instant')->nullable()->index();
+                    $table->string('response_issuer')->nullable();
+                    $table->longText('response_xml')->nullable();
+                    $table->string('assertion_id')->nullable();
+                    $table->string('assertion_subject')->nullable();
+                    $table->string('assertion_subject_name_qualifier')->nullable();
+                    $table->timestamps();
+                    $table->index('created_at');
+                });
+            }
+        }
     }
 
     protected function getEnvironmentSetUp($app)

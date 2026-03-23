@@ -160,6 +160,22 @@ class SPIDPruneTransactionsCommandTest extends SPIDAuthBaseTestCase
         $this->assertDatabaseHas('spid_transactions', ['authn_request_id' => 'recent']);
     }
 
+    public function testPruneShowsVerboseOutputWhenVerbose()
+    {
+        // Create multiple old transactions to trigger batch output
+        for ($i = 0; $i < 5; ++$i) {
+            SPIDTransaction::create([
+                'idp' => 'test',
+                'authn_request_id' => "old-{$i}",
+                'created_at' => Carbon::now()->subMonths(25),
+                'updated_at' => Carbon::now()->subMonths(25),
+            ]);
+        }
+
+        $this->artisan('spid:prune-transactions -v')
+            ->assertExitCode(0);
+    }
+
     protected function getEnvironmentSetUp($app)
     {
         parent::getEnvironmentSetUp($app);

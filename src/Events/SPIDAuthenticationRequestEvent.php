@@ -9,9 +9,9 @@
 namespace Italia\SPIDAuth\Events;
 
 use DOMDocument;
-use Exception;
 use Italia\SPIDAuth\Events\Concerns\SafeXmlExtraction;
 use OneLogin\Saml2\Utils as SAMLUtils;
+use Throwable;
 
 class SPIDAuthenticationRequestEvent
 {
@@ -74,11 +74,25 @@ class SPIDAuthenticationRequestEvent
     /**
      * Extract and return the AuthnRequest IssueInstant.
      *
+     * Maps to SPID SP-log field: Timestamp della request (AuthnReq_IssueInstant).
+     *
      * @return string|null AuthnRequest IssueInstant or null if not found
      */
     public function getAuthnRequestIssueInstant(): ?string
     {
         return $this->safeXPathQuery($this->getDocument(), '//samlp:AuthnRequest', 'IssueInstant');
+    }
+
+    /**
+     * Extract and return the AuthnRequest Issuer (SP EntityID).
+     *
+     * Maps to SPID SP-log field: Issuer della request (SP EntityID).
+     *
+     * @return string|null AuthnRequest Issuer or null if not found
+     */
+    public function getAuthnRequestIssuer(): ?string
+    {
+        return $this->safeXPathQuery($this->getDocument(), '//samlp:AuthnRequest/saml:Issuer');
     }
 
     /**
@@ -101,19 +115,17 @@ class SPIDAuthenticationRequestEvent
             return null;
         }
 
+        $this->document = new DOMDocument();
+        // Suppress warnings from OneLogin library when parsing malformed XML
+        $oldErrorReporting = error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR);
         try {
-            $this->document = new DOMDocument();
-            // Suppress warnings from OneLogin library when parsing malformed XML
-            $oldErrorReporting = error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR);
             SAMLUtils::loadXML($this->document, $this->authnRequestXml);
-            error_reporting($oldErrorReporting);
-        } catch (Exception $e) {
-            // Restore error reporting if exception occurs
-            if (isset($oldErrorReporting)) {
-                error_reporting($oldErrorReporting);
-            }
+        } catch (Throwable $e) {
             // If XML parsing fails, document stays null and all extraction methods return null
             $this->document = null;
+        } finally {
+            // Always restore error reporting, even on non-Exception Throwable
+            error_reporting($oldErrorReporting);
         }
 
         return $this->document;

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Italia\SPIDAuth\SPIDAuth;
 use Orchestra\Testbench\TestCase;
+use RuntimeException;
 
 class ServiceProviderTest extends TestCase
 {
@@ -48,6 +49,17 @@ class ServiceProviderTest extends TestCase
     public function testIfCommandExampleExists()
     {
         $this->assertArrayHasKey('spid-auth:example', Artisan::all());
+    }
+
+    public function testUnsupportedTransactionLogDriverThrowsException()
+    {
+        $this->app['config']->set('spid-auth.transaction_log.driver', 'unsupported-driver');
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Unsupported transaction log driver: unsupported-driver');
+
+        // Force binding by resolving the contract
+        $this->app->make(\Italia\SPIDAuth\Contracts\TransactionStoreContract::class);
     }
 
     protected function getPackageProviders($app)

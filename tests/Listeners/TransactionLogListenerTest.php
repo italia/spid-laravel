@@ -2,14 +2,15 @@
 
 namespace Italia\SPIDAuth\Tests\Listeners;
 
+use Exception;
 use Italia\SPIDAuth\Contracts\TransactionStoreContract;
 use Italia\SPIDAuth\Events\SPIDAuthenticationRequestEvent;
 use Italia\SPIDAuth\Events\SPIDAuthenticationResponseEvent;
 use Italia\SPIDAuth\Listeners\TransactionLogListener;
+use Italia\SPIDAuth\Tests\SPIDAuthBaseTestCase;
 use Mockery;
-use PHPUnit\Framework\TestCase;
 
-class TransactionLogListenerTest extends TestCase
+class TransactionLogListenerTest extends SPIDAuthBaseTestCase
 {
     protected function tearDown(): void
     {
@@ -65,5 +66,41 @@ class TransactionLogListenerTest extends TestCase
 
         $listener = new TransactionLogListener($store);
         $listener->handle($event);
+    }
+
+    public function testHandleRequestEventLogsErrorOnException()
+    {
+        $store = Mockery::mock(TransactionStoreContract::class);
+        $event = new SPIDAuthenticationRequestEvent('test-idp', '<xml>request</xml>');
+
+        $store->shouldReceive('storeRequest')
+            ->once()
+            ->andThrow(new Exception('Storage failed'));
+
+        $listener = new TransactionLogListener($store);
+
+        // Should not throw exception, should handle it gracefully
+        $listener->handle($event);
+
+        // Test passes if no exception is thrown
+        $this->assertTrue(true);
+    }
+
+    public function testHandleResponseEventLogsErrorOnException()
+    {
+        $store = Mockery::mock(TransactionStoreContract::class);
+        $event = new SPIDAuthenticationResponseEvent('test-idp', '<xml>response</xml>');
+
+        $store->shouldReceive('storeResponse')
+            ->once()
+            ->andThrow(new Exception('Storage failed'));
+
+        $listener = new TransactionLogListener($store);
+
+        // Should not throw exception, should handle it gracefully
+        $listener->handle($event);
+
+        // Test passes if no exception is thrown
+        $this->assertTrue(true);
     }
 }

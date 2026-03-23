@@ -86,7 +86,7 @@ XML;
         $event = new SPIDAuthenticationRequestEvent('test-idp', $this->getValidAuthnRequestXml());
 
         // Test that storeRequest can be called without errors
-        // The actual exception handling is tested in integration tests
+        // The exception handling is tested in integration tests
         $store->storeRequest($event);
 
         $this->assertTrue(true);
@@ -98,7 +98,7 @@ XML;
         $event = new SPIDAuthenticationResponseEvent('test-idp', $this->getValidResponseXml());
 
         // Test that storeResponse can be called without errors
-        // The actual exception handling is tested in integration tests
+        // The exception handling is tested in integration tests
         $store->storeResponse($event);
 
         $this->assertTrue(true);
