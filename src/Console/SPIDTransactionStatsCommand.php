@@ -34,7 +34,7 @@ class SPIDTransactionStatsCommand extends Command
      */
     public function handle()
     {
-        $idp = $this->option('idp_entity_id');
+        $idp = $this->option('idp');
 
         $query = SPIDTransaction::query();
         if ($idp) {
