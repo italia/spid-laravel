@@ -3,7 +3,6 @@
 namespace Italia\SPIDAuth\Tests\TransactionStore;
 
 use Exception;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Italia\SPIDAuth\Events\SPIDAuthenticationRequestEvent;
 use Italia\SPIDAuth\Events\SPIDAuthenticationResponseEvent;
@@ -13,36 +12,33 @@ use Italia\SPIDAuth\TransactionStore\DatabaseTransactionStore;
 
 class DatabaseTransactionStoreTest extends SPIDAuthBaseTestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        // Create the table using Schema directly
-        if (!Schema::hasTable('spid_transactions')) {
-            Schema::create('spid_transactions', function ($table) {
-                $table->id();
-                $table->uuid('uuid')->unique();
-                $table->string('authn_request_id')->nullable()->index();
-                $table->timestamp('authn_request_issue_instant')->nullable();
-                $table->longText('authn_request_xml')->nullable();
-                $table->string('response_id')->nullable();
-                $table->timestamp('response_issue_instant')->nullable();
-                $table->string('response_issuer')->nullable()->index();
-                $table->longText('response_xml')->nullable();
-                $table->string('assertion_id')->nullable();
-                $table->string('assertion_subject')->nullable();
-                $table->string('assertion_subject_name_qualifier')->nullable();
-                $table->string('idp_entity_id')->nullable()->index();
-                $table->string('sp_entity_id')->nullable();
-                $table->string('spid_level', 50)->nullable();
-                $table->string('status_code')->nullable();
-                $table->string('relay_state')->nullable();
-                $table->timestamps();
-                $table->index('created_at');
-            });
-        }
+        // Drop and recreate the table for each test
+        Schema::dropIfExists('spid_transactions');
+        Schema::create('spid_transactions', function ($table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('authn_request_id')->nullable()->index();
+            $table->timestamp('authn_request_issue_instant')->nullable();
+            $table->longText('authn_request_xml')->nullable();
+            $table->string('response_id')->nullable();
+            $table->timestamp('response_issue_instant')->nullable();
+            $table->string('response_issuer')->nullable()->index();
+            $table->longText('response_xml')->nullable();
+            $table->string('assertion_id')->nullable();
+            $table->string('assertion_subject')->nullable();
+            $table->string('assertion_subject_name_qualifier')->nullable();
+            $table->string('idp_entity_id')->nullable()->index();
+            $table->string('sp_entity_id')->nullable();
+            $table->string('spid_level', 50)->nullable();
+            $table->string('status_code')->nullable();
+            $table->string('relay_state')->nullable();
+            $table->timestamps();
+            $table->index('created_at');
+        });
     }
 
     public function testStoreRequestCreatesRecord()
@@ -168,34 +164,7 @@ XML;
 
         $this->expectException(Exception::class);
 
-        try {
-            $store->storeRequest($event);
-        } finally {
-            // Restore table for other tests
-            if (!Schema::hasTable('spid_transactions')) {
-                Schema::create('spid_transactions', function ($table) {
-                    $table->id();
-                    $table->uuid('uuid')->unique();
-                    $table->string('authn_request_id')->nullable()->index();
-                    $table->timestamp('authn_request_issue_instant')->nullable();
-                    $table->longText('authn_request_xml')->nullable();
-                    $table->string('response_id')->nullable();
-                    $table->timestamp('response_issue_instant')->nullable();
-                    $table->string('response_issuer')->nullable()->index();
-                    $table->longText('response_xml')->nullable();
-                    $table->string('assertion_id')->nullable();
-                    $table->string('assertion_subject')->nullable();
-                    $table->string('assertion_subject_name_qualifier')->nullable();
-                    $table->string('idp_entity_id')->nullable()->index();
-                    $table->string('sp_entity_id')->nullable();
-                    $table->string('spid_level', 50)->nullable();
-                    $table->string('status_code')->nullable();
-                    $table->string('relay_state')->nullable();
-                    $table->timestamps();
-                    $table->index('created_at');
-                });
-            }
-        }
+        $store->storeRequest($event);
     }
 
     public function testStoreResponseLogsErrorOnException()
@@ -208,34 +177,7 @@ XML;
 
         $this->expectException(Exception::class);
 
-        try {
-            $store->storeResponse($event);
-        } finally {
-            // Restore table for other tests
-            if (!Schema::hasTable('spid_transactions')) {
-                Schema::create('spid_transactions', function ($table) {
-                    $table->id();
-                    $table->uuid('uuid')->unique();
-                    $table->string('authn_request_id')->nullable()->index();
-                    $table->timestamp('authn_request_issue_instant')->nullable();
-                    $table->longText('authn_request_xml')->nullable();
-                    $table->string('response_id')->nullable();
-                    $table->timestamp('response_issue_instant')->nullable();
-                    $table->string('response_issuer')->nullable()->index();
-                    $table->longText('response_xml')->nullable();
-                    $table->string('assertion_id')->nullable();
-                    $table->string('assertion_subject')->nullable();
-                    $table->string('assertion_subject_name_qualifier')->nullable();
-                    $table->string('idp_entity_id')->nullable()->index();
-                    $table->string('sp_entity_id')->nullable();
-                    $table->string('spid_level', 50)->nullable();
-                    $table->string('status_code')->nullable();
-                    $table->string('relay_state')->nullable();
-                    $table->timestamps();
-                    $table->index('created_at');
-                });
-            }
-        }
+        $store->storeResponse($event);
     }
 
     public function testStoreRequestStoresSpEntityId()
@@ -436,6 +378,37 @@ XML;
         <saml:Subject>
             <saml:NameID Format="urn:oasis:names:tc:SAML:2.0:nameid-format:transient" NameQualifier="https://idp.example.com">user@example.com</saml:NameID>
         </saml:Subject>
+    </saml:Assertion>
+</samlp:Response>
+XML;
+    }
+
+    private function getResponseXmlWithAuthnStatement(): string
+    {
+        return <<<XML
+<?xml version="1.0"?>
+<samlp:Response
+    xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+    xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+    ID="_test-response-id-456"
+    InResponseTo="_test-request-id-123"
+    Version="2.0"
+    IssueInstant="2024-01-15T12:00:05Z"
+    Destination="https://sp.example.com/acs">
+    <saml:Issuer>https://idp.example.com</saml:Issuer>
+    <samlp:Status>
+        <samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success"/>
+    </samlp:Status>
+    <saml:Assertion ID="_test-assertion-id-789" IssueInstant="2024-01-15T12:00:05Z" Version="2.0">
+        <saml:Issuer>https://idp.example.com</saml:Issuer>
+        <saml:Subject>
+            <saml:NameID Format="urn:oasis:names:tc:SAML:2.0:nameid-format:transient" NameQualifier="https://idp.example.com">user@example.com</saml:NameID>
+        </saml:Subject>
+        <saml:AuthnStatement AuthnInstant="2024-01-15T12:00:04Z">
+            <saml:AuthnContext>
+                <saml:AuthnContextClassRef>https://www.spid.gov.it/SpidL2</saml:AuthnContextClassRef>
+            </saml:AuthnContext>
+        </saml:AuthnStatement>
     </saml:Assertion>
 </samlp:Response>
 XML;

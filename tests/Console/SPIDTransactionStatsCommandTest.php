@@ -3,43 +3,39 @@
 namespace Italia\SPIDAuth\Tests\Console;
 
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Italia\SPIDAuth\Models\SPIDTransaction;
 use Italia\SPIDAuth\Tests\SPIDAuthBaseTestCase;
 
 class SPIDTransactionStatsCommandTest extends SPIDAuthBaseTestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        // Create the table using Schema directly
-        if (!Schema::hasTable('spid_transactions')) {
-            Schema::create('spid_transactions', function ($table) {
-                $table->id();
-                $table->uuid('uuid')->unique();
-                $table->string('authn_request_id')->nullable()->index();
-                $table->timestamp('authn_request_issue_instant')->nullable();
-                $table->longText('authn_request_xml')->nullable();
-                $table->string('response_id')->nullable();
-                $table->timestamp('response_issue_instant')->nullable();
-                $table->string('response_issuer')->nullable()->index();
-                $table->longText('response_xml')->nullable();
-                $table->string('assertion_id')->nullable();
-                $table->string('assertion_subject')->nullable();
-                $table->string('assertion_subject_name_qualifier')->nullable();
-                $table->string('idp_entity_id')->nullable()->index();
-                $table->string('sp_entity_id')->nullable();
-                $table->string('spid_level', 50)->nullable();
-                $table->string('status_code')->nullable();
-                $table->string('relay_state')->nullable();
-                $table->timestamps();
-                $table->index('created_at');
-            });
-        }
+        // Drop and recreate the table for each test
+        Schema::dropIfExists('spid_transactions');
+        Schema::create('spid_transactions', function ($table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('authn_request_id')->nullable()->index();
+            $table->timestamp('authn_request_issue_instant')->nullable();
+            $table->longText('authn_request_xml')->nullable();
+            $table->string('response_id')->nullable();
+            $table->timestamp('response_issue_instant')->nullable();
+            $table->string('response_issuer')->nullable()->index();
+            $table->longText('response_xml')->nullable();
+            $table->string('assertion_id')->nullable();
+            $table->string('assertion_subject')->nullable();
+            $table->string('assertion_subject_name_qualifier')->nullable();
+            $table->string('idp_entity_id')->nullable()->index();
+            $table->string('sp_entity_id')->nullable();
+            $table->string('spid_level', 50)->nullable();
+            $table->string('status_code')->nullable();
+            $table->string('relay_state')->nullable();
+            $table->timestamps();
+            $table->index('created_at');
+        });
     }
 
     public function testStatsCommandDisplaysBasicStatistics()
