@@ -59,6 +59,19 @@ class SPIDTransaction extends Model
     ];
 
     /**
+     * Scope a query to only include transactions older than a given date.
+     *
+     * @param Builder $query
+     * @param Carbon $date
+     *
+     * @return Builder
+     */
+    public function scopeOlderThan(Builder $query, Carbon $date): Builder
+    {
+        return $query->where('created_at', '<', $date);
+    }
+
+    /**
      * Boot the model.
      *
      * @return void
@@ -72,18 +85,5 @@ class SPIDTransaction extends Model
                 $model->uuid = (string) Str::uuid();
             }
         });
-    }
-
-    /**
-     * Scope a query to only include transactions older than a given date.
-     *
-     * @param Builder $query
-     * @param Carbon $date
-     *
-     * @return Builder
-     */
-    public function scopeOlderThan(Builder $query, Carbon $date): Builder
-    {
-        return $query->where('created_at', '<', $date);
     }
 }
