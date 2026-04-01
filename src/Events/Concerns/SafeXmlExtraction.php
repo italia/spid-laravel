@@ -8,8 +8,8 @@
 namespace Italia\SPIDAuth\Events\Concerns;
 
 use DOMDocument;
-use Exception;
 use OneLogin\Saml2\Utils as SAMLUtils;
+use Throwable;
 
 trait SafeXmlExtraction
 {
@@ -36,8 +36,8 @@ trait SafeXmlExtraction
             }
 
             $node = $nodes->item(0);
-            if (null === $node) {
-                return null;
+            if (null === $node) { // @codeCoverageIgnore — DOMNodeList::item(0) never returns null when length > 0
+                return null; // @codeCoverageIgnore
             }
 
             if (null !== $attribute) {
@@ -52,7 +52,7 @@ trait SafeXmlExtraction
             $textContent = trim($node->textContent);
 
             return '' !== $textContent ? $textContent : null;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return null;
         }
     }
