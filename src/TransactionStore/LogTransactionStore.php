@@ -30,7 +30,8 @@ class LogTransactionStore implements TransactionStoreContract
 
             Log::channel($channel)->info('SPID Authentication Request', [
                 'type' => 'authn_request',
-                'idp' => $event->getIdp(),
+                'idp_entity_id' => $event->getIdp(),
+                'sp_entity_id' => $event->getAuthnRequestIssuer(),
                 'authn_request_id' => $event->getAuthnRequestId(),
                 'authn_request_issue_instant' => $event->getAuthnRequestIssueInstant(),
                 'authn_request_xml' => $event->getAuthnRequestXml(),
@@ -38,7 +39,7 @@ class LogTransactionStore implements TransactionStoreContract
         } catch (Exception $e) {
             // Fallback to default channel if configured channel fails
             Log::error('Failed to log SPID authentication request transaction', [
-                'idp' => $event->getIdp(),
+                'idp_entity_id' => $event->getIdp(),
                 'authn_request_id' => $event->getAuthnRequestId(),
                 'error' => $e->getMessage(),
             ]);
@@ -60,7 +61,7 @@ class LogTransactionStore implements TransactionStoreContract
 
             Log::channel($channel)->info('SPID Authentication Response', [
                 'type' => 'authn_response',
-                'idp' => $event->getIdp(),
+                'idp_entity_id' => $event->getIdp(),
                 'response_id' => $event->getResponseId(),
                 'response_issue_instant' => $event->getResponseIssueInstant(),
                 'response_issuer' => $event->getResponseIssuer(),
@@ -69,11 +70,13 @@ class LogTransactionStore implements TransactionStoreContract
                 'assertion_id' => $event->getAssertionId(),
                 'assertion_subject' => $event->getAssertionSubject(),
                 'assertion_subject_name_qualifier' => $event->getAssertionSubjectNameQualifier(),
+                'status_code' => $event->getResponseStatusCode(),
+                'spid_level' => $event->getAuthnContextClassRef(),
             ]);
         } catch (Exception $e) {
             // Fallback to default channel if configured channel fails
             Log::error('Failed to log SPID authentication response transaction', [
-                'idp' => $event->getIdp(),
+                'idp_entity_id' => $event->getIdp(),
                 'response_id' => $event->getResponseId(),
                 'error' => $e->getMessage(),
             ]);

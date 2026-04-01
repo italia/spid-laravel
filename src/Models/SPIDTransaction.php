@@ -10,6 +10,7 @@ namespace Italia\SPIDAuth\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class SPIDTransaction extends Model
 {
@@ -26,7 +27,9 @@ class SPIDTransaction extends Model
      * @var array<string>
      */
     protected $fillable = [
-        'idp',
+        'uuid',
+        'idp_entity_id',
+        'sp_entity_id',
         'authn_request_id',
         'authn_request_issue_instant',
         'authn_request_xml',
@@ -37,6 +40,9 @@ class SPIDTransaction extends Model
         'assertion_id',
         'assertion_subject',
         'assertion_subject_name_qualifier',
+        'spid_level',
+        'status_code',
+        'relay_state',
         'created_at',
         'updated_at',
     ];
@@ -47,9 +53,26 @@ class SPIDTransaction extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'uuid' => 'string',
         'authn_request_issue_instant' => 'datetime',
         'response_issue_instant' => 'datetime',
     ];
+
+    /**
+     * Boot the model.
+     *
+     * @return void
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = (string) Str::uuid();
+            }
+        });
+    }
 
     /**
      * Scope a query to only include transactions older than a given date.

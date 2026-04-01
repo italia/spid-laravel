@@ -20,17 +20,22 @@ class SPIDTransactionStatsCommandTest extends SPIDAuthBaseTestCase
         if (!Schema::hasTable('spid_transactions')) {
             Schema::create('spid_transactions', function ($table) {
                 $table->id();
-                $table->string('idp')->index();
+                $table->uuid('uuid')->unique();
                 $table->string('authn_request_id')->nullable()->index();
-                $table->timestamp('authn_request_issue_instant')->nullable()->index();
+                $table->timestamp('authn_request_issue_instant')->nullable();
                 $table->longText('authn_request_xml')->nullable();
                 $table->string('response_id')->nullable();
-                $table->timestamp('response_issue_instant')->nullable()->index();
-                $table->string('response_issuer')->nullable();
+                $table->timestamp('response_issue_instant')->nullable();
+                $table->string('response_issuer')->nullable()->index();
                 $table->longText('response_xml')->nullable();
                 $table->string('assertion_id')->nullable();
                 $table->string('assertion_subject')->nullable();
                 $table->string('assertion_subject_name_qualifier')->nullable();
+                $table->string('idp_entity_id')->nullable()->index();
+                $table->string('sp_entity_id')->nullable();
+                $table->string('spid_level', 50)->nullable();
+                $table->string('status_code')->nullable();
+                $table->string('relay_state')->nullable();
                 $table->timestamps();
                 $table->index('created_at');
             });
@@ -41,7 +46,7 @@ class SPIDTransactionStatsCommandTest extends SPIDAuthBaseTestCase
     {
         // Create transactions with and without responses
         SPIDTransaction::create([
-            'idp' => 'test-idp',
+            'idp_entity_id' => 'test-idp',
             'authn_request_id' => 'req-1',
             'authn_request_xml' => '<xml>request</xml>',
             'response_xml' => '<xml>response</xml>',
@@ -49,7 +54,7 @@ class SPIDTransactionStatsCommandTest extends SPIDAuthBaseTestCase
         ]);
 
         SPIDTransaction::create([
-            'idp' => 'test-idp',
+            'idp_entity_id' => 'test-idp',
             'authn_request_id' => 'req-2',
             'authn_request_xml' => '<xml>request</xml>',
             'created_at' => Carbon::now()->subDays(3),
@@ -62,13 +67,13 @@ class SPIDTransactionStatsCommandTest extends SPIDAuthBaseTestCase
     public function testStatsCommandShowsCorrectCounts()
     {
         SPIDTransaction::create([
-            'idp' => 'test-idp',
+            'idp_entity_id' => 'test-idp',
             'authn_request_id' => 'req-1',
             'response_xml' => '<xml>response</xml>',
         ]);
 
         SPIDTransaction::create([
-            'idp' => 'test-idp',
+            'idp_entity_id' => 'test-idp',
             'authn_request_id' => 'req-2',
             'response_xml' => null,
         ]);
@@ -80,12 +85,12 @@ class SPIDTransactionStatsCommandTest extends SPIDAuthBaseTestCase
     public function testStatsCommandFiltersByIdp()
     {
         SPIDTransaction::create([
-            'idp' => 'idp-1',
+            'idp_entity_id' => 'idp-1',
             'authn_request_id' => 'req-1',
         ]);
 
         SPIDTransaction::create([
-            'idp' => 'idp-2',
+            'idp_entity_id' => 'idp-2',
             'authn_request_id' => 'req-2',
         ]);
 
@@ -99,13 +104,13 @@ class SPIDTransactionStatsCommandTest extends SPIDAuthBaseTestCase
         $newest = Carbon::now()->subDays(1);
 
         SPIDTransaction::create([
-            'idp' => 'test-idp',
+            'idp_entity_id' => 'test-idp',
             'authn_request_id' => 'req-1',
             'created_at' => $oldest,
         ]);
 
         SPIDTransaction::create([
-            'idp' => 'test-idp',
+            'idp_entity_id' => 'test-idp',
             'authn_request_id' => 'req-2',
             'created_at' => $newest,
         ]);
@@ -117,17 +122,17 @@ class SPIDTransactionStatsCommandTest extends SPIDAuthBaseTestCase
     public function testStatsCommandShowsIdpBreakdownWhenNotFiltered()
     {
         SPIDTransaction::create([
-            'idp' => 'idp-1',
+            'idp_entity_id' => 'idp-1',
             'authn_request_id' => 'req-1',
         ]);
 
         SPIDTransaction::create([
-            'idp' => 'idp-1',
+            'idp_entity_id' => 'idp-1',
             'authn_request_id' => 'req-2',
         ]);
 
         SPIDTransaction::create([
-            'idp' => 'idp-2',
+            'idp_entity_id' => 'idp-2',
             'authn_request_id' => 'req-3',
         ]);
 
@@ -145,19 +150,19 @@ class SPIDTransactionStatsCommandTest extends SPIDAuthBaseTestCase
     {
         // Create 3 transactions, 2 with responses
         SPIDTransaction::create([
-            'idp' => 'test-idp',
+            'idp_entity_id' => 'test-idp',
             'authn_request_id' => 'req-1',
             'response_xml' => '<xml>response</xml>',
         ]);
 
         SPIDTransaction::create([
-            'idp' => 'test-idp',
+            'idp_entity_id' => 'test-idp',
             'authn_request_id' => 'req-2',
             'response_xml' => '<xml>response</xml>',
         ]);
 
         SPIDTransaction::create([
-            'idp' => 'test-idp',
+            'idp_entity_id' => 'test-idp',
             'authn_request_id' => 'req-3',
             'response_xml' => null,
         ]);
@@ -175,7 +180,7 @@ class SPIDTransactionStatsCommandTest extends SPIDAuthBaseTestCase
     public function testStatsCommandDoesNotShowIdpBreakdownWhenFiltered()
     {
         SPIDTransaction::create([
-            'idp' => 'idp-1',
+            'idp_entity_id' => 'idp-1',
             'authn_request_id' => 'req-1',
         ]);
 

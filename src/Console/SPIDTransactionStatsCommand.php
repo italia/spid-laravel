@@ -34,11 +34,11 @@ class SPIDTransactionStatsCommand extends Command
      */
     public function handle()
     {
-        $idp = $this->option('idp');
+        $idp = $this->option('idp_entity_id');
 
         $query = SPIDTransaction::query();
         if ($idp) {
-            $query->where('idp', $idp);
+            $query->where('idp_entity_id', $idp);
         }
 
         $total = $query->count();
@@ -81,8 +81,8 @@ class SPIDTransactionStatsCommand extends Command
 
         // Group by IdP if not filtered
         if (!$idp) {
-            $byIdp = SPIDTransaction::selectRaw('idp, COUNT(*) as count')
-                ->groupBy('idp')
+            $byIdp = SPIDTransaction::selectRaw('idp_entity_id, COUNT(*) as count')
+                ->groupBy('idp_entity_id')
                 ->orderByDesc('count')
                 ->get();
 
@@ -91,7 +91,7 @@ class SPIDTransactionStatsCommand extends Command
                 $this->info('Transactions by IdP:');
                 $this->table(
                     ['IdP', 'Count'],
-                    $byIdp->map(fn ($row) => [$row->idp, number_format($row->count)])->toArray()
+                    $byIdp->map(fn ($row) => [$row->idp_entity_id, number_format($row->count)])->toArray()
                 );
             }
         }
