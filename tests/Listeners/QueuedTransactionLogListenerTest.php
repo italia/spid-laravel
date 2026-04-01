@@ -104,14 +104,14 @@ class QueuedTransactionLogListenerTest extends SPIDAuthBaseTestCase
 
     public function testConstructorSetsConnectionFromConfig()
     {
-        config(['spid-auth.transaction_log.queue_connection' => 'redis']);
+        config(['spid-auth.transaction_log.queue.connection' => 'redis']);
         $listener = new QueuedTransactionLogListener();
         $this->assertSame('redis', $listener->connection);
     }
 
     public function testConstructorSetsConnectionToNullWhenNotConfigured()
     {
-        config(['spid-auth.transaction_log.queue_connection' => null]);
+        config(['spid-auth.transaction_log.queue.connection' => null]);
         $listener = new QueuedTransactionLogListener();
         $this->assertNull($listener->connection);
     }

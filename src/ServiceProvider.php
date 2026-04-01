@@ -57,7 +57,7 @@ class ServiceProvider extends LaravelServiceProvider
 
         // Register transaction log listener if enabled
         if (TransactionLogHelper::isEnabled()) {
-            $listenerClass = config('spid-auth.transaction_log.queue', false)
+            $listenerClass = config('spid-auth.transaction_log.queue.enabled', false)
                 ? QueuedTransactionLogListener::class
                 : TransactionLogListener::class;
 

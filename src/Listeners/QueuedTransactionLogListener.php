@@ -28,7 +28,7 @@ class QueuedTransactionLogListener implements ShouldQueue
      */
     public function __construct()
     {
-        $this->connection = config('spid-auth.transaction_log.queue_connection');
+        $this->connection = config('spid-auth.transaction_log.queue.connection');
     }
 
     /**
