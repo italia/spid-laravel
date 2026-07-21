@@ -748,6 +748,11 @@ class SPIDAuth extends Controller
     protected function applyProxySettings(): void
     {
         SAMLUtils::setProxyVars((bool) config('spid-auth.proxy.vars'));
+
+        $baseUrl = config('spid-auth.proxy.base_url');
+        if (!empty($baseUrl)) {
+            SAMLUtils::setBaseURL($baseUrl);
+        }
     }
 
     /**
