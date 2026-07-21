@@ -253,6 +253,42 @@ class SPIDAuthConfigTest extends TestCase
         $this->assertSame('/app/', \OneLogin\Saml2\Utils::getBaseURLPath());
     }
 
+    public function testProxyProtocolOverride()
+    {
+        config(['spid-auth.proxy.protocol' => 'https']);
+
+        $this->getSPIDAuthConfig();
+
+        $this->assertSame('https', \OneLogin\Saml2\Utils::getSelfProtocol());
+    }
+
+    public function testProxyHostOverride()
+    {
+        config(['spid-auth.proxy.host' => 'sp.example.org']);
+
+        $this->getSPIDAuthConfig();
+
+        $this->assertSame('sp.example.org', \OneLogin\Saml2\Utils::getSelfHost());
+    }
+
+    public function testProxyPortOverride()
+    {
+        config(['spid-auth.proxy.port' => '8443']);
+
+        $this->getSPIDAuthConfig();
+
+        $this->assertSame('8443', (string) \OneLogin\Saml2\Utils::getSelfPort());
+    }
+
+    public function testProxyBaseUrlPathOverride()
+    {
+        config(['spid-auth.proxy.base_url_path' => '/gateway']);
+
+        $this->getSPIDAuthConfig();
+
+        $this->assertSame('/gateway/', \OneLogin\Saml2\Utils::getBaseURLPath());
+    }
+
     protected function tearDown(): void
     {
         \OneLogin\Saml2\Utils::setProxyVars(false);

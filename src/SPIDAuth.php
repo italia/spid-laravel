@@ -753,6 +753,26 @@ class SPIDAuth extends Controller
         if (!empty($baseUrl)) {
             SAMLUtils::setBaseURL($baseUrl);
         }
+
+        $protocol = config('spid-auth.proxy.protocol');
+        if (!empty($protocol)) {
+            SAMLUtils::setSelfProtocol($protocol);
+        }
+
+        $host = config('spid-auth.proxy.host');
+        if (!empty($host)) {
+            SAMLUtils::setSelfHost($host);
+        }
+
+        $port = config('spid-auth.proxy.port');
+        if (null !== $port && '' !== $port) {
+            SAMLUtils::setSelfPort($port);
+        }
+
+        $baseUrlPath = config('spid-auth.proxy.base_url_path');
+        if (!empty($baseUrlPath)) {
+            SAMLUtils::setBaseURLPath($baseUrlPath);
+        }
     }
 
     /**
