@@ -289,6 +289,51 @@ class SPIDAuthConfigTest extends TestCase
         $this->assertSame('/gateway/', \OneLogin\Saml2\Utils::getBaseURLPath());
     }
 
+    public function testExplicitOverridesWinOverBaseUrl()
+    {
+        config([
+            'spid-auth.proxy.base_url' => 'https://example.org:443/app',
+            'spid-auth.proxy.host' => 'override.example.org',
+            'spid-auth.proxy.protocol' => 'http',
+            'spid-auth.proxy.port' => '9000',
+            'spid-auth.proxy.base_url_path' => '/override',
+        ]);
+
+        $this->getSPIDAuthConfig();
+
+        // Explicit setters run after setBaseURL, so they win.
+        $this->assertSame('override.example.org', \OneLogin\Saml2\Utils::getSelfHost());
+        $this->assertSame('http', \OneLogin\Saml2\Utils::getSelfProtocol());
+        $this->assertSame('9000', (string) \OneLogin\Saml2\Utils::getSelfPort());
+        $this->assertSame('/override/', \OneLogin\Saml2\Utils::getBaseURLPath());
+    }
+
+    public function testBaseUrlWinsOverForwardedDetection()
+    {
+        config([
+            'spid-auth.proxy.vars' => true,
+            'spid-auth.proxy.base_url' => 'https://canonical.example.org',
+        ]);
+        $_SERVER['HTTP_X_FORWARDED_HOST'] = 'forwarded.example.org';
+
+        $this->getSPIDAuthConfig();
+
+        // base_url set an explicit $_host, so getRawHost never reaches the
+        // X-Forwarded branch.
+        $this->assertSame('canonical.example.org', \OneLogin\Saml2\Utils::getSelfHost());
+    }
+
+    public function testDefaultProxyConfigDoesNotAlterUtilsState()
+    {
+        // Default config: vars=false, all others null.
+        $config = $this->getSPIDAuthConfig();
+
+        $this->assertFalse(\OneLogin\Saml2\Utils::getProxyVars());
+        $this->assertNull(\OneLogin\Saml2\Utils::getBaseURLPath());
+        $this->assertArrayNotHasKey('baseurl', $config);
+        $this->assertArrayNotHasKey('proxy', $config);
+    }
+
     protected function tearDown(): void
     {
         \OneLogin\Saml2\Utils::setProxyVars(false);
