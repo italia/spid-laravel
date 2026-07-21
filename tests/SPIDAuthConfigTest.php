@@ -204,6 +204,16 @@ class SPIDAuthConfigTest extends TestCase
         $this->getSPIDAuthConfig();
     }
 
+    public function testProxyConfigDefaults()
+    {
+        $this->assertFalse(config('spid-auth.proxy.vars'));
+        $this->assertNull(config('spid-auth.proxy.base_url'));
+        $this->assertNull(config('spid-auth.proxy.protocol'));
+        $this->assertNull(config('spid-auth.proxy.host'));
+        $this->assertNull(config('spid-auth.proxy.port'));
+        $this->assertNull(config('spid-auth.proxy.base_url_path'));
+    }
+
     protected function getPackageProviders($app)
     {
         return ['Italia\SPIDAuth\ServiceProvider'];

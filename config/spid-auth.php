@@ -101,4 +101,41 @@ return [
     'login_view' => 'spid-auth::login-spid',
     'after_login_url' => '/',
     'after_logout_url' => '/',
+
+    /*
+     * Reverse-proxy / self-URL settings.
+     *
+     * php-saml builds its self URLs (ACS, SLO, Destination) from raw $_SERVER
+     * values and ignores Laravel's TrustProxies middleware. Behind a reverse
+     * proxy that terminates HTTPS (SSL offloading), that yields http:// self
+     * URLs and breaks SAML validation. These options fix that. All are opt-in;
+     * leaving them at their defaults preserves the previous behavior.
+     */
+    'proxy' => [
+        // Read X-Forwarded-* headers (proto/host/port) to resolve the original
+        // request scheme/host/port. Enable when behind a reverse proxy that
+        // performs SSL offloading. Default: false.
+        'vars' => env('SPID_AUTH_PROXY_VARS', false),
+
+        // Full public base URL of the SP, e.g. https://example.org. When set,
+        // php-saml derives protocol/host/port/path from it. Overrides
+        // X-Forwarded detection. Leave null to disable.
+        'base_url' => env('SPID_AUTH_PROXY_BASE_URL'),
+
+        // Explicit self protocol, 'http' or 'https'. Overrides base_url and
+        // X-Forwarded detection. Leave null to disable.
+        'protocol' => env('SPID_AUTH_PROXY_PROTOCOL'),
+
+        // Explicit self host (hostname only, no scheme), e.g. example.org.
+        // Overrides base_url and X-Forwarded detection. Leave null to disable.
+        'host' => env('SPID_AUTH_PROXY_HOST'),
+
+        // Explicit self port, e.g. 443. Overrides base_url and X-Forwarded
+        // detection. Leave null to disable.
+        'port' => env('SPID_AUTH_PROXY_PORT'),
+
+        // Explicit base URL path, e.g. /app. Overrides base_url and
+        // X-Forwarded detection. Leave null to disable.
+        'base_url_path' => env('SPID_AUTH_PROXY_BASE_URL_PATH'),
+    ],
 ];
