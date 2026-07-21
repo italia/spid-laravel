@@ -8,6 +8,19 @@ use ReflectionClass;
 
 class SPIDAuthConfigTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        \OneLogin\Saml2\Utils::setProxyVars(false);
+        \OneLogin\Saml2\Utils::setBaseURL('');
+        unset(
+            $_SERVER['HTTP_X_FORWARDED_PROTO'],
+            $_SERVER['HTTP_X_FORWARDED_HOST'],
+            $_SERVER['HTTP_X_FORWARDED_PORT']
+        );
+
+        parent::tearDown();
+    }
+
     public function testMissingEntityId()
     {
         $this->withoutExceptionHandling();
@@ -332,19 +345,6 @@ class SPIDAuthConfigTest extends TestCase
         $this->assertNull(\OneLogin\Saml2\Utils::getBaseURLPath());
         $this->assertArrayNotHasKey('baseurl', $config);
         $this->assertArrayNotHasKey('proxy', $config);
-    }
-
-    protected function tearDown(): void
-    {
-        \OneLogin\Saml2\Utils::setProxyVars(false);
-        \OneLogin\Saml2\Utils::setBaseURL('');
-        unset(
-            $_SERVER['HTTP_X_FORWARDED_PROTO'],
-            $_SERVER['HTTP_X_FORWARDED_HOST'],
-            $_SERVER['HTTP_X_FORWARDED_PORT']
-        );
-
-        parent::tearDown();
     }
 
     protected function getPackageProviders($app)
