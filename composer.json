@@ -70,14 +70,20 @@
     "allow-plugins": {
       "cweagans/composer-patches": true
     },
-    "audit": {
-      "ignore": [
-        "PKSA-67d7-mg8j-87zx",
-        "PKSA-8qx3-n5y5-vvnd"
-      ]
-    },
     "platform": {
       "php": "8.2.0"
+    },
+    "policy": {
+      "advisories": {
+        "ignore-id": [
+          "PKSA-67d7-mg8j-87zx",
+          "PKSA-8qx3-n5y5-vvnd",
+          "PKSA-m5cs-t1y6-qpcs",
+          "PKSA-3r5d-mb8f-1qw9",
+          "PKSA-mdq4-51ck-6kdq",
+          "PKSA-w7xr-vk7n-rstm"
+        ]
+      }
     }
   }
 }
