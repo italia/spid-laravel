@@ -726,7 +726,28 @@ class SPIDAuth extends Controller
 
         $config['idp'] = $idps[$idp];
 
+        $this->applyProxySettings();
+
         return $config;
+    }
+
+    /**
+     * Apply reverse-proxy and self-URL settings to php-saml's static Utils state.
+     *
+     * php-saml builds self URLs (ACS/SLO/Destination) from raw $_SERVER values
+     * and ignores Laravel's TrustProxies middleware. These settings let an app
+     * behind a reverse proxy (SSL offloading) produce correct public URLs.
+     *
+     * Precedence, lowest to highest: X-Forwarded-* detection (proxy.vars) <
+     * proxy.base_url < explicit proxy.protocol/host/port/base_url_path. This is
+     * enforced by call order: base_url parses into the self-URL statics, then
+     * the explicit setters overwrite them.
+     *
+     * @return void
+     */
+    protected function applyProxySettings(): void
+    {
+        SAMLUtils::setProxyVars((bool) config('spid-auth.proxy.vars'));
     }
 
     /**

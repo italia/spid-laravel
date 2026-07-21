@@ -214,6 +214,46 @@ class SPIDAuthConfigTest extends TestCase
         $this->assertNull(config('spid-auth.proxy.base_url_path'));
     }
 
+    public function testProxyVarsEnabledResolvesHttpsSelfUrl()
+    {
+        config(['spid-auth.proxy.vars' => true]);
+        $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
+        $_SERVER['HTTP_X_FORWARDED_HOST'] = 'example.org';
+        $_SERVER['HTTP_X_FORWARDED_PORT'] = '443';
+
+        $this->getSPIDAuthConfig();
+
+        $this->assertTrue(\OneLogin\Saml2\Utils::getProxyVars());
+        $this->assertSame('https', \OneLogin\Saml2\Utils::getSelfProtocol());
+        $this->assertSame('example.org', \OneLogin\Saml2\Utils::getSelfHost());
+        $this->assertSame('https://example.org', \OneLogin\Saml2\Utils::getSelfURLhost());
+    }
+
+    public function testProxyVarsDisabledIgnoresForwardedHeaders()
+    {
+        config(['spid-auth.proxy.vars' => false]);
+        $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
+        $_SERVER['HTTP_X_FORWARDED_HOST'] = 'example.org';
+
+        $this->getSPIDAuthConfig();
+
+        $this->assertFalse(\OneLogin\Saml2\Utils::getProxyVars());
+        $this->assertNotSame('example.org', \OneLogin\Saml2\Utils::getSelfHost());
+    }
+
+    protected function tearDown(): void
+    {
+        \OneLogin\Saml2\Utils::setProxyVars(false);
+        \OneLogin\Saml2\Utils::setBaseURL('');
+        unset(
+            $_SERVER['HTTP_X_FORWARDED_PROTO'],
+            $_SERVER['HTTP_X_FORWARDED_HOST'],
+            $_SERVER['HTTP_X_FORWARDED_PORT']
+        );
+
+        parent::tearDown();
+    }
+
     protected function getPackageProviders($app)
     {
         return ['Italia\SPIDAuth\ServiceProvider'];
