@@ -2,10 +2,12 @@
 
 namespace Italia\SPIDAuth\Tests\TransactionStore;
 
+use Illuminate\Support\Facades\Log;
 use Italia\SPIDAuth\Events\SPIDAuthenticationRequestEvent;
 use Italia\SPIDAuth\Events\SPIDAuthenticationResponseEvent;
 use Italia\SPIDAuth\Tests\SPIDAuthBaseTestCase;
 use Italia\SPIDAuth\TransactionStore\LogTransactionStore;
+use Mockery;
 
 class LogTransactionStoreTest extends SPIDAuthBaseTestCase
 {
@@ -80,28 +82,44 @@ XML;
         $this->assertTrue(true);
     }
 
-    public function testStoreRequestHandlesExceptionGracefully()
+    public function testStoreRequestLogsFallbackAndRethrowsOnChannelFailure()
     {
+        $failingChannel = Mockery::mock();
+        $failingChannel->shouldReceive('info')->once()->andThrow(new \Exception('channel down'));
+
+        Log::shouldReceive('channel')->once()->andReturn($failingChannel);
+        Log::shouldReceive('error')->once()->with(
+            'Failed to log SPID authentication request transaction',
+            Mockery::type('array')
+        );
+
         $store = new LogTransactionStore();
         $event = new SPIDAuthenticationRequestEvent('test-idp', $this->getValidAuthnRequestXml());
 
-        // Test that storeRequest can be called without errors
-        // The exception handling is tested in integration tests
-        $store->storeRequest($event);
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('channel down');
 
-        $this->assertTrue(true);
+        $store->storeRequest($event);
     }
 
-    public function testStoreResponseHandlesExceptionGracefully()
+    public function testStoreResponseLogsFallbackAndRethrowsOnChannelFailure()
     {
+        $failingChannel = Mockery::mock();
+        $failingChannel->shouldReceive('info')->once()->andThrow(new \Exception('channel down'));
+
+        Log::shouldReceive('channel')->once()->andReturn($failingChannel);
+        Log::shouldReceive('error')->once()->with(
+            'Failed to log SPID authentication response transaction',
+            Mockery::type('array')
+        );
+
         $store = new LogTransactionStore();
         $event = new SPIDAuthenticationResponseEvent('test-idp', $this->getValidResponseXml());
 
-        // Test that storeResponse can be called without errors
-        // The exception handling is tested in integration tests
-        $store->storeResponse($event);
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('channel down');
 
-        $this->assertTrue(true);
+        $store->storeResponse($event);
     }
 
     private function getValidAuthnRequestXml(): string
