@@ -61,7 +61,7 @@ class ServiceProviderTest extends TestCase
         $this->expectExceptionMessage('Unsupported transaction log driver: unsupported-driver');
 
         // Force binding by resolving the contract
-        $this->app->make(\Italia\SPIDAuth\Contracts\TransactionStoreContract::class);
+        $this->app->make(TransactionStoreContract::class);
     }
 
     public function testLogDriverResolvesLogTransactionStore()

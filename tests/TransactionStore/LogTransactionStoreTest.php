@@ -2,6 +2,7 @@
 
 namespace Italia\SPIDAuth\Tests\TransactionStore;
 
+use Exception;
 use Illuminate\Support\Facades\Log;
 use Italia\SPIDAuth\Events\SPIDAuthenticationRequestEvent;
 use Italia\SPIDAuth\Events\SPIDAuthenticationResponseEvent;
@@ -85,7 +86,7 @@ XML;
     public function testStoreRequestLogsFallbackAndRethrowsOnChannelFailure()
     {
         $failingChannel = Mockery::mock();
-        $failingChannel->shouldReceive('info')->once()->andThrow(new \Exception('channel down'));
+        $failingChannel->shouldReceive('info')->once()->andThrow(new Exception('channel down'));
 
         Log::shouldReceive('channel')->once()->andReturn($failingChannel);
         Log::shouldReceive('error')->once()->with(
@@ -96,7 +97,7 @@ XML;
         $store = new LogTransactionStore();
         $event = new SPIDAuthenticationRequestEvent('test-idp', $this->getValidAuthnRequestXml());
 
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage('channel down');
 
         $store->storeRequest($event);
@@ -105,7 +106,7 @@ XML;
     public function testStoreResponseLogsFallbackAndRethrowsOnChannelFailure()
     {
         $failingChannel = Mockery::mock();
-        $failingChannel->shouldReceive('info')->once()->andThrow(new \Exception('channel down'));
+        $failingChannel->shouldReceive('info')->once()->andThrow(new Exception('channel down'));
 
         Log::shouldReceive('channel')->once()->andReturn($failingChannel);
         Log::shouldReceive('error')->once()->with(
@@ -116,7 +117,7 @@ XML;
         $store = new LogTransactionStore();
         $event = new SPIDAuthenticationResponseEvent('test-idp', $this->getValidResponseXml());
 
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage('channel down');
 
         $store->storeResponse($event);

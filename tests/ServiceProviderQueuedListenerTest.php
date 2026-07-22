@@ -11,20 +11,6 @@ use Orchestra\Testbench\TestCase;
 
 class ServiceProviderQueuedListenerTest extends TestCase
 {
-    protected function getPackageProviders($app)
-    {
-        return ['Italia\SPIDAuth\ServiceProvider'];
-    }
-
-    protected function defineEnvironment($app)
-    {
-        // Enable transaction logging with the queued driver before the provider boots.
-        $app['config']->set('spid-auth.transaction_log.enabled', true);
-        $app['config']->set('spid-auth.transaction_log.queue.enabled', true);
-
-        TransactionLogHelper::resetCache();
-    }
-
     protected function tearDown(): void
     {
         TransactionLogHelper::resetCache();
@@ -43,5 +29,19 @@ class ServiceProviderQueuedListenerTest extends TestCase
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
             return QueuedTransactionLogListener::class === $job->class;
         });
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return ['Italia\SPIDAuth\ServiceProvider'];
+    }
+
+    protected function defineEnvironment($app)
+    {
+        // Enable transaction logging with the queued driver before the provider boots.
+        $app['config']->set('spid-auth.transaction_log.enabled', true);
+        $app['config']->set('spid-auth.transaction_log.queue.enabled', true);
+
+        TransactionLogHelper::resetCache();
     }
 }
