@@ -132,6 +132,18 @@ XML;
         $this->assertNull($event->getAuthnRequestIssuer());
     }
 
+    public function testXmlWithDoctypeIsCaughtAndReturnsNull()
+    {
+        $xml = '<?xml version="1.0"?><!DOCTYPE foo [<!ENTITY x "y">]>'
+             . '<samlp:AuthnRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" ID="_id"/>';
+        $event = new SPIDAuthenticationRequestEvent('test-idp', $xml);
+
+        // loadXML throws on DOCTYPE (XXE guard); getDocument() catches and nulls the document.
+        $this->assertNull($event->getAuthnRequestId());
+        $this->assertNull($event->getAuthnRequestIssueInstant());
+        $this->assertNull($event->getAuthnRequestIssuer());
+    }
+
     private function getValidAuthnRequestXml(): string
     {
         return <<<XML

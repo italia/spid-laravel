@@ -228,6 +228,18 @@ XML;
         $this->assertNull($event->getResponseIssuer());
     }
 
+    public function testXmlWithDoctypeIsCaughtAndReturnsNull()
+    {
+        $xml = '<?xml version="1.0"?><!DOCTYPE foo [<!ENTITY x "y">]>'
+             . '<samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" ID="_id"/>';
+        $event = new SPIDAuthenticationResponseEvent('test-idp', $xml);
+
+        // loadXML throws on DOCTYPE (XXE guard); getDocument() catches and nulls the document.
+        $this->assertNull($event->getResponseId());
+        $this->assertNull($event->getAssertionId());
+        $this->assertNull($event->getResponseStatusCode());
+    }
+
     private function getValidResponseXml(): string
     {
         return <<<XML
