@@ -4,7 +4,9 @@ namespace Italia\SPIDAuth\Tests;
 
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+use Italia\SPIDAuth\Contracts\TransactionStoreContract;
 use Italia\SPIDAuth\SPIDAuth;
+use Italia\SPIDAuth\TransactionStore\LogTransactionStore;
 use Orchestra\Testbench\TestCase;
 use RuntimeException;
 
@@ -60,6 +62,15 @@ class ServiceProviderTest extends TestCase
 
         // Force binding by resolving the contract
         $this->app->make(\Italia\SPIDAuth\Contracts\TransactionStoreContract::class);
+    }
+
+    public function testLogDriverResolvesLogTransactionStore()
+    {
+        $this->app['config']->set('spid-auth.transaction_log.driver', 'log');
+
+        $store = $this->app->make(TransactionStoreContract::class);
+
+        $this->assertInstanceOf(LogTransactionStore::class, $store);
     }
 
     protected function getPackageProviders($app)
