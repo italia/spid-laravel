@@ -63,8 +63,8 @@
     ]
   },
   "scripts": {
-    "spid:idps:check": "php scripts/spid-idps-sync.php check",
-    "spid:idps:update": "php scripts/spid-idps-sync.php update"
+    "spid:idps:check": "php bin/spid-idps-sync.php check",
+    "spid:idps:update": "php bin/spid-idps-sync.php update"
   },
   "config": {
     "allow-plugins": {
