@@ -16,8 +16,8 @@
   ],
   "require": {
     "php": "^8.2|^8.3",
-    "illuminate/config": "^9.52.4|^10.0|^11.0|^12.0",
-    "illuminate/support": "^9.52.4|^10.0|^11.0|^12.0",
+    "illuminate/config": "^9.52.4|^10.0|^11.0|^12.0|^13.0",
+    "illuminate/support": "^9.52.4|^10.0|^11.0|^12.0|^13.0",
     "onelogin/php-saml": "^4.3.1",
     "robrichards/xmlseclibs": "^3.1.5",
     "cweagans/composer-patches": "^1.7",
@@ -25,8 +25,8 @@
   },
   "require-dev": {
     "pds/skeleton": "~1.0",
-    "phpunit/phpunit": "^9.5.10|^10.0|^11.0",
-    "orchestra/testbench": "^7.22.1|^8.0|^9.0|^10.0",
+    "phpunit/phpunit": "^9.5.10|^10.0|^11.0|^12.0",
+    "orchestra/testbench": "^7.22.1|^8.0|^9.0|^10.0|^11.0",
     "mockery/mockery": "^1.5.1",
     "mikey179/vfsstream": "^1.6",
     "symfony/http-foundation": "^6.4.29|^7.3.7",

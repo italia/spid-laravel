@@ -22,6 +22,7 @@ get_laravel_version() {
         10) echo "^10.0" ;;
         11) echo "^11.0" ;;
         12) echo "^12.0" ;;
+        13) echo "^13.0" ;;
         *) echo "" ;;
     esac
 }
@@ -33,6 +34,7 @@ get_testbench_version() {
         10) echo "^8.0" ;;
         11) echo "^9.0" ;;
         12) echo "^10.0" ;;
+        13) echo "^11.0" ;;
         *) echo "" ;;
     esac
 }
@@ -44,6 +46,7 @@ get_phpunit_version() {
         10) echo "^10.0" ;;
         11) echo "^10.0" ;;
         12) echo "^11.0" ;;
+        13) echo "^12.0" ;;
         *) echo "" ;;
     esac
 }
@@ -55,6 +58,7 @@ get_carbon_version() {
         10) echo "^2.66" ;;
         11) echo "^3.0" ;;
         12) echo "^3.0" ;;
+        13) echo "^3.0" ;;
         *) echo "" ;;
     esac
 }
@@ -136,6 +140,13 @@ test_laravel_version() {
         "illuminate/support:$illuminate_version" \
         "nesbot/carbon:$carbon_version"
 
+    if [ "$version" = "13" ]; then
+        # Laravel 13 needs PHP 8.3 (above the 8.2.0 platform pin), and
+        # php-cs-fixer 3.51 cannot share sebastian/diff with PHPUnit 12.
+        composer config --unset platform.php
+        composer remove --dev --no-update friendsofphp/php-cs-fixer
+    fi
+
     # Then, update development dependencies (require-dev)
     print_info "Updating development dependencies..."
     composer require --dev --no-update \
@@ -144,7 +155,7 @@ test_laravel_version() {
 
     # Update dependencies
     print_info "Running composer update (this may take a while)..."
-    if ! composer update --prefer-dist --no-interaction --no-plugins 2>&1 | tee /tmp/composer-update.log | grep -E "(Installing|Upgrading|Package operations|Nothing to modify)"; then
+    if ! COMPOSER_EXIT_ON_PATCH_FAILURE=1 composer update --prefer-dist --no-interaction 2>&1 | tee /tmp/composer-update.log | grep -E "(Installing|Upgrading|Package operations|Nothing to modify)"; then
         echo ""
         echo "Full composer output:"
         cat /tmp/composer-update.log
@@ -190,13 +201,13 @@ main() {
         local laravel_version=$(get_laravel_version $test_version)
         if [ -z "$laravel_version" ]; then
             print_error "Invalid Laravel version: $test_version"
-            print_info "Available versions: 9, 10, 11, 12"
+            print_info "Available versions: 9, 10, 11, 12, 13"
             restore_composer
             exit 1
         fi
         versions_to_test="$test_version"
     else
-        versions_to_test="9 10 11 12"
+        versions_to_test="9 10 11 12 13"
     fi
 
     # Test each version
