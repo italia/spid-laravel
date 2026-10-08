@@ -59,12 +59,7 @@ commands:
                       composer require --dev --no-update "orchestra/testbench:^10.0" "phpunit/phpunit:^11.0"
                       ;;
                     13)
-                      # Laravel 13 requires PHP 8.3, above the 8.2.0 platform pin.
-                      composer config --unset platform.php
                       composer require --no-update "illuminate/config:^13.0" "illuminate/support:^13.0" "nesbot/carbon:^3.0"
-                      # php-cs-fixer 3.51 cannot share sebastian/diff with PHPUnit 12;
-                      # the style check runs on the other Laravel versions.
-                      composer remove --dev --no-update friendsofphp/php-cs-fixer
                       composer require --dev --no-update "orchestra/testbench:^11.0" "phpunit/phpunit:^12.0"
                       ;;
                   esac
