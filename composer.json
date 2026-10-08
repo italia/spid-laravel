@@ -30,7 +30,7 @@
     "mockery/mockery": "^1.5.1",
     "mikey179/vfsstream": "^1.6",
     "symfony/http-foundation": "^6.4.29|^7.3.7",
-    "friendsofphp/php-cs-fixer": "~3.51.0"
+    "friendsofphp/php-cs-fixer": "^3.95"
   },
   "autoload": {
     "psr-4": {
@@ -74,9 +74,6 @@
       "ignore": [
         "PKSA-8qx3-n5y5-vvnd"
       ]
-    },
-    "platform": {
-      "php": "8.2.0"
     }
   }
 }
