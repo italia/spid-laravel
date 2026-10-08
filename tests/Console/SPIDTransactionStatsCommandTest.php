@@ -184,6 +184,55 @@ class SPIDTransactionStatsCommandTest extends SPIDAuthBaseTestCase
             ->assertExitCode(0);
     }
 
+    public function testStatsCommandShowsTimeRangeAndAveragePerDay()
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-15 12:00:00'));
+
+        try {
+            foreach (['2026-06-05 12:00:00', '2026-06-10 08:30:00', '2026-06-15 12:00:00'] as $i => $createdAt) {
+                SPIDTransaction::create([
+                    'idp_entity_id' => 'test-idp',
+                    'authn_request_id' => "req-{$i}",
+                    'created_at' => Carbon::parse($createdAt),
+                ]);
+            }
+
+            $this->artisan('spid:transaction-stats')
+                ->expectsOutput('  Oldest: 2026-06-05 12:00:00')
+                ->expectsOutput('  Newest: 2026-06-15 12:00:00')
+                ->expectsOutput('  Average per day: 0.30')
+                ->assertExitCode(0);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function testStatsCommandOmitsAveragePerDayWhenAllOnSameDay()
+    {
+        SPIDTransaction::create(['idp_entity_id' => 'test-idp', 'authn_request_id' => 'req-1']);
+        SPIDTransaction::create(['idp_entity_id' => 'test-idp', 'authn_request_id' => 'req-2']);
+
+        $this->artisan('spid:transaction-stats')
+            ->doesntExpectOutputToContain('Average per day')
+            ->assertExitCode(0);
+    }
+
+    public function testStatsCommandFilteredByUnknownIdpShowsEmptyStatistics()
+    {
+        SPIDTransaction::create(['idp_entity_id' => 'test-idp', 'authn_request_id' => 'req-1']);
+
+        $this->artisan('spid:transaction-stats', ['--idp' => 'unknown-idp'])
+            ->expectsOutput('Filtered by IdP: unknown-idp')
+            ->expectsTable(['Metric', 'Value'], [
+                ['Total Transactions', '0'],
+                ['With Response', '0'],
+                ['Without Response', '0'],
+                ['Completion Rate', 'N/A'],
+            ])
+            ->doesntExpectOutput('Time Range:')
+            ->assertExitCode(0);
+    }
+
     protected function getEnvironmentSetUp($app)
     {
         parent::getEnvironmentSetUp($app);

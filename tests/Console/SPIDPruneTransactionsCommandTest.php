@@ -177,6 +177,70 @@ class SPIDPruneTransactionsCommandTest extends SPIDAuthBaseTestCase
             ->assertExitCode(0);
     }
 
+    public function testPruneDeletesAllOldTransactionsAcrossMultipleBatches()
+    {
+        $this->insertTransactions(2500, Carbon::now()->subMonths(25));
+        $this->insertTransactions(2, Carbon::now()->subMonths(1), 'recent');
+
+        $this->artisan('spid:prune-transactions')
+            ->expectsOutput('Deleted 2500 transaction(s).')
+            ->assertExitCode(0);
+
+        $this->assertSame(2, SPIDTransaction::count());
+        $this->assertSame(0, SPIDTransaction::where('authn_request_id', 'like', 'old-%')->count());
+    }
+
+    public function testPruneHandlesExactlyOneFullBatch()
+    {
+        $this->insertTransactions(1000, Carbon::now()->subMonths(25));
+
+        $this->artisan('spid:prune-transactions')
+            ->expectsOutput('Deleted 1000 transaction(s).')
+            ->assertExitCode(0);
+
+        $this->assertSame(0, SPIDTransaction::count());
+    }
+
+    public function testPruneKeepsTransactionCreatedExactlyAtCutoff()
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-15 12:00:00'));
+
+        try {
+            SPIDTransaction::create([
+                'idp_entity_id' => 'test',
+                'authn_request_id' => 'at-cutoff',
+                'created_at' => Carbon::parse('2024-06-15 12:00:00'),
+            ]);
+            SPIDTransaction::create([
+                'idp_entity_id' => 'test',
+                'authn_request_id' => 'just-before-cutoff',
+                'created_at' => Carbon::parse('2024-06-15 11:59:59'),
+            ]);
+
+            $this->artisan('spid:prune-transactions', ['--months' => 24])
+                ->expectsOutput('Pruning SPID transactions older than 24 months (before 2024-06-15)...')
+                ->expectsOutput('Deleted 1 transaction(s).')
+                ->assertExitCode(0);
+
+            $this->assertDatabaseHas('spid_transactions', ['authn_request_id' => 'at-cutoff']);
+            $this->assertDatabaseMissing('spid_transactions', ['authn_request_id' => 'just-before-cutoff']);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function testPruneRejectsInvalidConfiguredRetention()
+    {
+        config(['spid-auth.transaction_log.retention_months' => 'two years']);
+        $this->insertTransactions(1, Carbon::now()->subMonths(25));
+
+        $this->artisan('spid:prune-transactions')
+            ->expectsOutput('Invalid retention period. Must be a positive number of months.')
+            ->assertExitCode(1);
+
+        $this->assertSame(1, SPIDTransaction::count());
+    }
+
     protected function getEnvironmentSetUp($app)
     {
         parent::getEnvironmentSetUp($app);
@@ -187,5 +251,26 @@ class SPIDPruneTransactionsCommandTest extends SPIDAuthBaseTestCase
             'database' => ':memory:',
             'prefix' => '',
         ]);
+    }
+
+    /**
+     * Bulk-insert transactions without going through Eloquent, for speed.
+     */
+    protected function insertTransactions(int $count, Carbon $createdAt, string $prefix = 'old'): void
+    {
+        $rows = [];
+        for ($i = 0; $i < $count; ++$i) {
+            $rows[] = [
+                'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                'idp_entity_id' => 'test',
+                'authn_request_id' => "{$prefix}-{$i}",
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ];
+        }
+
+        foreach (array_chunk($rows, 200) as $chunk) {
+            SPIDTransaction::insert($chunk);
+        }
     }
 }

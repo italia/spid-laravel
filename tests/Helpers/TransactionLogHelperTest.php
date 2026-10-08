@@ -74,4 +74,15 @@ class TransactionLogHelperTest extends SPIDAuthBaseTestCase
         // Now should read new value
         $this->assertFalse(TransactionLogHelper::isEnabled());
     }
+
+    public function testIsEnabledCastsStringConfigValues()
+    {
+        // Values set without env() casting (e.g. a published config edited by hand).
+        foreach (['1' => true, 'true' => true, '0' => false, '' => false] as $value => $expected) {
+            config(['spid-auth.transaction_log.enabled' => (string) $value]);
+            TransactionLogHelper::resetCache();
+
+            $this->assertSame($expected, TransactionLogHelper::isEnabled(), "enabled = '{$value}'");
+        }
+    }
 }
