@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Document SPID Validator and SPID Demo setup (#107)
+- Add SPID strict-compliance tests for the AuthnRequest (#107)
+- Apply the SPID php-saml patch in CI (#107)
+
 ## [v2.1.0-beta] - 2025-12-18
 
 - Add SPID IdP certificate sync script and update config
