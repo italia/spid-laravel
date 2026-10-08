@@ -347,6 +347,102 @@ class SPIDAuthConfigTest extends TestCase
         $this->assertArrayNotHasKey('proxy', $config);
     }
 
+    public function testEmptyStringProxyValuesAreIgnored()
+    {
+        // Baseline self-URL state with no proxy settings.
+        $this->getSPIDAuthConfig();
+        $protocol = \OneLogin\Saml2\Utils::getSelfProtocol();
+        $host = \OneLogin\Saml2\Utils::getSelfHost();
+        $port = \OneLogin\Saml2\Utils::getSelfPort();
+
+        // An empty env var (e.g. SPID_AUTH_PROXY_HOST=) yields '' rather than null.
+        config([
+            'spid-auth.proxy.base_url' => '',
+            'spid-auth.proxy.protocol' => '',
+            'spid-auth.proxy.host' => '',
+            'spid-auth.proxy.port' => '',
+            'spid-auth.proxy.base_url_path' => '',
+        ]);
+
+        $this->getSPIDAuthConfig();
+
+        $this->assertSame($protocol, \OneLogin\Saml2\Utils::getSelfProtocol());
+        $this->assertSame($host, \OneLogin\Saml2\Utils::getSelfHost());
+        $this->assertSame($port, \OneLogin\Saml2\Utils::getSelfPort());
+        $this->assertNull(\OneLogin\Saml2\Utils::getBaseURLPath());
+    }
+
+    public function testProxyVarsIsCastToBool()
+    {
+        foreach (['1' => true, 'true' => true, '0' => false, '' => false] as $value => $expected) {
+            config(['spid-auth.proxy.vars' => (string) $value]);
+
+            $this->getSPIDAuthConfig();
+
+            $this->assertSame($expected, \OneLogin\Saml2\Utils::getProxyVars(), "proxy.vars = '{$value}'");
+        }
+    }
+
+    public function testForwardedNonStandardPortIsKeptInSelfUrlHost()
+    {
+        config(['spid-auth.proxy.vars' => true]);
+        $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
+        $_SERVER['HTTP_X_FORWARDED_HOST'] = 'example.org';
+        $_SERVER['HTTP_X_FORWARDED_PORT'] = '8443';
+
+        $this->getSPIDAuthConfig();
+
+        $this->assertSame('https://example.org:8443', \OneLogin\Saml2\Utils::getSelfURLhost());
+    }
+
+    public function testExplicitOverridesWinOverForwardedDetection()
+    {
+        config([
+            'spid-auth.proxy.vars' => true,
+            'spid-auth.proxy.protocol' => 'http',
+            'spid-auth.proxy.host' => 'internal.example.org',
+            'spid-auth.proxy.port' => '8080',
+        ]);
+        $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
+        $_SERVER['HTTP_X_FORWARDED_HOST'] = 'forwarded.example.org';
+        $_SERVER['HTTP_X_FORWARDED_PORT'] = '443';
+
+        $this->getSPIDAuthConfig();
+
+        $this->assertSame('http://internal.example.org:8080', \OneLogin\Saml2\Utils::getSelfURLhost());
+    }
+
+    public function testSelfUrlMatchesPublicAcsUrlBehindSslOffloadingProxy()
+    {
+        // php-saml compares the Response Destination against this URL.
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? null;
+        $_SERVER['SCRIPT_NAME'] = '/spid/acs';
+        config(['spid-auth.proxy.vars' => true]);
+        $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
+        $_SERVER['HTTP_X_FORWARDED_HOST'] = 'example.org';
+        $_SERVER['HTTP_X_FORWARDED_PORT'] = '443';
+
+        try {
+            $this->getSPIDAuthConfig();
+
+            $this->assertSame('https://example.org/spid/acs', \OneLogin\Saml2\Utils::getSelfURLNoQuery());
+        } finally {
+            $_SERVER['SCRIPT_NAME'] = $scriptName;
+        }
+    }
+
+    public function testProxySettingsAreAppliedWhenServingMetadata()
+    {
+        config([
+            'spid-auth.proxy.protocol' => 'https',
+            'spid-auth.proxy.host' => 'metadata.example.org',
+        ]);
+
+        $this->get(route('spid-auth_metadata'))->assertOk();
+
+        $this->assertSame('https://metadata.example.org', \OneLogin\Saml2\Utils::getSelfURLhost());
+    }
+
     protected function getPackageProviders($app)
     {
         return ['Italia\SPIDAuth\ServiceProvider'];
