@@ -56,11 +56,22 @@ commands:
                       composer require --no-update "illuminate/config:^12.0" "illuminate/support:^12.0" "nesbot/carbon:^3.0"
                       composer require --dev --no-update "orchestra/testbench:^10.0" "phpunit/phpunit:^11.0"
                       ;;
+                    13)
+                      # Laravel 13 requires PHP 8.3, above the 8.2.0 platform pin.
+                      composer config --unset platform.php
+                      composer require --no-update "illuminate/config:^13.0" "illuminate/support:^13.0" "nesbot/carbon:^3.0"
+                      # php-cs-fixer 3.51 cannot share sebastian/diff with PHPUnit 12;
+                      # the style check runs on the other Laravel versions.
+                      composer remove --dev --no-update friendsofphp/php-cs-fixer
+                      composer require --dev --no-update "orchestra/testbench:^11.0" "phpunit/phpunit:^12.0"
+                      ;;
                   esac
 
+      # Plugins stay enabled so composer-patches applies the SPID patch to
+      # php-saml; testMetadataCarriesSPIDPatch fails if it is missing.
       - run:
           name: Run composer update
-          command: composer update --prefer-dist --no-interaction --no-plugins
+          command: COMPOSER_EXIT_ON_PATCH_FAILURE=1 composer update --prefer-dist --no-interaction
 
   structure-validation:
     description: Ensure package directory strucure is valid
@@ -114,7 +125,11 @@ jobs:
           name: Validate SPID IdP certificates vs registry
           command: composer spid:idps:check
       - structure-validation
-      - php-cs-fixer
+      - unless:
+          condition:
+            equal: [ "13", << parameters.laravel-version >> ]
+          steps:
+            - php-cs-fixer
       - security
       - save_all_caches
       # test
@@ -134,6 +149,9 @@ jobs:
               12)
                 XDEBUG_MODE=coverage vendor/bin/phpunit -c phpunit-11.xml
                 ;;
+              13)
+                XDEBUG_MODE=coverage vendor/bin/phpunit -c phpunit-12.xml
+                ;;
             esac
       - codecov/upload
 
@@ -144,9 +162,24 @@ workflows:
           name: "PHP << matrix.php-version >> - Laravel << matrix.laravel-version >>"
           matrix:
             parameters:
-              php-version: ["8.2", "8.3"]
-              laravel-version: ["9", "10", "11", "12"]
+              php-version: ["8.2", "8.3", "8.4", "8.5"]
+              laravel-version: ["9", "10", "11", "12", "13"]
             exclude:
               # Laravel 9 only supports PHP 8.2
               - php-version: "8.3"
                 laravel-version: "9"
+              - php-version: "8.4"
+                laravel-version: "9"
+              - php-version: "8.5"
+                laravel-version: "9"
+              # Laravel 10 supports PHP up to 8.3
+              - php-version: "8.4"
+                laravel-version: "10"
+              - php-version: "8.5"
+                laravel-version: "10"
+              # Laravel 11 supports PHP up to 8.4
+              - php-version: "8.5"
+                laravel-version: "11"
+              # Laravel 13 requires PHP 8.3
+              - php-version: "8.2"
+                laravel-version: "13"
