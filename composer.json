@@ -70,10 +70,12 @@
     "allow-plugins": {
       "cweagans/composer-patches": true
     },
-    "audit": {
-      "ignore": [
-        "PKSA-8qx3-n5y5-vvnd"
-      ]
+    "policy": {
+      "advisories": {
+        "ignore": {
+          "laravel/framework": "Laravel framework is not a direct dependency of this package, but is required for testing purposes. Ignoring security advisories for this package in the context of this package's development and testing."
+        }
+      }
     }
   }
 }
