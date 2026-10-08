@@ -83,8 +83,7 @@ commands:
       - run:
           name: Run php-cs-fixer (future mode)
           command: |
-            PHP_CS_FIXER_FUTURE_MODE=1
-            vendor/bin/php-cs-fixer fix --diff --dry-run --verbose
+            PHP_CS_FIXER_FUTURE_MODE=1 vendor/bin/php-cs-fixer fix --diff --dry-run --verbose
 
   security:
     description: Check known security issues in php dependencies
@@ -122,11 +121,7 @@ jobs:
           name: Validate SPID IdP certificates vs registry
           command: composer spid:idps:check
       - structure-validation
-      - unless:
-          condition:
-            equal: [ "13", << parameters.laravel-version >> ]
-          steps:
-            - php-cs-fixer
+      - php-cs-fixer
       - security
       - save_all_caches
       # test
