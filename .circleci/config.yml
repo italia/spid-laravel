@@ -14,13 +14,11 @@ commands:
           - v1-php-
 
   xdebug:
-    description: Install Xdebug and set coverage mode
+    description: Enable Xdebug extension
     steps:
       - run:
           command: |
-            sudo -E install-php-extensions xdebug
             sudo docker-php-ext-enable xdebug
-            echo "xdebug.mode = coverage" | sudo tee -a /etc/php.d/circleci.ini
 
   composer:
     description: Ensure all php dependencies are installed
