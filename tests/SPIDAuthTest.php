@@ -448,6 +448,28 @@ class SPIDAuthTest extends SPIDAuthBaseTestCase
         $this->assertTrue($ret);
     }
 
+    public function testMetadataCarriesSPIDPatch()
+    {
+        // These come from patches/php-saml-4.3-spid.patch: the stock toolkit
+        // hardcodes index="1" and adds validUntil, which SPID rejects.
+        $metadata = new DOMDocument();
+
+        $response = $this->get($this->metadataURL);
+
+        $response->assertStatus(200);
+        $metadata->loadXML($response->getContent());
+
+        $root = $metadata->documentElement;
+        $acs = $metadata->getElementsByTagName('AssertionConsumerService')->item(0);
+        $attcs = $metadata->getElementsByTagName('AttributeConsumingService')->item(0);
+
+        $this->assertFalse($root->hasAttribute('validUntil'));
+        $this->assertFalse($root->hasAttribute('cacheDuration'));
+        $this->assertSame((string) config('spid-auth.sp_acs_index'), $acs->getAttribute('index'));
+        $this->assertSame('true', $acs->getAttribute('isDefault'));
+        $this->assertSame((string) config('spid-auth.sp_attributes_index'), $attcs->getAttribute('index'));
+    }
+
     public function testNotValidMetadata()
     {
         $this->setSPIDAuthMock();

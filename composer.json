@@ -18,8 +18,8 @@
     "php": "^8.2|^8.3",
     "illuminate/config": "^9.52.4|^10.0|^11.0|^12.0",
     "illuminate/support": "^9.52.4|^10.0|^11.0|^12.0",
-    "onelogin/php-saml": "4.1.0",
-    "robrichards/xmlseclibs": "^3.1.4",
+    "onelogin/php-saml": "^4.3.1",
+    "robrichards/xmlseclibs": "^3.1.5",
     "cweagans/composer-patches": "^1.7",
     "nesbot/carbon": "^2.66|^3.0"
   },
@@ -50,7 +50,7 @@
     },
     "patches": {
       "onelogin/php-saml": {
-        "Compatibility with SPID": "https://rawgit.com/italia/spid-laravel/master/patches/php-saml-4.1.0-spid.patch"
+        "Compatibility with SPID": "https://raw.githubusercontent.com/offline-agency/spid-laravel/feat/laravel-13/patches/php-saml-4.3-spid.patch"
       }
     }
   },
@@ -72,7 +72,6 @@
     },
     "audit": {
       "ignore": [
-        "PKSA-67d7-mg8j-87zx",
         "PKSA-8qx3-n5y5-vvnd"
       ]
     },
