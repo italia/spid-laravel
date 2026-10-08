@@ -14,11 +14,15 @@ commands:
           - v1-php-
 
   xdebug:
-    description: Enable Xdebug extension
+    description: Install Xdebug using PIE
     steps:
       - run:
+          name: Install PIE and Xdebug
           command: |
-            sudo docker-php-ext-enable xdebug
+            curl -sSL -o pie https://github.com/php/pie/releases/latest/download/pie.phar
+            chmod +x pie
+            sudo mv pie /usr/local/bin/pie
+            sudo pie install xdebug/xdebug
 
   composer:
     description: Ensure all php dependencies are installed
