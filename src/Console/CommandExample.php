@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This class implements an Artisan command for SPIDAuth Package.
  *

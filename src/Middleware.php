@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This class implements a Laravel Middleware for SPIDAuth Package.
  *

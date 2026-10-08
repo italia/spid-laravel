@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This class implements a Laravel Event for SPIDAuth Package.
  *
