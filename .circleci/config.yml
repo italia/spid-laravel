@@ -60,7 +60,7 @@ commands:
 
       - run:
           name: Run composer update
-          command: composer update --prefer-dist --no-interaction --no-plugins
+          command: composer update --prefer-dist --no-interaction
 
   structure-validation:
     description: Ensure package directory strucure is valid
