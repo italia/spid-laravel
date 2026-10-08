@@ -464,11 +464,14 @@ public URLs:
 - `vars`: set to `true` to read the `X-Forwarded-Proto`, `X-Forwarded-Host`
   and `X-Forwarded-Port` headers sent by the proxy. Enough when the proxy sets
   those headers correctly.
-- `base_url`: the full public base URL (e.g. `https://example.org`). php-saml
-  derives protocol, host, port and path from it. Overrides `X-Forwarded-*`.
+- `base_url`: the full public base URL of the application (e.g.
+  `https://example.org`, or `https://example.org/app` when served under a
+  subpath). php-saml derives protocol, host, port and path from it; the
+  `routes_prefix` is appended automatically. Overrides `X-Forwarded-*`.
 - `protocol` / `host` / `port` / `base_url_path`: explicit overrides for a
-  single component. They take precedence over `base_url` and over
-  `X-Forwarded-*` detection.
+  single component (`base_url_path` is the application path, e.g. `/app`; the
+  `routes_prefix` is appended automatically). They take precedence over
+  `base_url` and over `X-Forwarded-*` detection.
 
 Precedence, lowest to highest: `X-Forwarded-*` (`vars`) < `base_url` <
 explicit `protocol`/`host`/`port`/`base_url_path`.

@@ -263,7 +263,7 @@ class SPIDAuthConfigTest extends TestCase
         $this->assertSame('https', \OneLogin\Saml2\Utils::getSelfProtocol());
         $this->assertSame('example.org', \OneLogin\Saml2\Utils::getSelfHost());
         $this->assertSame('443', (string) \OneLogin\Saml2\Utils::getSelfPort());
-        $this->assertSame('/app/', \OneLogin\Saml2\Utils::getBaseURLPath());
+        $this->assertSame('/app/spid/', \OneLogin\Saml2\Utils::getBaseURLPath());
     }
 
     public function testProxyProtocolOverride()
@@ -299,7 +299,7 @@ class SPIDAuthConfigTest extends TestCase
 
         $this->getSPIDAuthConfig();
 
-        $this->assertSame('/gateway/', \OneLogin\Saml2\Utils::getBaseURLPath());
+        $this->assertSame('/gateway/spid/', \OneLogin\Saml2\Utils::getBaseURLPath());
     }
 
     public function testExplicitOverridesWinOverBaseUrl()
@@ -318,7 +318,7 @@ class SPIDAuthConfigTest extends TestCase
         $this->assertSame('override.example.org', \OneLogin\Saml2\Utils::getSelfHost());
         $this->assertSame('http', \OneLogin\Saml2\Utils::getSelfProtocol());
         $this->assertSame('9000', (string) \OneLogin\Saml2\Utils::getSelfPort());
-        $this->assertSame('/override/', \OneLogin\Saml2\Utils::getBaseURLPath());
+        $this->assertSame('/override/spid/', \OneLogin\Saml2\Utils::getBaseURLPath());
     }
 
     public function testBaseUrlWinsOverForwardedDetection()
@@ -443,6 +443,78 @@ class SPIDAuthConfigTest extends TestCase
         $this->assertSame('https://metadata.example.org', \OneLogin\Saml2\Utils::getSelfURLhost());
     }
 
+    public function testResponseDestinationIsAcceptedBehindSslOffloadingProxy()
+    {
+        config(['spid-auth.proxy.vars' => true]);
+        $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
+        $_SERVER['HTTP_X_FORWARDED_HOST'] = 'example.org';
+        $_SERVER['HTTP_X_FORWARDED_PORT'] = '443';
+
+        $error = $this->validateResponseDestinedTo('https://example.org/spid/acs');
+
+        // Destination check passed; validation only stops at the (expected)
+        // missing signature of this unsigned fixture.
+        $this->assertStringNotContainsString('The response was received at', $error);
+        $this->assertStringContainsString('is not signed', $error);
+    }
+
+    public function testResponseDestinationIsAcceptedWithProxyBaseUrl()
+    {
+        config(['spid-auth.proxy.base_url' => 'https://example.org']);
+
+        $error = $this->validateResponseDestinedTo('https://example.org/spid/acs');
+
+        $this->assertStringNotContainsString('The response was received at', $error);
+        $this->assertStringContainsString('is not signed', $error);
+    }
+
+    public function testResponseDestinationIsAcceptedWithProxyBaseUrlUnderSubpath()
+    {
+        config(['spid-auth.proxy.base_url' => 'https://example.org/app/']);
+
+        $error = $this->validateResponseDestinedTo('https://example.org/app/spid/acs');
+
+        $this->assertStringNotContainsString('The response was received at', $error);
+        $this->assertStringContainsString('is not signed', $error);
+    }
+
+    public function testResponseDestinationIsAcceptedWithProxyBaseUrlPath()
+    {
+        config([
+            'spid-auth.proxy.protocol' => 'https',
+            'spid-auth.proxy.host' => 'example.org',
+            'spid-auth.proxy.base_url_path' => '/app',
+        ]);
+
+        $error = $this->validateResponseDestinedTo('https://example.org/app/spid/acs');
+
+        $this->assertStringNotContainsString('The response was received at', $error);
+        $this->assertStringContainsString('is not signed', $error);
+    }
+
+    public function testProxyBaseUrlUsesCustomRoutesPrefix()
+    {
+        config([
+            'spid-auth.routes_prefix' => 'auth/spid',
+            'spid-auth.proxy.base_url' => 'https://example.org',
+        ]);
+
+        $this->getSPIDAuthConfig();
+
+        $this->assertSame('/auth/spid/', \OneLogin\Saml2\Utils::getBaseURLPath());
+    }
+
+    public function testResponseDestinationIsRejectedBehindProxyWithoutProxyVars()
+    {
+        $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
+        $_SERVER['HTTP_X_FORWARDED_HOST'] = 'example.org';
+        $_SERVER['HTTP_X_FORWARDED_PORT'] = '443';
+
+        $error = $this->validateResponseDestinedTo('https://example.org/spid/acs');
+
+        $this->assertStringContainsString('The response was received at http://', $error);
+    }
+
     protected function getPackageProviders($app)
     {
         return ['Italia\SPIDAuth\ServiceProvider'];
@@ -456,5 +528,44 @@ class SPIDAuthConfigTest extends TestCase
         $getSAMLConfig->setAccessible(true);
 
         return $getSAMLConfig->invokeArgs($SPIDAuth, ['test']);
+    }
+
+    /**
+     * Run php-saml's own Response validation on an unsigned response addressed
+     * to $destination, as if it had been POSTed to /spid/acs, and return the
+     * validation error.
+     */
+    protected function validateResponseDestinedTo(string $destination): string
+    {
+        $server = $_SERVER;
+        $_SERVER['SCRIPT_NAME'] = $_SERVER['REQUEST_URI'] = '/spid/acs';
+        unset($_SERVER['HTTPS'], $_SERVER['PATH_INFO']);
+
+        try {
+            $settings = new \OneLogin\Saml2\Settings($this->getSPIDAuthConfig());
+            $now = time();
+            $xml = strtr(file_get_contents(__DIR__ . '/responses/valid_level1.xml'), [
+                '{{AssertionConsumerURL}}' => $destination,
+                '{{ResponseID}}' => '_response',
+                '{{AssertionID}}' => '_assertion',
+                '{{AuthnRequestID}}' => '_request',
+                '{{IssueInstant}}' => \OneLogin\Saml2\Utils::parseTime2SAML($now),
+                '{{ResponseIssueInstant}}' => \OneLogin\Saml2\Utils::parseTime2SAML($now),
+                '{{AssertionIssueInstant}}' => \OneLogin\Saml2\Utils::parseTime2SAML($now),
+                '{{AuthnIstant}}' => \OneLogin\Saml2\Utils::parseTime2SAML($now),
+                '{{NotOnOrAfter}}' => \OneLogin\Saml2\Utils::parseTime2SAML($now + 300),
+                '{{Audience}}' => config('spid-auth.sp_entity_id'),
+                '{{NameID}}' => '_nameid',
+                '{{NameIDNameQualifier}}' => 'spid-testenv',
+                '{{Attributes}}' => '<saml:Attribute Name="spidCode"><saml:AttributeValue>TEST0123456789</saml:AttributeValue></saml:Attribute>',
+            ]);
+
+            $response = new \OneLogin\Saml2\Response($settings, base64_encode($xml));
+            $response->isValid('_request');
+
+            return (string) $response->getError();
+        } finally {
+            $_SERVER = $server;
+        }
     }
 }

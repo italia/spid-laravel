@@ -117,9 +117,9 @@ return [
         // performs SSL offloading. Default: false.
         'vars' => env('SPID_AUTH_PROXY_VARS', false),
 
-        // Full public base URL of the SP, e.g. https://example.org. When set,
-        // php-saml derives protocol/host/port/path from it. Overrides
-        // X-Forwarded detection. Leave null to disable.
+        // Full public base URL of the app, e.g. https://example.org. When set,
+        // php-saml derives protocol/host/port/path from it (routes_prefix is
+        // appended). Overrides X-Forwarded detection. Leave null to disable.
         'base_url' => env('SPID_AUTH_PROXY_BASE_URL'),
 
         // Explicit self protocol, 'http' or 'https'. Overrides base_url and
@@ -134,8 +134,8 @@ return [
         // detection. Leave null to disable.
         'port' => env('SPID_AUTH_PROXY_PORT'),
 
-        // Explicit base URL path, e.g. /app. Overrides base_url and
-        // X-Forwarded detection. Leave null to disable.
+        // Explicit app base URL path, e.g. /app (routes_prefix is appended).
+        // Overrides base_url and X-Forwarded detection. Leave null to disable.
         'base_url_path' => env('SPID_AUTH_PROXY_BASE_URL_PATH'),
     ],
 ];
