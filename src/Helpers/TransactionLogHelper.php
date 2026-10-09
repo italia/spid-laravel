@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Helper class for transaction logging functionality.
  *

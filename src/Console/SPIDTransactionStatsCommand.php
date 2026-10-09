@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Artisan command to display SPID transaction logging statistics.
  *

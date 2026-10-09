@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Listener for SPID authentication events.
  * Delegates transaction storage to the configured store implementation.

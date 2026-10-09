@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Log-based transaction store implementation.
  * Writes SPID transactions as structured JSON to a configured log channel.

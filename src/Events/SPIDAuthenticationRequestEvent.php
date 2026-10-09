@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This class implements a Laravel Event for SPIDAuth Package.
  * Fired when an AuthnRequest is generated during SPID authentication flow.

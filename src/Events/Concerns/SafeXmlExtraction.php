@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Trait providing safe XML extraction methods for SPID authentication events.
  *

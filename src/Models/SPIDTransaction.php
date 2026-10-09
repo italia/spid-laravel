@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Eloquent model for SPID transaction logs.
  *

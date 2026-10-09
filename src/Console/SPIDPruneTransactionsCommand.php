@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Artisan command to prune old SPID transaction logs.
  *

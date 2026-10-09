@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This class implements a Laravel Event for SPIDAuth Package.
  * Fired when a SAML Response is received during SPID authentication flow.

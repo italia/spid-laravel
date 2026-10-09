@@ -84,7 +84,7 @@ class ServiceProvider extends LaravelServiceProvider
             return match ($driver) {
                 'database' => new DatabaseTransactionStore(),
                 'log' => new LogTransactionStore(),
-                default => throw new RuntimeException("Unsupported transaction log driver: {$driver}")
+                default => throw new RuntimeException("Unsupported transaction log driver: {$driver}"),
             };
         });
 

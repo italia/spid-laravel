@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Database-backed transaction store implementation.
  * Stores SPID transactions in the spid_transactions table via Eloquent.

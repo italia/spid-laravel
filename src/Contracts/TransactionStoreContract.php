@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Contract for storing SPID transaction logs.
  * Implementations can use different storage backends (database, log files, external systems, etc.).
