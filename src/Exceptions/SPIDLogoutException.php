@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This class implements a SPIDLogoutException for SPIDAuth Package.
  *

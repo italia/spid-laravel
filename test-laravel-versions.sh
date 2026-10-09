@@ -1,10 +1,12 @@
 #!/bin/bash
 
-# Script to test SPID Laravel package against multiple Laravel versions
-# This version is compatible with bash 3.2 (macOS default)
-# Usage: ./test-laravel-versions-legacy.sh [version]
-# Example: ./test-laravel-versions-legacy.sh 12  (test only Laravel 12)
-#          ./test-laravel-versions-legacy.sh     (test all versions)
+# Script to test SPID Laravel package against multiple Laravel & PHP versions using Docker
+# Matrix matches CircleCI configuration exactly.
+#
+# Usage:
+#   ./test-laravel-versions-docker.sh                   (run full matrix)
+#   ./test-laravel-versions-docker.sh 12                (test Laravel 12 on all valid PHP versions)
+#   ./test-laravel-versions-docker.sh 12 8.3            (test Laravel 12 specifically on PHP 8.3)
 
 set -e
 
@@ -13,53 +15,52 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
 BLUE='\033[0;34m'
+YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
-# Function to get Laravel version constraint
-get_laravel_version() {
+# Matrix definition
+ALL_PHP_VERSIONS="8.2 8.3 8.4 8.5"
+ALL_LARAVEL_VERSIONS="9 10 11 12 13"
+
+# Check if a PHP + Laravel combination is valid according to CircleCI matrix
+is_valid_combination() {
+    local php=$1
+    local laravel=$2
+
+    case $laravel in
+        9)
+            [ "$php" = "8.2" ] && return 0
+            ;;
+        10)
+            [ "$php" = "8.2" ] || [ "$php" = "8.3" ] && return 0
+            ;;
+        11)
+            [ "$php" = "8.2" ] || [ "$php" = "8.3" ] || [ "$php" = "8.4" ] && return 0
+            ;;
+        12)
+            [ "$php" = "8.2" ] || [ "$php" = "8.3" ] || [ "$php" = "8.4" ] || [ "$php" = "8.5" ] && return 0
+            ;;
+        13)
+            [ "$php" = "8.3" ] || [ "$php" = "8.4" ] || [ "$php" = "8.5" ] && return 0
+            ;;
+    esac
+
+    return 1
+}
+
+# Get phpunit XML config file per Laravel version
+get_phpunit_config() {
     case $1 in
-        9) echo "^9.52.4" ;;
-        10) echo "^10.0" ;;
-        11) echo "^11.0" ;;
-        12) echo "^12.0" ;;
-        *) echo "" ;;
+        9) echo "phpunit-9.xml" ;;
+        10) echo "phpunit-10.xml" ;;
+        11) echo "phpunit-10.xml" ;;
+        12) echo "phpunit-11.xml" ;;
+        13) echo "phpunit-12.xml" ;;
+        *) echo "phpunit.xml" ;;
     esac
 }
 
-# Function to get Testbench version
-get_testbench_version() {
-    case $1 in
-        9) echo "^7.22.1" ;;
-        10) echo "^8.0" ;;
-        11) echo "^9.0" ;;
-        12) echo "^10.0" ;;
-        *) echo "" ;;
-    esac
-}
-
-# Function to get PHPUnit version
-get_phpunit_version() {
-    case $1 in
-        9) echo "^9.5.10" ;;
-        10) echo "^10.0" ;;
-        11) echo "^10.0" ;;
-        12) echo "^11.0" ;;
-        *) echo "" ;;
-    esac
-}
-
-# Function to get Carbon version
-get_carbon_version() {
-    case $1 in
-        9) echo "^2.66" ;;
-        10) echo "^2.66" ;;
-        11) echo "^3.0" ;;
-        12) echo "^3.0" ;;
-        *) echo "" ;;
-    esac
-}
-
-# Function to print colored messages
+# Output formatting functions
 print_header() {
     echo -e "${BLUE}================================================${NC}"
     echo -e "${BLUE}$1${NC}"
@@ -78,7 +79,11 @@ print_info() {
     echo -e "${CYAN}ℹ $1${NC}"
 }
 
-# Function to backup composer files
+print_warning() {
+    echo -e "${YELLOW}⚠ $1${NC}"
+}
+
+# Backup & Restore composer files
 backup_composer() {
     print_info "Backing up composer.json and composer.lock..."
     cp composer.json composer.json.backup
@@ -87,151 +92,165 @@ backup_composer() {
     fi
 }
 
-# Function to restore composer files
 restore_composer() {
-    print_info "Restoring composer.json and composer.lock..."
-    mv composer.json.backup composer.json
-    if [ -f composer.lock.backup ]; then
-        mv composer.lock.backup composer.lock
+    if [ -f composer.json.backup ]; then
+        print_info "Restoring original composer.json and composer.lock..."
+        mv composer.json.backup composer.json
+        if [ -f composer.lock.backup ]; then
+            mv composer.lock.backup composer.lock
+        fi
     fi
 }
 
-# Function to check PHP version
-check_php_version() {
-    local required_version=$1
-    local current_version=$(php -r 'echo PHP_VERSION;')
+# Ensure composer files are restored on exit or interruption
+trap restore_composer EXIT INT TERM
 
-    echo "Current PHP version: $current_version"
-    echo "Required PHP version: >= $required_version"
-}
-
-# Function to test a specific Laravel version
-test_laravel_version() {
-    local version=$1
-    local illuminate_version=$(get_laravel_version $version)
-    local testbench_version=$(get_testbench_version $version)
-    local phpunit_version=$(get_phpunit_version $version)
-    local carbon_version=$(get_carbon_version $version)
-
-    if [ -z "$illuminate_version" ]; then
-        print_error "Invalid Laravel version: $version"
-        return 1
+# Check Docker status
+check_docker() {
+    if ! command -v docker >/dev/null 2>&1; then
+        print_error "Docker not installed or not in PATH."
+        exit 1
     fi
 
-    print_header "Testing Laravel $version"
-
-    echo "Installing dependencies for Laravel $version..."
-    echo "  - illuminate/config: $illuminate_version"
-    echo "  - illuminate/support: $illuminate_version"
-    echo "  - orchestra/testbench: $testbench_version"
-    echo "  - phpunit/phpunit: $phpunit_version"
-    echo "  - nesbot/carbon: $carbon_version"
-    echo ""
-
-    # Update composer.json with specific versions
-    # First, update production dependencies (require)
-    print_info "Updating production dependencies..."
-    composer require --no-update \
-        "illuminate/config:$illuminate_version" \
-        "illuminate/support:$illuminate_version" \
-        "nesbot/carbon:$carbon_version"
-
-    # Then, update development dependencies (require-dev)
-    print_info "Updating development dependencies..."
-    composer require --dev --no-update \
-        "orchestra/testbench:$testbench_version" \
-        "phpunit/phpunit:$phpunit_version"
-
-    # Update dependencies
-    print_info "Running composer update (this may take a while)..."
-    if ! composer update --prefer-dist --no-interaction --no-plugins 2>&1 | tee /tmp/composer-update.log | grep -E "(Installing|Upgrading|Package operations|Nothing to modify)"; then
-        echo ""
-        echo "Full composer output:"
-        cat /tmp/composer-update.log
-        print_error "Failed to update dependencies for Laravel $version"
-        return 1
-    fi
-
-    print_success "Dependencies installed successfully"
-
-    # Run tests
-    print_info "Running PHPUnit tests..."
-    echo ""
-
-    # select phpunit config based on requested phpunit major
-    phpunit_major=$(echo "$phpunit_version" | sed -E 's/^\^?([0-9]+).*/\1/')
-
-    if XDEBUG_MODE=coverage vendor/bin/phpunit -c "phpunit-$phpunit_major.xml"; then
-        print_success "All tests passed for Laravel $version!"
-        return 0
-    else
-        print_error "Tests failed for Laravel $version"
-        return 1
+    if ! docker info >/dev/null 2>&1; then
+        print_error "The Docker daemon is not running."
+        exit 1
     fi
 }
 
-# Main script
-main() {
-    local test_version=$1
-    local failed_versions=""
-    local successful_versions=""
+# Run job inside Docker container
+run_docker_job() {
+    local laravel_version=$1
+    local php_version=$2
+    local phpunit_config=$(get_phpunit_config $laravel_version)
 
-    print_header "SPID Laravel - Multi-version Testing"
+    print_header "Testing PHP $php_version - Laravel $laravel_version (Docker: cimg/php:$php_version)"
 
-    check_php_version "8.2"
-    echo ""
-
-    # Backup composer files
+    # Restore clean composer.json state before altering dependencies
+    restore_composer
     backup_composer
 
-    # Determine which versions to test
-    local versions_to_test
-    if [ -n "$test_version" ]; then
-        local laravel_version=$(get_laravel_version $test_version)
-        if [ -z "$laravel_version" ]; then
-            print_error "Invalid Laravel version: $test_version"
-            print_info "Available versions: 9, 10, 11, 12"
-            restore_composer
-            exit 1
-        fi
-        versions_to_test="$test_version"
-    else
-        versions_to_test="9 10 11 12"
-    fi
+    # Generate container setup script matching CircleCI commands
+    local container_cmd="set -e
+    
+    echo '==> Ensuring coverage driver (Xdebug) is installed...'
+    curl -sSL -o pie https://github.com/php/pie/releases/latest/download/pie.phar
+    chmod +x pie
+    sudo mv pie /usr/local/bin/pie
+    sudo pie install xdebug/xdebug
 
-    # Test each version
-    for version in $versions_to_test; do
-        echo ""
-        if test_laravel_version "$version"; then
-            successful_versions="$successful_versions $version"
-        else
-            failed_versions="$failed_versions $version"
+    echo '==> Updating Composer dependencies for Laravel $laravel_version...'
+    case $laravel_version in
+        9)
+            composer require --no-update 'illuminate/config:^9.52.4' 'illuminate/support:^9.52.4' 'nesbot/carbon:^2.66'
+            composer require --dev --no-update 'orchestra/testbench:^7.22.1' 'phpunit/phpunit:^9.5.10'
+            ;;
+        10)
+            composer require --no-update 'illuminate/config:^10.0' 'illuminate/support:^10.0' 'nesbot/carbon:^2.66'
+            composer require --dev --no-update 'orchestra/testbench:^8.0' 'phpunit/phpunit:^10.0'
+            ;;
+        11)
+            composer require --no-update 'illuminate/config:^11.0' 'illuminate/support:^11.0' 'nesbot/carbon:^3.0'
+            composer require --dev --no-update 'orchestra/testbench:^9.0' 'phpunit/phpunit:^10.0'
+            ;;
+        12)
+            composer require --no-update 'illuminate/config:^12.0' 'illuminate/support:^12.0' 'nesbot/carbon:^3.0'
+            composer require --dev --no-update 'orchestra/testbench:^10.0' 'phpunit/phpunit:^11.0'
+            ;;
+        13)
+            composer require --no-update 'illuminate/config:^13.0' 'illuminate/support:^13.0' 'nesbot/carbon:^3.0'
+            composer require --dev --no-update 'orchestra/testbench:^11.0' 'phpunit/phpunit:^12.0'
+            ;;
+    esac
+
+    echo '==> Running composer update...'
+    COMPOSER_EXIT_ON_PATCH_FAILURE=1 composer update --prefer-dist --no-interaction
+
+    echo '==> Validating SPID IdP certificates...'
+    composer spid:idps:check
+
+    echo '==> Validating package structure (pds-skeleton)...'
+    vendor/bin/pds-skeleton validate
+"
+
+        container_cmd="$container_cmd
+    echo '==> Running php-cs-fixer...'
+    PHP_CS_FIXER_FUTURE_MODE=1 vendor/bin/php-cs-fixer fix --diff --dry-run --verbose
+"
+
+    # Add security audit and PHPUnit execution
+    container_cmd="$container_cmd
+    echo '==> Checking known security issues in dependencies...'
+    composer audit
+
+    echo '==> Running PHPUnit tests...'
+    XDEBUG_MODE=coverage vendor/bin/phpunit -c $phpunit_config
+"
+
+    # Run Docker container
+    if docker run --rm \
+        -v "$(pwd)":/app \
+        -w /app \
+        "cimg/php:${php_version}" \
+        bash -c "$container_cmd"; then
+        print_success "PHP $php_version - Laravel $laravel_version PASSED"
+        return 0
+    else
+        print_error "PHP $php_version - Laravel $laravel_version FAILED"
+        return 1
+    fi
+}
+
+# Main function
+main() {
+    local req_laravel=$1
+    local req_php=$2
+
+    local successful_jobs=""
+    local failed_jobs=""
+
+    check_docker
+
+    print_header "SPID Laravel - Docker Matrix Testing (CircleCI Replica)"
+
+    # Determine which combinations to run
+    for l_ver in $ALL_LARAVEL_VERSIONS; do
+        if [ -n "$req_laravel" ] && [ "$req_laravel" != "$l_ver" ]; then
+            continue
         fi
-        echo ""
-        echo "---"
-        echo ""
+
+        for p_ver in $ALL_PHP_VERSIONS; do
+            if [ -n "$req_php" ] && [ "$req_php" != "$p_ver" ]; then
+                continue
+            fi
+
+            if is_valid_combination "$p_ver" "$l_ver"; then
+                if run_docker_job "$l_ver" "$p_ver"; then
+                    successful_jobs="$successful_jobs\n  ✓ PHP $p_ver - Laravel $l_ver"
+                else
+                    failed_jobs="$failed_jobs\n  ✗ PHP $p_ver - Laravel $l_ver"
+                fi
+                echo ""
+            fi
+        done
     done
 
-    # Restore original composer files
-    restore_composer
-    print_success "Composer files restored"
-    echo ""
-
     # Print summary
-    print_header "TEST SUMMARY"
+    print_header "MATRIX TEST SUMMARY"
 
-    if [ -n "$successful_versions" ]; then
-        print_success "Successful versions:$successful_versions"
+    if [ -n "$successful_jobs" ]; then
+        echo -e "${GREEN}Passed Matrix Jobs:${NC}$successful_jobs"
+        echo ""
     fi
 
-    if [ -n "$failed_versions" ]; then
-        print_error "Failed versions:$failed_versions"
+    if [ -n "$failed_jobs" ]; then
+        echo -e "${RED}Failed Matrix Jobs:${NC}$failed_jobs"
+        echo ""
         exit 1
     else
-        print_success "All tests passed! ✨"
+        print_success "All executed matrix jobs passed successfully! ✨"
         exit 0
     fi
 }
 
-# Run main function
 main "$@"

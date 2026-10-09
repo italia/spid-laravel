@@ -16,21 +16,21 @@
   ],
   "require": {
     "php": "^8.2|^8.3",
-    "illuminate/config": "^9.52.4|^10.0|^11.0|^12.0",
-    "illuminate/support": "^9.52.4|^10.0|^11.0|^12.0",
-    "onelogin/php-saml": "4.1.0",
-    "robrichards/xmlseclibs": "^3.1.4",
+    "illuminate/config": "^9.52.4|^10.0|^11.0|^12.0|^13.0",
+    "illuminate/support": "^9.52.4|^10.0|^11.0|^12.0|^13.0",
+    "onelogin/php-saml": "^4.3.1",
+    "robrichards/xmlseclibs": "^3.1.5",
     "cweagans/composer-patches": "^1.7",
     "nesbot/carbon": "^2.66|^3.0"
   },
   "require-dev": {
     "pds/skeleton": "~1.0",
-    "phpunit/phpunit": "^9.5.10|^10.0|^11.0",
-    "orchestra/testbench": "^7.22.1|^8.0|^9.0|^10.0",
+    "phpunit/phpunit": "^9.5.10|^10.0|^11.0|^12.0",
+    "orchestra/testbench": "^7.22.1|^8.0|^9.0|^10.0|^11.0",
     "mockery/mockery": "^1.5.1",
     "mikey179/vfsstream": "^1.6",
     "symfony/http-foundation": "^6.4.29|^7.3.7",
-    "friendsofphp/php-cs-fixer": "~3.51.0"
+    "friendsofphp/php-cs-fixer": "^3.95"
   },
   "autoload": {
     "psr-4": {
@@ -50,7 +50,7 @@
     },
     "patches": {
       "onelogin/php-saml": {
-        "Compatibility with SPID": "https://rawgit.com/italia/spid-laravel/master/patches/php-saml-4.1.0-spid.patch"
+        "Compatibility with SPID": "https://raw.githubusercontent.com/italia/spid-laravel/feat/laravel-13/patches/php-saml-4.3-spid.patch"
       }
     }
   },
@@ -63,21 +63,19 @@
     ]
   },
   "scripts": {
-    "spid:idps:check": "php scripts/spid-idps-sync.php check",
-    "spid:idps:update": "php scripts/spid-idps-sync.php update"
+    "spid:idps:check": "php bin/spid-idps-sync.php check",
+    "spid:idps:update": "php bin/spid-idps-sync.php update"
   },
   "config": {
     "allow-plugins": {
       "cweagans/composer-patches": true
     },
-    "audit": {
-      "ignore": [
-        "PKSA-67d7-mg8j-87zx",
-        "PKSA-8qx3-n5y5-vvnd"
-      ]
-    },
-    "platform": {
-      "php": "8.2.0"
+    "policy": {
+      "advisories": {
+        "ignore": {
+          "laravel/framework": "Laravel framework is not a direct dependency of this package, but is required for testing purposes. Ignoring security advisories for this package in the context of this package's development and testing."
+        }
+      }
     }
   }
 }

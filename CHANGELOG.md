@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+- Security: require onelogin/php-saml ^4.3.1 (CVE-2025-66475, GHSA-5j8p-438x-rgg5) and robrichards/xmlseclibs ^3.1.5
+- Port the SPID patch to php-saml 4.3 (`patches/php-saml-4.3-spid.patch`) and serve it from a raw URL that resolves
+- Add Laravel 13 compatibility (Testbench 11, PHPUnit 12)
+- CircleCI: apply the SPID patch during tests, add PHP 8.4/8.5 and Laravel 13
+
 ## [v2.1.0-beta] - 2025-12-18
 
 - Add SPID IdP certificate sync script and update config

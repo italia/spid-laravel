@@ -19,12 +19,12 @@ class ServiceProviderTest extends TestCase
     {
         $allRoutes = Route::getRoutes();
         $spidRoutesNames = [
-          'spid-auth_login',
-          'spid-auth_do-login',
-          'spid-auth_logout',
-          'spid-auth_acs',
-          'spid-auth_metadata',
-          'spid-auth_providers',
+            'spid-auth_login',
+            'spid-auth_do-login',
+            'spid-auth_logout',
+            'spid-auth_acs',
+            'spid-auth_metadata',
+            'spid-auth_providers',
         ];
 
         foreach ($spidRoutesNames as $routeName) {
