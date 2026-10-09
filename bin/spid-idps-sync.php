@@ -14,8 +14,8 @@
  * - update: rewrites `config/spid-idps.php` updating only `x509cert` values
  *
  * Usage:
- *   php scripts/spid-idps-sync.php check
- *   php scripts/spid-idps-sync.php update
+ *   php bin/spid-idps-sync.php check
+ *   php bin/spid-idps-sync.php update
  */
 
 declare(strict_types=1);

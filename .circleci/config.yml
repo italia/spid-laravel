@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  codecov: codecov/codecov@6.1.0
+  codecov: codecov/codecov@5.0.0
 
 commands:
   restore_all_caches:
@@ -14,13 +14,15 @@ commands:
           - v1-php-
 
   xdebug:
-    description: Install Xdebug and set coverage mode
+    description: Install Xdebug using PIE
     steps:
       - run:
+          name: Install PIE and Xdebug
           command: |
-            sudo -E install-php-extensions xdebug
-            sudo docker-php-ext-enable xdebug
-            echo "xdebug.mode = coverage" | sudo tee -a /etc/php.d/circleci.ini
+            curl -sSL -o pie https://github.com/php/pie/releases/latest/download/pie.phar
+            chmod +x pie
+            sudo mv pie /usr/local/bin/pie
+            sudo pie install xdebug/xdebug
 
   composer:
     description: Ensure all php dependencies are installed
@@ -56,11 +58,17 @@ commands:
                       composer require --no-update "illuminate/config:^12.0" "illuminate/support:^12.0" "nesbot/carbon:^3.0"
                       composer require --dev --no-update "orchestra/testbench:^10.0" "phpunit/phpunit:^11.0"
                       ;;
+                    13)
+                      composer require --no-update "illuminate/config:^13.0" "illuminate/support:^13.0" "nesbot/carbon:^3.0"
+                      composer require --dev --no-update "orchestra/testbench:^11.0" "phpunit/phpunit:^12.0"
+                      ;;
                   esac
 
+      # Plugins stay enabled so composer-patches applies the SPID patch to
+      # php-saml; testMetadataCarriesSPIDPatch fails if it is missing.
       - run:
           name: Run composer update
-          command: composer update --prefer-dist --no-interaction
+          command: COMPOSER_EXIT_ON_PATCH_FAILURE=1 composer update --prefer-dist --no-interaction
 
   structure-validation:
     description: Ensure package directory strucure is valid
@@ -75,8 +83,7 @@ commands:
       - run:
           name: Run php-cs-fixer (future mode)
           command: |
-            PHP_CS_FIXER_FUTURE_MODE=1
-            vendor/bin/php-cs-fixer fix --diff --dry-run --verbose
+            PHP_CS_FIXER_FUTURE_MODE=1 vendor/bin/php-cs-fixer fix --diff --dry-run --verbose
 
   security:
     description: Check known security issues in php dependencies
@@ -134,11 +141,16 @@ jobs:
               12)
                 XDEBUG_MODE=coverage vendor/bin/phpunit -c phpunit-11.xml
                 ;;
+              13)
+                XDEBUG_MODE=coverage vendor/bin/phpunit -c phpunit-12.xml
+                ;;
             esac
-      - codecov/upload:
-          # Tokenless uploads are only accepted for fork-style "owner:branch"
-          # names; CIRCLE_PR_USERNAME is only set on forked-PR builds.
-          branch: "${CIRCLE_PR_USERNAME:+$CIRCLE_PR_USERNAME:}${CIRCLE_BRANCH}"
+      - run:
+          name: Upload coverage to Codecov
+          command: |
+            curl -Os https://cli.codecov.io/latest/linux/codecov
+            chmod +x codecov
+            ./codecov upload-process
 
 workflows:
   build:
@@ -147,9 +159,24 @@ workflows:
           name: "PHP << matrix.php-version >> - Laravel << matrix.laravel-version >>"
           matrix:
             parameters:
-              php-version: ["8.2", "8.3"]
-              laravel-version: ["9", "10", "11", "12"]
+              php-version: ["8.2", "8.3", "8.4", "8.5"]
+              laravel-version: ["9", "10", "11", "12", "13"]
             exclude:
               # Laravel 9 only supports PHP 8.2
               - php-version: "8.3"
                 laravel-version: "9"
+              - php-version: "8.4"
+                laravel-version: "9"
+              - php-version: "8.5"
+                laravel-version: "9"
+              # Laravel 10 supports PHP up to 8.3
+              - php-version: "8.4"
+                laravel-version: "10"
+              - php-version: "8.5"
+                laravel-version: "10"
+              # Laravel 11 supports PHP up to 8.4
+              - php-version: "8.5"
+                laravel-version: "11"
+              # Laravel 13 requires PHP 8.3
+              - php-version: "8.2"
+                laravel-version: "13"

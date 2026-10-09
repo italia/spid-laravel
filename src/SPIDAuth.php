@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This class implements a Laravel Controller for SPIDAuth Package.
  *
@@ -95,9 +96,9 @@ class SPIDAuth extends Controller
      * and redirect to the intended or configured after_login_url.
      * Fire LoginEvent with SPIDUser (also stored in session).
      *
-     * @throws SPIDLoginException
-     *
      * @return RedirectResponse redirect to the intended or configured URL
+     *
+     * @throws SPIDLoginException
      */
     public function acs(): RedirectResponse
     {
@@ -183,9 +184,9 @@ class SPIDAuth extends Controller
     /**
      * Attempt logout with the selected SPID Identity Provider.
      *
-     * @throws SPIDLogoutException
-     *
      * @return RedirectResponse redirect to after_logout_url
+     *
+     * @throws SPIDLogoutException
      */
     public function logout(): RedirectResponse
     {
@@ -255,9 +256,9 @@ class SPIDAuth extends Controller
     /**
      * Metadata endpoint for this Service Provider.
      *
-     * @throws SPIDMetadataException
-     *
      * @return Response XML metadata of this Service Provider
+     *
+     * @throws SPIDMetadataException
      */
     public function metadata(): Response
     {

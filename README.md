@@ -15,11 +15,25 @@ applications based on [Laravel](https://www.laravel.com).
 See [Changelog](CHANGELOG.md) for more informations about versions and breaking
 changes.
 
+## Requirements
+
+| Laravel | PHP           |
+|---------|---------------|
+| 9.x     | 8.2           |
+| 10.x    | 8.2, 8.3      |
+| 11.x    | 8.2 – 8.4     |
+| 12.x    | 8.2 – 8.5     |
+| 13.x    | 8.3 – 8.5     |
+
+The package depends on [onelogin/php-saml](https://github.com/onelogin/php-saml)
+`^4.3.1` and [robrichards/xmlseclibs](https://github.com/robrichards/xmlseclibs)
+`^3.1.5`.
+
 ## Installation
 
 1. Before installing this package patching must be enabled in `composer.json`.
 This is necessary because
-[this patch](https://github.com/italia/spid-laravel/blob/master/patches/php-saml-4.1.0-spid.patch)
+[this patch](https://github.com/italia/spid-laravel/blob/master/patches/php-saml-4.3-spid.patch)
 has to be applied to [onelogin/php-saml](https://github.com/onelogin/php-saml)
 for SPID compatibility.
 
@@ -111,24 +125,48 @@ format at `/spid/metadata`.
 
 ## Testing (multi-version)
 
-This repository includes tools and CI configuration to run the full test suite against multiple Laravel versions.
+This repository includes tools and CI configuration to run the full test suite
+against multiple Laravel and PHP versions.
 
-The script `test-laravel-versions.sh` installs the appropriate dependencies for
-each Laravel major and runs the test suite sequentially for all supported
-Laravel versions.
+The script `test-laravel-versions.sh` replicates the CircleCI matrix locally
+using Docker: every supported PHP/Laravel combination (see
+[Requirements](#requirements)) runs in a `cimg/php:<version>` container. Each
+job installs the dependencies for the Laravel major (applying the SPID patch to
+php-saml), checks the IdP certificates, validates the package structure, runs
+php-cs-fixer and `composer audit`, and finally runs PHPUnit with the matching
+`phpunit-*.xml` config.
+
+Docker must be installed and running. The original `composer.json` and
+`composer.lock` are backed up and restored when the script exits.
 
 Quick examples
 
-Run tests for Laravel 12 only:
+Run the full matrix:
+
+```bash
+./test-laravel-versions.sh
+```
+
+Run tests for Laravel 12 on every supported PHP version:
 
 ```bash
 ./test-laravel-versions.sh 12
 ```
 
-Run tests for all supported Laravel versions sequentially:
+Run tests for Laravel 12 on PHP 8.3 only:
 
 ```bash
-./test-laravel-versions.sh
+./test-laravel-versions.sh 12 8.3
+```
+
+### SPID IdP certificates
+
+The certificates in `config/spid-idps.php` can be checked against the official
+[SPID registry](https://registry.spid.gov.it/identity-providers) with:
+
+```bash
+composer spid:idps:check   # exits non-zero on mismatches
+composer spid:idps:update  # rewrites the x509cert values in config/spid-idps.php
 ```
 
 ### Bindings

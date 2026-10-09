@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This class implements a SPIDUser for SPIDAuth Package.
  *
