@@ -150,7 +150,15 @@ jobs:
           command: |
             curl -Os https://cli.codecov.io/latest/linux/codecov
             chmod +x codecov
-            ./codecov upload-process
+            # Tokenless uploads are only accepted for fork-style "owner:branch"
+            # names; CIRCLE_PR_USERNAME is only set on forked-PR builds.
+            # Parallel jobs race to create the same Codecov report, which can
+            # fail transiently, so retry a few times before giving up.
+            for attempt in 1 2 3; do
+              ./codecov upload-process --branch "${CIRCLE_PR_USERNAME:+$CIRCLE_PR_USERNAME:}${CIRCLE_BRANCH}" && exit 0
+              sleep $((attempt * 10))
+            done
+            exit 1
 
 workflows:
   build:

@@ -726,7 +726,56 @@ class SPIDAuth extends Controller
 
         $config['idp'] = $idps[$idp];
 
+        $this->applyProxySettings();
+
         return $config;
+    }
+
+    /**
+     * Apply reverse-proxy and self-URL settings to php-saml's static Utils state.
+     *
+     * php-saml builds self URLs (ACS/SLO/Destination) from raw $_SERVER values
+     * and ignores Laravel's TrustProxies middleware. These settings let an app
+     * behind a reverse proxy (SSL offloading) produce correct public URLs.
+     *
+     * Precedence, lowest to highest: X-Forwarded-* detection (proxy.vars) <
+     * proxy.base_url < explicit proxy.protocol/host/port/base_url_path. This is
+     * enforced by call order: base_url parses into the self-URL statics, then
+     * the explicit setters overwrite them.
+     *
+     * @return void
+     */
+    protected function applyProxySettings(): void
+    {
+        SAMLUtils::setProxyVars((bool) config('spid-auth.proxy.vars'));
+
+        // php-saml rebuilds the self URL as base URL path + request path (with
+        // the base path stripped), so the package routes prefix carries over
+        // from the request and must not be added here.
+        $baseUrl = config('spid-auth.proxy.base_url');
+        if (!empty($baseUrl)) {
+            SAMLUtils::setBaseURL(rtrim($baseUrl, '/') . '/');
+        }
+
+        $protocol = config('spid-auth.proxy.protocol');
+        if (!empty($protocol)) {
+            SAMLUtils::setSelfProtocol($protocol);
+        }
+
+        $host = config('spid-auth.proxy.host');
+        if (!empty($host)) {
+            SAMLUtils::setSelfHost($host);
+        }
+
+        $port = config('spid-auth.proxy.port');
+        if (null !== $port && '' !== $port) {
+            SAMLUtils::setSelfPort($port);
+        }
+
+        $baseUrlPath = config('spid-auth.proxy.base_url_path');
+        if (!empty($baseUrlPath)) {
+            SAMLUtils::setBaseURLPath(rtrim($baseUrlPath, '/') . '/');
+        }
     }
 
     /**
