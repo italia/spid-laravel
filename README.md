@@ -461,6 +461,96 @@ in your `config/spid-auth.php` file.
 
 **Set ```'test_idp' => false``` to disable**.
 
+### Testing with SPID Validator and SPID Demo
+
+Before submitting the Service Provider metadata to AgID, the
+[SPID technical procedure](https://www.spid.gov.it/en/technical-procedure/)
+asks to verify the Service Provider with two AgID tools from
+[spid-saml-check](https://github.com/italia/spid-saml-check):
+
+- [SPID Validator](https://validator.spid.gov.it): checks the metadata, the
+  AuthnRequest and the Response handling.
+- [SPID Demo](https://demo.spid.gov.it): a test Identity Provider with
+  [demo users](https://demo.spid.gov.it/users).
+
+#### Prerequisites
+
+- The application must be reachable over HTTPS on a public hostname
+  (a tunnel is fine for development).
+- `expose_sp_metadata` must be `true`; the metadata URL is
+  `https://<host>/<routes_prefix>/metadata` (`/spid/metadata` by default).
+- The SPID patch for `onelogin/php-saml` must be applied: the output of
+  `composer install` must not contain `Could not apply patch!`.
+
+#### Configuration
+
+Configure `validator_idp` with the values of
+<https://validator.spid.gov.it/metadata.xml> and `test_idp` with the values of
+<https://demo.spid.gov.it/metadata.xml>. The `test` Identity Provider entry
+is reused for SPID Demo.
+
+| Config key | Metadata value |
+|------------|----------------|
+| `entityId` | `EntityDescriptor/@entityID` |
+| `sso_endpoint` | `SingleSignOnService[@Binding="...HTTP-Redirect"]/@Location` |
+| `slo_endpoint` | `SingleLogoutService[@Binding="...HTTP-Redirect"]/@Location` |
+| `x509cert` | `KeyDescriptor[@use="signing"]//X509Certificate` (body only, no PEM headers) |
+
+```php
+'validator_idp' => [
+    'entityId' => 'https://validator.spid.gov.it',
+    'sso_endpoint' => 'https://validator.spid.gov.it/samlsso',
+    'slo_endpoint' => 'https://validator.spid.gov.it/samlsso',
+    'x509cert' => '<signing certificate from https://validator.spid.gov.it/metadata.xml>',
+],
+'test_idp' => [
+    'entityId' => 'https://demo.spid.gov.it',
+    'sso_endpoint' => 'https://demo.spid.gov.it/samlsso',
+    'slo_endpoint' => 'https://demo.spid.gov.it/samlsso',
+    'x509cert' => '<signing certificate from https://demo.spid.gov.it/metadata.xml>',
+],
+```
+
+The SSO endpoint is `.../samlsso`; `https://demo.spid.gov.it/start`, shown
+in the browser during a login, is an internal step of SPID Demo and must not
+be used as `sso_endpoint`. The certificates are rotated: always copy them
+from the metadata URLs above.
+
+#### Running the checks
+
+1. Log in to <https://validator.spid.gov.it> (user `validator`, password
+   `validator`), open *Metadata / Download from URL*, enter your metadata URL,
+   then run *Metadata / Check Strict* and *Metadata / Check Extra*.
+2. Start a login from your application choosing the *SPID Validator* button:
+   the validator shows the result in *Request / Check Strict* and
+   *Request / Check Extra*.
+3. Start a login choosing the *Test IdP* button to authenticate on SPID Demo
+   with one of the demo users.
+
+#### Troubleshooting SPID Demo errors
+
+| Message | Cause |
+|---------|-------|
+| `Formato richiesta non corretto. Verificare che il metadata sia stato registrato.` | The SP metadata is not registered on SPID Validator, or the `Issuer` of the request (your `sp_entity_id`) differs from the registered `entityID`. Register it again after changing the certificate, `sp_entity_id`, `sp_base_url`, `sp_acs_index`, `sp_attributes_index` or the requested attributes. |
+| `Formato richiesta non corretto. La AuthnRequest non supera i controlli strict.` | The AuthnRequest fails a strict check: metadata not registered again after a change (see above), SPID patch not applied, `sso_endpoint` not ending in `/samlsso`, application served over HTTP instead of HTTPS, or server clock skew (`IssueInstant`). |
+| `Formato richiesta non corretto. La AuthnRequest non supera i controlli extra.` | The AuthnRequest passes the strict checks but fails the extra ones. |
+| `Formato richiesta non corretto. AuthnContextClassRef non corretto.` | `sp_spid_level` is not one of `https://www.spid.gov.it/SpidL1`, `SpidL2`, `SpidL3`. |
+
+The per-check report is on SPID Validator, *Request / Check Strict* (and
+*Check Extra*). The same checks can be run locally with
+[spid-sp-test](https://github.com/italia/spid-sp-test), saving the full
+redirect URL of the login (the `Location` header of `POST /spid/login`) to a
+file:
+
+```bash
+IDP_ENTITYID=https://demo.spid.gov.it spid_sp_test \
+    --metadata-url https://<host>/spid/metadata \
+    --authn-url file://authn-request.dump \
+    --profile spid-sp-private --extra
+```
+
+Use `--profile spid-sp-public` for a public administration.
+
 ### Service Provider certificate and private key
 
 In the

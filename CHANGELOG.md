@@ -6,6 +6,8 @@
 - Port the SPID patch to php-saml 4.3 (`patches/php-saml-4.3-spid.patch`) and serve it from a raw URL that resolves
 - Add Laravel 13 compatibility (Testbench 11, PHPUnit 12)
 - CircleCI: apply the SPID patch during tests, add PHP 8.4/8.5 and Laravel 13
+- Document SPID Validator and SPID Demo setup (#107)
+- Add SPID strict-compliance tests for the AuthnRequest (#107)
 
 ## [v2.1.0-beta] - 2025-12-18
 

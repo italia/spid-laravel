@@ -80,6 +80,8 @@ return [
     'expose_sp_metadata' => true,
     'expose_idps_json' => true,
     'only_sp_logout' => false,
+    // Test Identity Provider, also used for SPID Demo (https://demo.spid.gov.it).
+    // See "Testing with SPID Validator and SPID Demo" in the README.
     // 'test_idp' => false,
     'test_idp' => [
         'entityId' => 'spid-testenv',
@@ -88,6 +90,8 @@ return [
         'x509cert' => 'spid-testenv-cert',
     ],
 
+    // SPID Validator (https://validator.spid.gov.it).
+    // See "Testing with SPID Validator and SPID Demo" in the README.
     // 'validator_idp' => false,
     'validator_idp' => [
         'entityId' => 'spid-validator',
