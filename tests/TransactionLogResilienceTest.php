@@ -55,7 +55,7 @@ class TransactionLogResilienceTest extends SPIDAuthBaseTestCase
         ];
 
         // Every fillable column (besides the ones Eloquent manages) exists in the stub.
-        $fillable = array_diff((new SPIDTransaction())->getFillable(), ['uuid', 'created_at', 'updated_at']);
+        $fillable = array_values(array_diff((new SPIDTransaction())->getFillable(), ['uuid', 'created_at', 'updated_at']));
         $this->assertEqualsCanonicalizing($fillable, array_keys($attributes));
 
         $transaction = SPIDTransaction::create($attributes)->fresh();
