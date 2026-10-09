@@ -263,7 +263,7 @@ class SPIDAuthConfigTest extends TestCase
         $this->assertSame('https', \OneLogin\Saml2\Utils::getSelfProtocol());
         $this->assertSame('example.org', \OneLogin\Saml2\Utils::getSelfHost());
         $this->assertSame('443', (string) \OneLogin\Saml2\Utils::getSelfPort());
-        $this->assertSame('/app/spid/', \OneLogin\Saml2\Utils::getBaseURLPath());
+        $this->assertSame('/app/', \OneLogin\Saml2\Utils::getBaseURLPath());
     }
 
     public function testProxyProtocolOverride()
@@ -299,7 +299,7 @@ class SPIDAuthConfigTest extends TestCase
 
         $this->getSPIDAuthConfig();
 
-        $this->assertSame('/gateway/spid/', \OneLogin\Saml2\Utils::getBaseURLPath());
+        $this->assertSame('/gateway/', \OneLogin\Saml2\Utils::getBaseURLPath());
     }
 
     public function testExplicitOverridesWinOverBaseUrl()
@@ -318,7 +318,7 @@ class SPIDAuthConfigTest extends TestCase
         $this->assertSame('override.example.org', \OneLogin\Saml2\Utils::getSelfHost());
         $this->assertSame('http', \OneLogin\Saml2\Utils::getSelfProtocol());
         $this->assertSame('9000', (string) \OneLogin\Saml2\Utils::getSelfPort());
-        $this->assertSame('/override/spid/', \OneLogin\Saml2\Utils::getBaseURLPath());
+        $this->assertSame('/override/', \OneLogin\Saml2\Utils::getBaseURLPath());
     }
 
     public function testBaseUrlWinsOverForwardedDetection()
@@ -499,9 +499,16 @@ class SPIDAuthConfigTest extends TestCase
             'spid-auth.proxy.base_url' => 'https://example.org',
         ]);
 
-        $this->getSPIDAuthConfig();
+        $server = $_SERVER;
+        $_SERVER['REQUEST_URI'] = '/auth/spid/acs';
 
-        $this->assertSame('/auth/spid/', \OneLogin\Saml2\Utils::getBaseURLPath());
+        try {
+            $this->getSPIDAuthConfig();
+
+            $this->assertSame('https://example.org/auth/spid/acs', \OneLogin\Saml2\Utils::getSelfRoutedURLNoQuery());
+        } finally {
+            $_SERVER = $server;
+        }
     }
 
     public function testResponseDestinationIsRejectedBehindProxyWithoutProxyVars()

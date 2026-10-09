@@ -749,14 +749,12 @@ class SPIDAuth extends Controller
     {
         SAMLUtils::setProxyVars((bool) config('spid-auth.proxy.vars'));
 
-        // php-saml rebuilds the self URL as base URL path + last request path
-        // segment (e.g. "acs"), so the configured app path must include the
-        // package routes prefix.
-        $routesPrefix = trim((string) config('spid-auth.routes_prefix'), '/');
-
+        // php-saml rebuilds the self URL as base URL path + request path (with
+        // the base path stripped), so the package routes prefix carries over
+        // from the request and must not be added here.
         $baseUrl = config('spid-auth.proxy.base_url');
         if (!empty($baseUrl)) {
-            SAMLUtils::setBaseURL(rtrim($baseUrl, '/') . '/' . $routesPrefix);
+            SAMLUtils::setBaseURL(rtrim($baseUrl, '/') . '/');
         }
 
         $protocol = config('spid-auth.proxy.protocol');
@@ -776,7 +774,7 @@ class SPIDAuth extends Controller
 
         $baseUrlPath = config('spid-auth.proxy.base_url_path');
         if (!empty($baseUrlPath)) {
-            SAMLUtils::setBaseURLPath(rtrim($baseUrlPath, '/') . '/' . $routesPrefix);
+            SAMLUtils::setBaseURLPath(rtrim($baseUrlPath, '/') . '/');
         }
     }
 
