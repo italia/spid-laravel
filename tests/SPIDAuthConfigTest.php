@@ -527,6 +527,12 @@ class SPIDAuthConfigTest extends TestCase
         return ['Italia\SPIDAuth\ServiceProvider'];
     }
 
+    protected function getEnvironmentSetUp($app)
+    {
+        // Throwaway key generated per run, so no secret-looking APP_KEY is committed.
+        $app['config']->set('app.key', 'base64:' . base64_encode(random_bytes(32)));
+    }
+
     protected function getSPIDAuthConfig()
     {
         $SPIDAuth = $this->app->make('SPIDAuth');
