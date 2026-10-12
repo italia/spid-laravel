@@ -20,9 +20,6 @@
       <clover outputFile="clover.xml"/>
     </report>
   </coverage>
-  <php>
-    <env name="APP_KEY" value="AckfSECXIvnK5r28GVIWUAxmbBSjTsmF"/>
-  </php>
   <testsuites>
     <testsuite name="SPID Laravel Test Suite">
       <directory suffix="Test.php">tests/</directory>
