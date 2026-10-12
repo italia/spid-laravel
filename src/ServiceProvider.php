@@ -9,8 +9,18 @@
 namespace Italia\SPIDAuth;
 
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
+use Italia\SPIDAuth\Contracts\TransactionStoreContract;
+use Italia\SPIDAuth\Events\SPIDAuthenticationRequestEvent;
+use Italia\SPIDAuth\Events\SPIDAuthenticationResponseEvent;
+use Italia\SPIDAuth\Helpers\TransactionLogHelper;
+use Italia\SPIDAuth\Listeners\QueuedTransactionLogListener;
+use Italia\SPIDAuth\Listeners\TransactionLogListener;
+use Italia\SPIDAuth\TransactionStore\DatabaseTransactionStore;
+use Italia\SPIDAuth\TransactionStore\LogTransactionStore;
+use RuntimeException;
 
 class ServiceProvider extends LaravelServiceProvider
 {
@@ -23,6 +33,7 @@ class ServiceProvider extends LaravelServiceProvider
         $configSAML = dirname(__DIR__) . '/config/spid-saml.php';
         $configIdps = dirname(__DIR__) . '/config/spid-idps.php';
         $assets = dirname(__DIR__) . '/resources/assets';
+        $migrationStub = dirname(__DIR__) . '/database/migrations/create_spid_transactions_table.php.stub';
 
         $this->mergeConfigFrom($configAuth, 'spid-auth');
         $this->mergeConfigFrom($configSAML, 'spid-saml');
@@ -34,12 +45,27 @@ class ServiceProvider extends LaravelServiceProvider
 
         $this->publishes([$configAuth => config_path('spid-auth.php')], 'spid-config');
         $this->publishes([$assets => public_path('vendor/spid-auth')], 'spid-assets');
+        $this->publishes([
+            $migrationStub => database_path('migrations/' . date('Y_m_d_His', time()) . '_create_spid_transactions_table.php'),
+        ], 'spid-migrations');
 
         $router->aliasMiddleware('spid.auth', Middleware::class);
 
         View::composer('*', function ($view) {
             $view->with('SPIDActionUrl', route('spid-auth_do-login'));
         });
+
+        // Register transaction log listener if enabled
+        if (TransactionLogHelper::isEnabled()) {
+            $listenerClass = config('spid-auth.transaction_log.queue.enabled', false)
+                ? QueuedTransactionLogListener::class
+                : TransactionLogListener::class;
+
+            Event::listen(
+                [SPIDAuthenticationRequestEvent::class, SPIDAuthenticationResponseEvent::class],
+                $listenerClass
+            );
+        }
     }
 
     /**
@@ -51,6 +77,21 @@ class ServiceProvider extends LaravelServiceProvider
             return new SPIDAuth();
         });
 
-        $this->commands(Console\CommandExample::class);
+        // Bind TransactionStoreContract to implementation based on driver config
+        $this->app->bind(TransactionStoreContract::class, function ($app) {
+            $driver = config('spid-auth.transaction_log.driver', 'database');
+
+            return match ($driver) {
+                'database' => new DatabaseTransactionStore(),
+                'log' => new LogTransactionStore(),
+                default => throw new RuntimeException("Unsupported transaction log driver: {$driver}"),
+            };
+        });
+
+        $this->commands([
+            Console\CommandExample::class,
+            Console\SPIDPruneTransactionsCommand::class,
+            Console\SPIDTransactionStatsCommand::class,
+        ]);
     }
 }

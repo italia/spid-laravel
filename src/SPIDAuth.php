@@ -19,11 +19,14 @@ use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Str;
 use Italia\SPIDAuth\Events\LoginEvent;
 use Italia\SPIDAuth\Events\LogoutEvent;
+use Italia\SPIDAuth\Events\SPIDAuthenticationRequestEvent;
+use Italia\SPIDAuth\Events\SPIDAuthenticationResponseEvent;
 use Italia\SPIDAuth\Exceptions\SPIDConfigurationException;
 use Italia\SPIDAuth\Exceptions\SPIDLoginAnomalyException;
 use Italia\SPIDAuth\Exceptions\SPIDLoginException;
 use Italia\SPIDAuth\Exceptions\SPIDLogoutException;
 use Italia\SPIDAuth\Exceptions\SPIDMetadataException;
+use Italia\SPIDAuth\Helpers\TransactionLogHelper;
 use OneLogin\Saml2\Auth as SAMLAuth;
 use OneLogin\Saml2\Constants as SAMLConstants;
 use OneLogin\Saml2\Error as SAMLError;
@@ -69,9 +72,15 @@ class SPIDAuth extends Controller
             $relayState = $this->getRandomString();
             $idpRedirectTo = $this->getSAML($idp)->login($relayState, [], true, false, true);
             $requestDocument = new DOMDocument();
-            SAMLUtils::loadXML($requestDocument, $this->getSAML($idp)->getLastRequestXML());
+            $authnRequestXml = $this->getSAML($idp)->getLastRequestXML();
+            SAMLUtils::loadXML($requestDocument, $authnRequestXml);
             $requestIssueInstant = $requestDocument->documentElement->getAttribute('IssueInstant');
             $lastRequestId = $this->getSAML($idp)->getLastRequestID();
+
+            // Fire transaction log event if enabled
+            if (TransactionLogHelper::isEnabled()) {
+                event(new SPIDAuthenticationRequestEvent($idp, $authnRequestXml));
+            }
 
             Cookie::queue('spid_idp', $idp, 10, null, null, true, true, false, 'none');
             Cookie::queue('spid_lastRequestId', $lastRequestId, 10, null, null, true, true, false, 'none');
@@ -139,6 +148,11 @@ class SPIDAuth extends Controller
 
         $lastResponseXML = $this->getSAML($idp)->getLastResponseXML();
         $this->validateLoginResponse($lastResponseXML, $lastRequestIssueInstant);
+
+        // Fire transaction log event if enabled
+        if (TransactionLogHelper::isEnabled()) {
+            event(new SPIDAuthenticationResponseEvent($idp, $lastResponseXML));
+        }
 
         try {
             $assertionExpiry = Carbon::parse($assertionNotOnOrAfter);

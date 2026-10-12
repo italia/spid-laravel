@@ -7,6 +7,7 @@ $excluded_folders = [
     'config',
     'bootstrap/cache',
     'node_modules',
+    'pcov',
     'public',
     'resources',
     'storage',
