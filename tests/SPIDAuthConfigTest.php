@@ -415,8 +415,9 @@ class SPIDAuthConfigTest extends TestCase
     public function testSelfUrlMatchesPublicAcsUrlBehindSslOffloadingProxy()
     {
         // php-saml compares the Response Destination against this URL.
-        $scriptName = $_SERVER['SCRIPT_NAME'] ?? null;
-        $_SERVER['SCRIPT_NAME'] = '/spid/acs';
+        $server = $_SERVER;
+        $_SERVER['SCRIPT_NAME'] = '/index.php';
+        $_SERVER['REQUEST_URI'] = '/spid/acs';
         config(['spid-auth.proxy.vars' => true]);
         $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
         $_SERVER['HTTP_X_FORWARDED_HOST'] = 'example.org';
@@ -425,9 +426,9 @@ class SPIDAuthConfigTest extends TestCase
         try {
             $this->getSPIDAuthConfig();
 
-            $this->assertSame('https://example.org/spid/acs', \OneLogin\Saml2\Utils::getSelfURLNoQuery());
+            $this->assertSame('https://example.org/spid/acs', \OneLogin\Saml2\Utils::getSelfRoutedURLNoQuery());
         } finally {
-            $_SERVER['SCRIPT_NAME'] = $scriptName;
+            $_SERVER = $server;
         }
     }
 
@@ -551,7 +552,8 @@ class SPIDAuthConfigTest extends TestCase
     protected function validateResponseDestinedTo(string $destination): string
     {
         $server = $_SERVER;
-        $_SERVER['SCRIPT_NAME'] = $_SERVER['REQUEST_URI'] = '/spid/acs';
+        $_SERVER['SCRIPT_NAME'] = '/index.php';
+        $_SERVER['REQUEST_URI'] = '/spid/acs';
         unset($_SERVER['HTTPS'], $_SERVER['PATH_INFO']);
 
         try {
