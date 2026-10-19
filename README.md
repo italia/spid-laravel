@@ -436,6 +436,53 @@ As required in the [SPID technical specifications](https://docs.italia.it/italia
 According to this requirement, some cookies in this package are created with
 `Secure` policy, thus the authentication does not work in an unsecure context.
 
+### Deployment behind a reverse proxy
+
+When the application runs behind a reverse proxy that terminates TLS (SSL
+offloading) and forwards plain HTTP to PHP, the underlying php-saml library
+builds its self URLs (`AssertionConsumerService`, `SingleLogoutService` and the
+`Destination` it validates) from the raw `$_SERVER` values it sees — plain
+`http://` on the internal port. This is the cause of the
+`The response was received at http://... instead of https://...` error.
+
+Laravel's `TrustProxies` middleware is not enough on its own: it fixes what
+Laravel's `Request` reports, but php-saml reads `$_SERVER` directly and never
+consults it. Configure the `proxy` block so php-saml resolves the correct
+public URLs:
+
+```php
+'proxy' => [
+    'vars' => env('SPID_AUTH_PROXY_VARS', false),
+    'base_url' => env('SPID_AUTH_PROXY_BASE_URL'),
+    'protocol' => env('SPID_AUTH_PROXY_PROTOCOL'),
+    'host' => env('SPID_AUTH_PROXY_HOST'),
+    'port' => env('SPID_AUTH_PROXY_PORT'),
+    'base_url_path' => env('SPID_AUTH_PROXY_BASE_URL_PATH'),
+],
+```
+
+- `vars`: set to `true` to read the `X-Forwarded-Proto`, `X-Forwarded-Host`
+  and `X-Forwarded-Port` headers sent by the proxy. Enough when the proxy sets
+  those headers correctly.
+- `base_url`: the full public base URL of the application (e.g.
+  `https://example.org`, or `https://example.org/app` when served under a
+  subpath). php-saml derives protocol, host, port and path from it.
+  Overrides `X-Forwarded-*`.
+- `protocol` / `host` / `port` / `base_url_path`: explicit overrides for a
+  single component (`base_url_path` is the application path, e.g. `/app`).
+  They take precedence over `base_url` and over `X-Forwarded-*` detection.
+
+Do not include the `routes_prefix` (e.g. `/spid`) in `base_url` or
+`base_url_path`: php-saml takes the rest of the path from the current request,
+so the package routes keep their prefix.
+
+Precedence, lowest to highest: `X-Forwarded-*` (`vars`) < `base_url` <
+explicit `protocol`/`host`/`port`/`base_url_path`.
+
+Regardless of the `proxy` settings, `sp_base_url` must be the public HTTPS URL
+of the Service Provider — it is what appears in the SP metadata and in the
+generated ACS/SLO endpoints.
+
 ### Test Identity Provider
 
 In the
