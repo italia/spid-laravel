@@ -8,6 +8,9 @@
 - CircleCI: apply the SPID patch during tests, add PHP 8.4/8.5 and Laravel 13
 - Document SPID Validator and SPID Demo setup (#107)
 - Add SPID strict-compliance tests for the AuthnRequest (#107)
+- Add reverse proxy support: opt-in `proxy` config block (`X-Forwarded-*` headers, public base URL and self URL overrides) for apps behind SSL offloading (#39, #113)
+- Document deployment behind a reverse proxy
+- CircleCI: verify the Codecov CLI signature and checksum, retry failed coverage uploads
 
 ## [v2.1.0-beta] - 2025-12-18
 
