@@ -747,6 +747,10 @@ class SPIDAuth extends Controller
      */
     protected function applyProxySettings(): void
     {
+        // Utils keeps static state: reset host, protocol, port and base URL
+        // path so values from a previous configuration (e.g. in long-running
+        // workers) do not leak into this one.
+        SAMLUtils::setBaseURL('');
         SAMLUtils::setProxyVars((bool) config('spid-auth.proxy.vars'));
 
         // php-saml rebuilds the self URL as base URL path + request path (with

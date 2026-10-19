@@ -372,6 +372,34 @@ class SPIDAuthConfigTest extends TestCase
         $this->assertNull(\OneLogin\Saml2\Utils::getBaseURLPath());
     }
 
+    public function testPreviousProxySettingsDoNotLeak()
+    {
+        // Baseline self-URL state with no proxy settings.
+        $this->getSPIDAuthConfig();
+        $protocol = \OneLogin\Saml2\Utils::getSelfProtocol();
+        $host = \OneLogin\Saml2\Utils::getSelfHost();
+        $port = \OneLogin\Saml2\Utils::getSelfPort();
+
+        config([
+            'spid-auth.proxy.base_url' => 'https://example.org:8443/app',
+            'spid-auth.proxy.host' => 'override.example.org',
+        ]);
+        $this->getSPIDAuthConfig();
+
+        // Utils state is static: a later configuration without proxy settings
+        // (e.g. the next request in a long-running worker) must start clean.
+        config([
+            'spid-auth.proxy.base_url' => null,
+            'spid-auth.proxy.host' => null,
+        ]);
+        $this->getSPIDAuthConfig();
+
+        $this->assertSame($protocol, \OneLogin\Saml2\Utils::getSelfProtocol());
+        $this->assertSame($host, \OneLogin\Saml2\Utils::getSelfHost());
+        $this->assertSame($port, \OneLogin\Saml2\Utils::getSelfPort());
+        $this->assertNull(\OneLogin\Saml2\Utils::getBaseURLPath());
+    }
+
     public function testProxyVarsIsCastToBool()
     {
         foreach (['1' => true, 'true' => true, '0' => false, '' => false] as $value => $expected) {
