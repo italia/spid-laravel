@@ -466,12 +466,15 @@ public URLs:
   those headers correctly.
 - `base_url`: the full public base URL of the application (e.g.
   `https://example.org`, or `https://example.org/app` when served under a
-  subpath). php-saml derives protocol, host, port and path from it; the
-  `routes_prefix` is appended automatically. Overrides `X-Forwarded-*`.
+  subpath). php-saml derives protocol, host, port and path from it.
+  Overrides `X-Forwarded-*`.
 - `protocol` / `host` / `port` / `base_url_path`: explicit overrides for a
-  single component (`base_url_path` is the application path, e.g. `/app`; the
-  `routes_prefix` is appended automatically). They take precedence over
-  `base_url` and over `X-Forwarded-*` detection.
+  single component (`base_url_path` is the application path, e.g. `/app`).
+  They take precedence over `base_url` and over `X-Forwarded-*` detection.
+
+Do not include the `routes_prefix` (e.g. `/spid`) in `base_url` or
+`base_url_path`: php-saml takes the rest of the path from the current request,
+so the package routes keep their prefix.
 
 Precedence, lowest to highest: `X-Forwarded-*` (`vars`) < `base_url` <
 explicit `protocol`/`host`/`port`/`base_url_path`.
